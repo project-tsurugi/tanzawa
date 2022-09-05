@@ -13,14 +13,14 @@ This module provides a Java program entry for Tsurugi SQL console.
 
 ```sh
 # cd modules/cli
-java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/tanzawa-cli-*-all.jar /path/to/script.sql tcp://localhost:12345
+java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-*-all.jar /path/to/script.sql tcp://localhost:12345
 ```
 
 or, read SQL script from standard input (specify `-` to script path)
 
 ```sh
 # cd modules/cli
-java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/tanzawa-cli-*-all.jar - tcp://localhost:12345
+java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-*-all.jar - tcp://localhost:12345
 ```
 
 Please type `\help` to show available commands.
