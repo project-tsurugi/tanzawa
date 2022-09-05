@@ -1,0 +1,37 @@
+plugins {
+    id 'tanzawa.libs-conventions'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+dependencies {
+    // dependent projects
+    implementation project(':tanzawa-core')
+    implementation "com.tsurugidb.tsubakuro:tsubakuro-session:${tsubakuroVersion}"
+    implementation "com.tsurugidb.tsubakuro:tsubakuro-common:${tsubakuroVersion}"
+    implementation "com.tsurugidb.tsubakuro:tsubakuro-ipc:${tsubakuroVersion}"
+    implementation "com.tsurugidb.tsubakuro:tsubakuro-stream:${tsubakuroVersion}"
+
+    // peripherals
+    implementation 'org.slf4j:slf4j-simple:1.7.36'
+
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+}
+
+application {
+    applicationName = 'Tanzawa'
+    mainClass = 'com.tsurugidb.tsubakuro.bootstrap.Main'
+}
+
+run {
+    description 'run SQL script : -Dscript=</path/to/script> -Dconnection=<endpoint-uri> [-DlogLevel=<level>]'
+    args = [ System.getProperty('script', '(unspecified)'), System.getProperty('connection', 'unspecified:unspecified') ]
+    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', System.getProperty('logLevel', 'INFO')
+    jvmArgs = ['--add-opens=java.base/java.nio=ALL-UNNAMED']
+}
+
+shadowJar {
+    archiveBaseName = 'sql-console'
+    archiveClassifier = 'all'
+    mergeServiceFiles()
+}

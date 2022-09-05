@@ -1,0 +1,123 @@
+plugins {
+    id 'java'
+    id 'checkstyle'
+
+    id 'com.github.spotbugs'
+}
+
+group = 'com.tsurugidb.tanzawa'
+version = '0.0.1-SNAPSHOT'
+
+ext {
+    tsubakuroVersion = '0.0.1-SNAPSHOT'
+}
+
+if (hasProperty('mavenLocal')) {
+    repositories {
+        mavenLocal()
+    }
+} else {
+    repositories {
+        maven {
+            url 'https://maven.pkg.github.com/project-tsurugi/*'
+            content {
+                includeGroupByRegex 'com\\.tsurugidb.*'
+            }
+            credentials {
+                username findProperty('gpr.user') ?: System.getenv('GPR_USER')
+                password findProperty('gpr.key') ?: System.getenv('GPR_KEY')
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral {
+        content {
+            excludeGroupByRegex 'com\\.tsurugidb.*'
+        }
+    }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 8, 'hours'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+dependencies {
+    testImplementation(platform('org.junit:junit-bom:5.9.0'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+}
+
+checkstyle {
+    if ('strict' == findProperty('checkMode')) {
+        maxWarnings = 0
+    }
+}
+
+spotbugsMain {
+    reports {
+        xml {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/main/spotbugs.xml")
+        }
+    }
+}
+
+spotbugsTest.enabled = false
+checkstyleTest.enabled = false
+
+tasks.withType(JavaCompile) { task ->
+    task.options.encoding = 'UTF-8'
+}
+
+task sourcesJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+task testsJar(type: Jar) {
+    classifier 'tests'
+    from sourceSets.test.output
+}
+
+jar {
+    manifest.attributes (
+        'Build-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"),
+        'Build-Revision' : System.getenv("GITHUB_SHA") ?: "",
+        'Created-By'     : "Gradle ${gradle.gradleVersion}",
+        'Build-Jdk'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+        'Build-OS'       : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
+    )
+}
+
+artifacts {
+    archives tasks.sourcesJar
+    //archives tasks.testsJar
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+
+    testLogging {
+        showStandardStreams true
+        events 'started', 'skipped', 'passed', 'failed'
+        exceptionFormat 'full'
+    }
+}
+
+task showTsubakuroManifest {
+    doLast {
+        def tsubakuroJar = configurations["compileClasspath"].filter {
+            it.name.startsWith("tsubakuro-session")
+        }
+        def version = resources.text.fromArchiveEntry(tsubakuroJar, "META-INF/MANIFEST.MF")
+        print(version.asString())
+    }
+}
+

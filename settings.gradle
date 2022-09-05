@@ -1,0 +1,11 @@
+rootProject.name = 'tanzawa'
+
+include 'tanzawa-core'
+include 'tanzawa-cli'
+
+rootProject.children.each { project ->
+    var dirName = project.name.substring('tanzawa-'.length());
+    project.projectDir = new File(settingsDir, "modules/${dirName}")
+    assert project.projectDir.isDirectory()
+}
+

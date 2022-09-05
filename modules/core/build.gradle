@@ -1,0 +1,34 @@
+plugins {
+    id 'tanzawa.libs-conventions'
+    id "org.xbib.gradle.plugin.jflex" version "1.4.0"
+}
+
+dependencies {
+    api "com.tsurugidb.tsubakuro:tsubakuro-session:${tsubakuroVersion}"
+    
+    api 'com.google.code.findbugs:jsr305:3.0.2'
+    api 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.3'
+
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.1'
+
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+    testImplementation "com.tsurugidb.tsubakuro:tsubakuro-session:${tsubakuroVersion}:test-fixtures"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "$buildDir/generated/sources/jflex"
+        }
+    }
+}
+
+checkstyleMain {
+    exclude '**/*Flex.java'
+}
+
+tasks.sourcesJar {
+    // sourcesJar will include generated files..
+    dependsOn 'generateJflex'
+}

@@ -1,0 +1,33 @@
+plugins {
+    id 'java-library'
+    id 'java-test-fixtures'
+    id 'maven-publish'
+
+    id 'tanzawa.java-conventions'
+}
+
+publishing {
+    repositories {
+        maven {
+            name 'GitHubPackages'
+            url 'https://maven.pkg.github.com/project-tsurugi/tanzawa'
+            credentials {
+                username findProperty('gpr.user') ?: System.getenv('GPR_USER')
+                password findProperty('gpr.key') ?: System.getenv('GPR_KEY')
+            }
+        }
+    }
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = project.name
+
+            from components.java
+
+            artifact sourcesJar {
+                classifier = 'sources'
+                archiveExtension  = 'jar'
+            }
+        }
+    }
+}
+

@@ -1,0 +1,23 @@
+# Gradle
+.gradle/
+/build
+/modules/*/build
+/buildSrc/build
+
+# Eclipse
+/bin
+/.project
+/.classpath
+/.settings
+/modules/*/bin
+/modules/*/.project
+/modules/*/.classpath
+/modules/*/.settings
+
+# IDEA
+/.idea
+/modules/*/out
+
+# VSCode
+/.vscode
+

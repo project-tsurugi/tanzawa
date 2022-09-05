@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+tasks.register('allJavadoc', Javadoc)
+tasks.named('allJavadoc') {
+    source project.allprojects.collect { it.sourceSets.main.allJava }
+    classpath = files(project.allprojects.collect { it.sourceSets.main.compileClasspath })
+    destinationDir = file("${buildDir}/docs/javadoc-all")
+    title = "Tanzawa All JavaDoc"
+    options.links "https://docs.oracle.com/en/java/javase/11/docs/api/"
+}
+
