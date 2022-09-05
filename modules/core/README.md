@@ -1,13 +1,6 @@
-# Tsurugi SQL console
+# Tsurugi SQL console engine
 
-Tsurugi SQL console is a text based SQL client program.
-
-This module provides the following program entry.
-
-* [ScriptRunner] - Executes SQL script files.
-  * program arguments
-    * `[0]` - path to the script file
-    * `[1]` - Tsurugi OLTP server end-point URI
+Tsurugi SQL console engine is a core library of Tsurugi SQL console.
 
 Developers can build other SQL scripting tools using following interfaces and classes.
 
@@ -21,14 +14,13 @@ Developers can build other SQL scripting tools using following interfaces and cl
   * [BasicResultProcessor] - Prints result sets as JSON lines style
   * [SqlParser] - Splits SQL script into individual SQL statements
 
-[ScriptRunner]:src/main/java/com/tsurugidb/tsubakuro/console/ScriptRunner.java
-[Engine]:src/main/java/com/tsurugidb/tsubakuro/console/executor/Engine.java
-[SqlProcessor]:src/main/java/com/tsurugidb/tsubakuro/console/executor/SqlProcessor.java
-[ResultProcessor]:src/main/java/com/tsurugidb/tsubakuro/console/executor/ResultProcessor.java
-[BasicEngine]:src/main/java/com/tsurugidb/tsubakuro/console/executor/BasicEngine.java
-[BasicSqlProcessor]:src/main/java/com/tsurugidb/tsubakuro/console/executor/BasicSqlProcessor.java
-[BasicResultProcessor]:src/main/java/com/tsurugidb/tsubakuro/console/executor/BasicResultProcessor.java
-[SqlParser]:src/main/java/com/tsurugidb/tsubakuro/console/parser/SqlParser.java
+[Engine]:src/main/java/com/tsurugidb/console/core/executor/Engine.java
+[SqlProcessor]:src/main/java/com/tsurugidb/console/core/executor/SqlProcessor.java
+[ResultProcessor]:src/main/java/com/tsurugidb/console/core/executor/ResultProcessor.java
+[BasicEngine]:src/main/java/com/tsurugidb/console/core/executor/BasicEngine.java
+[BasicSqlProcessor]:src/main/java/com/tsurugidb/console/core/executor/BasicSqlProcessor.java
+[BasicResultProcessor]:src/main/java/com/tsurugidb/console/core/executor/BasicResultProcessor.java
+[SqlParser]:src/main/java/com/tsurugidb/console/core/parser/SqlParser.java
 
 ## Language
 
@@ -150,19 +142,19 @@ Developers can build other SQL scripting tools using following interfaces and cl
 
 ### Logger names and levels
 
-* `com.tsurugidb.tsubakuro.console.ScriptRunner`
+* `com.tsurugidb.console.core.ScriptRunner`
   * `ERROR` - print critical runtime error messages
   * `WARN` - print runtime error messages
   * `INFO` - program start/finish message
   * `DEBUG` - print program parameters
-* `com.tsurugidb.tsubakuro.console.executor.BasicEngine`
+* `com.tsurugidb.console.core.executor.BasicEngine`
   * `DEBUG` - print engine progress
-* `com.tsurugidb.tsubakuro.console.executor.BasicSqlProcessor`
+* `com.tsurugidb.console.core.executor.BasicSqlProcessor`
   * `DEBUG` - print actual SQL requests
-* `com.tsurugidb.tsubakuro.console.executor.ExecutorUtil`
+* `com.tsurugidb.console.core.executor.ExecutorUtil`
   * `WARN` - print warnings
-* `com.tsurugidb.tsubakuro.console.parser.Segment`
+* `com.tsurugidb.console.core.parser.Segment`
   * `TRACE` - print each tokens
-* `com.tsurugidb.tsubakuro.console.parser.SegmentAnalyzer`
+* `com.tsurugidb.console.core.parser.SegmentAnalyzer`
   * `DEBUG` - print analyze target
   * `TRACE` - print analyze progress
