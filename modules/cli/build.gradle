@@ -12,6 +12,10 @@ dependencies {
     implementation "com.tsurugidb.tsubakuro:tsubakuro-ipc:${tsubakuroVersion}"
     implementation "com.tsurugidb.tsubakuro:tsubakuro-stream:${tsubakuroVersion}"
 
+    implementation 'org.jline:jline:3.21.0'
+    implementation 'net.java.dev.jna:jna:5.12.1'
+    implementation 'net.java.dev.jna:jna-platform:5.12.1'
+
     // peripherals
     implementation 'org.slf4j:slf4j-simple:1.7.36'
 

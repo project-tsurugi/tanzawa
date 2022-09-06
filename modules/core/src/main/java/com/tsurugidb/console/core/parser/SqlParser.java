@@ -59,6 +59,14 @@ public class SqlParser implements Closeable {
         }
     }
 
+    /**
+     * Returns whether or not this scanner reached EOF.
+     * @return {@code true} is reached EOF, otherwise {@code false}
+     */
+    public boolean sawEof() {
+        return scanner.sawEof();
+    }
+
     @Override
     public void close() throws IOException {
         scanner.close();

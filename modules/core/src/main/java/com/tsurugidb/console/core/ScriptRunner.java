@@ -26,8 +26,8 @@ import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.console.core.parser.SqlParser;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
-import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.common.SessionBuilder;
+import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 
 /**
@@ -44,16 +44,17 @@ public final class ScriptRunner {
     /**
      * Executes a script file.
      * <ul>
-     * <li> {@code args[0]} : path to the script file (UTF-8 encoded) </li>
-     * <li> {@code args[1]} : connection URI </li>
+     * <li>{@code args[0]} : path to the script file (UTF-8 encoded)</li>
+     * <li>{@code args[1]} : connection URI</li>
      * </ul>
+     * 
      * @param args the program arguments
      * @throws Exception if exception was occurred
      */
     public static void main(String... args) throws Exception {
         if (args.length != 2) {
-            throw new IllegalArgumentException(MessageFormat.format(
-                    "usage: java {0} </path/to/script.sql> <connection-uri>",
+            throw new IllegalArgumentException(MessageFormat.format(//
+                    "usage: java {0} </path/to/script.sql> <connection-uri>", //
                     ScriptRunner.class.getName()));
         }
         LOG.debug("script: {}", args[0]); //$NON-NLS-1$
@@ -69,46 +70,42 @@ public final class ScriptRunner {
 
     /**
      * Executes the script using basic implementation.
-     * @param script the script file
-     * @param endpoint the connection target end-point URI
+     * 
+     * @param script     the script file
+     * @param endpoint   the connection target end-point URI
      * @param credential the connection credential information
      * @return {@code true} if successfully completed, {@code false} otherwise
-     * @throws ServerException if server side error was occurred
-     * @throws IOException if I/O error was occurred while establishing connection
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while establishing connection
      * @throws InterruptedException if interrupted while establishing connection
      */
-    public static boolean execute(
-            @Nonnull IoSupplier<? extends Reader> script,
-            @Nonnull URI endpoint,
+    public static boolean execute(//
+            @Nonnull IoSupplier<? extends Reader> script, //
+            @Nonnull URI endpoint, //
             @Nonnull Credential credential) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(script);
         Objects.requireNonNull(endpoint);
         Objects.requireNonNull(credential);
-        LOG.info(MessageFormat.format(
-                "establishing connection: {0}",
-                endpoint));
-        try (
-                var session = SessionBuilder.connect(endpoint)
-                        .withCredential(credential)
-                        .create();
+        LOG.info("establishing connection: {}", endpoint);
+        try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create();
                 var sqlProcessor = new BasicSqlProcessor(SqlClient.attach(session));
-                var resultProcessor = new BasicResultProcessor();
-        ) {
+                var resultProcessor = new BasicResultProcessor()) {
             return execute(script, new BasicEngine(sqlProcessor, resultProcessor));
         }
     }
 
     /**
      * Executes the script.
+     * 
      * @param script the script file
      * @param engine the statement executor
      * @return {@code true} if successfully completed, {@code false} otherwise
-     * @throws ServerException if server side error was occurred
-     * @throws IOException if I/O error was occurred while establishing connection
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while establishing connection
      * @throws InterruptedException if interrupted while establishing connection
      */
-    public static boolean execute(
-            @Nonnull IoSupplier<? extends Reader> script,
+    public static boolean execute(//
+            @Nonnull IoSupplier<? extends Reader> script, //
             @Nonnull Engine engine) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(script);
         Objects.requireNonNull(engine);
@@ -126,11 +123,10 @@ public final class ScriptRunner {
                         break;
                     }
                 } catch (Exception e) {
-                    LOG.error(MessageFormat.format(
-                            "exception was occurred while processing statement: text=''{0}'', line={1}, column={2}",
-                            statement.getText(),
-                            statement.getRegion().getStartLine() + 1,
-                            statement.getRegion().getStartColumn() + 1),
+                    LOG.error("exception was occurred while processing statement: text=''{}'', line={}, column={}", //
+                            statement.getText(), //
+                            statement.getRegion().getStartLine() + 1, //
+                            statement.getRegion().getStartColumn() + 1, //
                             e);
                     return false;
                 }
@@ -157,6 +153,45 @@ public final class ScriptRunner {
         }
         LOG.debug("read SQL script from file: {}", path); //$NON-NLS-1$
         return () -> Files.newBufferedReader(path, DEFAULT_SCRIPT_ENCODING);
+    }
+
+    public static void repl(Reader reader, Engine engine) throws IOException {
+        try (var parser = new SqlParser(reader)) {
+            while (true) {
+                try {
+                    Statement statement = parser.next();
+                    if (statement == null) {
+                        break;
+                    }
+                    boolean cont = engine.execute(statement);
+                    if (!cont) {
+                        LOG.info("shutdown was requested");
+                        break;
+                    }
+                } catch (ServerException e) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.warn("{}", e.getDiagnosticCode().name(), e);
+                    } else {
+                        LOG.warn("{} ({})", e.getDiagnosticCode().name(), e.getMessage());
+                    }
+                } catch (Exception e) {
+                    if (e.getMessage() != null) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.warn("{}", e.getMessage(), e);
+                        } else {
+                            LOG.warn("{}", e.getMessage());
+                        }
+                    } else {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.warn("{}", e.getClass().getName(), e);
+                        } else {
+                            LOG.warn("{}", e.getClass().getName());
+                        }
+                    }
+                }
+            }
+        }
+        LOG.info("repl execution was successfully completed");
     }
 
     private ScriptRunner() {
