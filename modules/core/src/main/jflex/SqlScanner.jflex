@@ -1,4 +1,4 @@
-package com.tsurugidb.tsubakuro.console.parser;
+package com.tsurugidb.console.core.parser;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
