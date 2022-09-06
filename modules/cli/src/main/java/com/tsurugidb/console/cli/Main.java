@@ -3,7 +3,7 @@ package com.tsurugidb.console.cli;
 import com.tsurugidb.console.core.ScriptRunner;
 
 /**
- * A program entry of Tsubakuro.
+ * A program entry of Tsurugi SQL console cli.
  */
 public final class Main {
 

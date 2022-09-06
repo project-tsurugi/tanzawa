@@ -19,8 +19,8 @@ dependencies {
 }
 
 application {
-    applicationName = 'Tanzawa'
-    mainClass = 'com.tsurugidb.tsubakuro.bootstrap.Main'
+    applicationName = 'tgsql'
+    mainClass = 'com.tsurugidb.console.cli.Main'
 }
 
 run {
