@@ -1,4 +1,4 @@
-# Tsubakuro bootstrap entry
+# Tsurugi SQL console CLI
 
 This module provides a Java program entry for Tsurugi SQL console.
 
@@ -7,29 +7,20 @@ This module provides a Java program entry for Tsurugi SQL console.
     * `[0]` - path to the script file
     * `[1]` - Tsurugi OLTP server end-point URI
 
-Please refer about Tsurugi SQL console [console/README.md].
-
-[Main]:src/main/java/com/tsurugidb/tsubakuro/bootstrap/Main.java
-[console/README.md]:../console/README.md
-
-## Build
-
-```sh
-./gradlew assemble
-```
+[Main]:src/main/java/com/tsurugidb/console/cli/Main.java
 
 ## Execute
 
 ```sh
-# cd modules/bootstrap
-java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/tsubakuro-bootstrap-*-all.jar /path/to/script.sql tcp://localhost:12345
+# cd modules/cli
+java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-*-all.jar /path/to/script.sql tcp://localhost:12345
 ```
 
 or, read SQL script from standard input (specify `-` to script path)
 
 ```sh
-# cd modules/bootstrap
-java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/tsubakuro-bootstrap-*-all.jar - tcp://localhost:12345
+# cd modules/cli
+java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-*-all.jar - tcp://localhost:12345
 ```
 
 Please type `\help` to show available commands.
