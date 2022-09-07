@@ -2,6 +2,7 @@ package com.tsurugidb.console.cli.jline;
 
 import java.net.URI;
 
+import com.tsurugidb.console.cli.CliArgument;
 import com.tsurugidb.console.core.ScriptRunner;
 import com.tsurugidb.console.core.executor.BasicEngine;
 import com.tsurugidb.console.core.executor.BasicSqlProcessor;
@@ -12,8 +13,8 @@ import com.tsurugidb.tsubakuro.sql.SqlClient;
 
 public final class JLineMain {
 
-    public static void main(String... args) throws Exception {
-        var endpoint = URI.create(args[1]);
+    public static void main(CliArgument argument) throws Exception {
+        var endpoint = URI.create(argument.getEndpoint());
         Credential credential = NullCredential.INSTANCE;
 
         var lineReader = JlLineReader.create();

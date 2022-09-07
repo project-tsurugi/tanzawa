@@ -34,6 +34,7 @@ public final class JlLineReader {
         Attributes originalAttributes = terminal.getAttributes();
         Attributes attributes = new Attributes(originalAttributes);
         attributes.setControlChar(ControlChar.VINTR, 0); // disable Ctrl+C
+        terminal.setAttributes(attributes);
 
         return terminal;
     }

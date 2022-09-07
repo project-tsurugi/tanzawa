@@ -1,5 +1,7 @@
 package com.tsurugidb.console.cli;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import com.tsurugidb.console.cli.jline.JLineMain;
 import com.tsurugidb.console.core.ScriptRunner;
 
@@ -11,21 +13,39 @@ public final class Main {
     /**
      * Executes a script file.
      * <ul>
-     * <li>{@code args[0]} : path to the script file (UTF-8 encoded)</li>
-     * <li>{@code args[1]} : connection URI</li>
+     * <li>{@code --file} : path to the script file (UTF-8 encoded)</li>
+     * <li>{@code --endpoint} : connection URI</li>
      * </ul>
      * 
      * @param args the program arguments
      * @throws Exception if exception was occurred
      */
     public static void main(String... args) throws Exception {
-        if (args.length >= 2 && args[0].equals("-")) {
-            JLineMain.main(args);
+        var argument = new CliArgument();
+        var commander = JCommander.newBuilder() //
+                .programName("tgsql") //
+                .addObject(argument) //
+                .build();
+        try {
+            commander.parse(args);
+        } catch (ParameterException e) {
+            System.err.println(e.getMessage());
+            e.usage();
+            System.exit(1);
+        }
+
+        if (argument.isHelp()) {
+            commander.usage();
             return;
         }
 
-        // FIXME: use options parser
-        ScriptRunner.main(args);
+        if (argument.isStdin()) {
+            JLineMain.main(argument);
+            return;
+        }
+
+        // FIXME: use options class
+        ScriptRunner.main(argument.getScriptFile(), argument.getEndpoint());
     }
 
     private Main() {
