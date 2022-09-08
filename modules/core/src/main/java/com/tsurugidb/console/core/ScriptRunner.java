@@ -18,10 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.executor.BasicEngine;
+import com.tsurugidb.console.core.executor.BasicReporter;
 import com.tsurugidb.console.core.executor.BasicResultProcessor;
 import com.tsurugidb.console.core.executor.BasicSqlProcessor;
 import com.tsurugidb.console.core.executor.Engine;
 import com.tsurugidb.console.core.executor.IoSupplier;
+import com.tsurugidb.console.core.executor.ScriptReporter;
 import com.tsurugidb.console.core.executor.ResultProcessor;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.console.core.parser.SqlParser;
@@ -134,7 +136,8 @@ public final class ScriptRunner {
         try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create();
                 var sqlProcessor = new BasicSqlProcessor(SqlClient.attach(session));
                 var resultProcessor = new BasicResultProcessor()) {
-            return execute(script, new BasicEngine(config, sqlProcessor, resultProcessor));
+            var reporter = new BasicReporter();
+            return execute(script, new BasicEngine(config, sqlProcessor, resultProcessor, reporter));
         }
     }
 
@@ -205,6 +208,7 @@ public final class ScriptRunner {
      * @param config          script configuration
      * @param reader          console reader
      * @param resultProcessor result processer
+     * @param reporter        reporter
      * @throws ServerException      if server side error was occurred
      * @throws IOException          if I/O error was occurred while establishing connection
      * @throws InterruptedException if interrupted while establishing connection
@@ -212,7 +216,8 @@ public final class ScriptRunner {
     public static void repl(//
             @Nonnull ScriptConfig config, //
             @Nonnull Reader reader, //
-            @Nonnull ResultProcessor resultProcessor) throws ServerException, IOException, InterruptedException {
+            @Nonnull ResultProcessor resultProcessor, //
+            @Nonnull ScriptReporter reporter) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(config);
         Objects.requireNonNull(reader);
         Objects.requireNonNull(resultProcessor);
@@ -222,7 +227,7 @@ public final class ScriptRunner {
         LOG.info("establishing connection: {}", endpoint);
         try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create(); //
                 var sqlProcessor = new BasicSqlProcessor(SqlClient.attach(session))) {
-            repl(reader, new BasicEngine(config, sqlProcessor, resultProcessor));
+            repl(reader, new BasicEngine(config, sqlProcessor, resultProcessor, reporter));
         }
     }
 
@@ -250,12 +255,10 @@ public final class ScriptRunner {
                         break;
                     }
                 } catch (ServerException e) {
-                    String message = e.getDiagnosticCode().name();
                     if (LOG.isDebugEnabled()) {
-                        LOG.warn("{}", message, e);
-                    } else {
-                        LOG.warn("{} ({})", message, e.getMessage());
+                        LOG.warn("{}", e.getDiagnosticCode().name(), e);
                     }
+                    engine.getReporter().warn(e);
                 } catch (Exception e) {
                     String message = e.getMessage();
                     if (message == null) {
@@ -263,9 +266,8 @@ public final class ScriptRunner {
                     }
                     if (LOG.isDebugEnabled()) {
                         LOG.warn("{}", message, e);
-                    } else {
-                        LOG.warn("{}", message);
                     }
+                    engine.getReporter().warn(message);
                 }
             }
         }

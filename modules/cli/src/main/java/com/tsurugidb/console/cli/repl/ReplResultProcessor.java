@@ -1,12 +1,9 @@
 package com.tsurugidb.console.cli.repl;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
-
-import org.jline.terminal.Terminal;
 
 import com.tsurugidb.console.core.executor.ResultProcessor;
 import com.tsurugidb.console.core.executor.ResultSetUtil;
@@ -20,10 +17,10 @@ import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
  */
 public class ReplResultProcessor implements ResultProcessor {
 
-    private final PrintWriter writer;
+    private final ReplReporter reporter;
 
-    public ReplResultProcessor(@Nonnull Terminal terminal) {
-        this.writer = terminal.writer();
+    public ReplResultProcessor(@Nonnull ReplReporter reporter) {
+        this.reporter = reporter;
     }
 
     @Override
@@ -32,7 +29,7 @@ public class ReplResultProcessor implements ResultProcessor {
 
         var list = new ArrayList<Object>();
         while (ResultSetUtil.fetchNextRow(target, target.getMetadata(), list::add)) {
-            writer.println(list);
+            reporter.reportResultSetRow(list.toString());
             list.clear();
         }
     }
@@ -43,7 +40,7 @@ public class ReplResultProcessor implements ResultProcessor {
         for (int i = 0, n = columns.size(); i < n; i++) {
             list.add(new Field(i, columns.get(i)));
         }
-        writer.println(list);
+        reporter.reportResultSetHeader(list.toString());
     }
 
     private static class Field {

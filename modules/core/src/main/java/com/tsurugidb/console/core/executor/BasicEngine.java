@@ -21,8 +21,7 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
- * A basic implementation of {@link Engine}.
- * Clients must start/finish transactions manually.
+ * A basic implementation of {@link Engine}. Clients must start/finish transactions manually.
  */
 public class BasicEngine extends AbstractEngine {
 
@@ -32,19 +31,29 @@ public class BasicEngine extends AbstractEngine {
 
     private final ResultProcessor resultSetProcessor;
 
+    private final ScriptReporter reporter;
+
     /**
      * Creates a new instance.
      * 
      * @param config             script configuration
      * @param sqlProcessor       the SQL processor
      * @param resultSetProcessor the result set processor
+     * @param reporter           reporter
      */
-    public BasicEngine(@Nonnull ScriptConfig config, @Nonnull SqlProcessor sqlProcessor, @Nonnull ResultProcessor resultSetProcessor) {
+    public BasicEngine(@Nonnull ScriptConfig config, @Nonnull SqlProcessor sqlProcessor, @Nonnull ResultProcessor resultSetProcessor, @Nonnull ScriptReporter reporter) {
         super(config);
         Objects.requireNonNull(sqlProcessor);
         Objects.requireNonNull(resultSetProcessor);
+        Objects.requireNonNull(reporter);
         this.sqlProcessor = sqlProcessor;
         this.resultSetProcessor = resultSetProcessor;
+        this.reporter = reporter;
+    }
+
+    @Override
+    public ScriptReporter getReporter() {
+        return this.reporter;
     }
 
     @Override
@@ -77,6 +86,7 @@ public class BasicEngine extends AbstractEngine {
         checkTransactionInactive(statement);
         var option = ExecutorUtil.toTransactionOption(statement);
         sqlProcessor.startTransaction(option);
+        reporter.reportStartTransaction(option);
         return true;
     }
 
@@ -88,6 +98,7 @@ public class BasicEngine extends AbstractEngine {
         checkTransactionActive(statement);
         var status = ExecutorUtil.toCommitStatus(statement);
         sqlProcessor.commitTransaction(status.orElse(null));
+        reporter.reportCommitTransaction(status);
         return true;
     }
 
@@ -98,6 +109,7 @@ public class BasicEngine extends AbstractEngine {
 
         checkTransactionActive(statement);
         sqlProcessor.rollbackTransaction();
+        reporter.reportRollbackTransaction();
         return true;
     }
 
@@ -123,18 +135,13 @@ public class BasicEngine extends AbstractEngine {
         }
         if (ExecutorUtil.isStatusCommand(statement)) {
             LOG.debug("show status"); //$NON-NLS-1$
-            if (sqlProcessor.isTransactionActive()) {
-                System.out.println("transaction is active");
-            } else {
-                System.out.println("transaction is inactive");
-            }
+            boolean active = sqlProcessor.isTransactionActive();
+            reporter.reportTransactionStatus(active);
             return true;
         }
         if (ExecutorUtil.isHelpCommand(statement)) {
             LOG.debug("show help"); //$NON-NLS-1$
-            for (var s : ExecutorUtil.getHelpMessage()) {
-                System.out.println(s);
-            }
+            reporter.reportHelp();
             return true;
         }
         // execute as erroneous

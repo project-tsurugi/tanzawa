@@ -5,6 +5,7 @@ import java.net.URI;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.tsurugidb.console.cli.repl.ReplReader;
+import com.tsurugidb.console.cli.repl.ReplReporter;
 import com.tsurugidb.console.cli.repl.ReplLineReader;
 import com.tsurugidb.console.cli.repl.ReplResultProcessor;
 import com.tsurugidb.console.core.ScriptConfig;
@@ -49,9 +50,10 @@ public final class Main {
 
         if (argument.isStdin()) {
             var lineReader = ReplLineReader.create();
+            var reporter = new ReplReporter(lineReader.getTerminal());
             try (var reader = new ReplReader(lineReader); //
-                    var resultProcessor = new ReplResultProcessor(lineReader.getTerminal())) {
-                ScriptRunner.repl(config, reader, resultProcessor);
+                    var resultProcessor = new ReplResultProcessor(reporter)) {
+                ScriptRunner.repl(config, reader, resultProcessor, reporter);
             }
             return;
         }

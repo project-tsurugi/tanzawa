@@ -76,8 +76,7 @@ class BasicEngineTest {
     void empty_statement() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor();
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse(";"));
         assertTrue(cont);
     }
@@ -96,8 +95,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("INSERT INTO A DEFAULT VALUES"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -130,8 +128,7 @@ class BasicEngineTest {
                 assertFalse(target.nextRow());
             }
         };
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("SELECT * FROM T"));
         assertTrue(cont);
         assertTrue(reachedExec.get());
@@ -152,8 +149,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("CALL proc()"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -163,8 +159,7 @@ class BasicEngineTest {
     void generic_staement_inactive_tx() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         assertThrows(EngineException.class, () -> engine.execute(parse("SELECT * FROM T")));
     }
 
@@ -184,8 +179,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("START TRANSACTION"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -207,8 +201,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("START LONG TRANSACTION"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -230,8 +223,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("START TRANSACTION EXECUTE PRIOR"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -253,8 +245,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("START TRANSACTION AS TESTING"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -279,8 +270,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("START TRANSACTION WRITE PRESERVE a, b, c"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -290,8 +280,7 @@ class BasicEngineTest {
     void start_transaction_statement_tx_active() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         assertThrows(EngineException.class, () -> engine.execute(parse("START TRANSACTION")));
     }
 
@@ -308,8 +297,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("COMMIT"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -328,8 +316,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("COMMIT WAIT STORED"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -339,8 +326,7 @@ class BasicEngineTest {
     void commit_statement_tx_inactive() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         assertThrows(EngineException.class, () -> engine.execute(parse("COMMIT")));
     }
 
@@ -356,8 +342,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("ROLLBACK"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -367,8 +352,7 @@ class BasicEngineTest {
     void rollback_statement_tx_inactive() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         assertThrows(EngineException.class, () -> engine.execute(parse("COMMIT")));
     }
 
@@ -376,8 +360,7 @@ class BasicEngineTest {
     void special_statement_exit() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("\\exit"));
         assertFalse(cont);
     }
@@ -386,8 +369,7 @@ class BasicEngineTest {
     void special_statement_halt() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("\\halt"));
         assertFalse(cont);
     }
@@ -396,8 +378,7 @@ class BasicEngineTest {
     void special_statement_status() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("\\status"));
         assertTrue(cont);
     }
@@ -406,8 +387,7 @@ class BasicEngineTest {
     void special_statement_status_tx_active() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("\\status"));
         assertTrue(cont);
     }
@@ -416,8 +396,7 @@ class BasicEngineTest {
     void special_statement_help() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("\\help"));
         assertTrue(cont);
     }
@@ -426,8 +405,7 @@ class BasicEngineTest {
     void special_statement_exit_tx_active() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         assertThrows(EngineException.class, () -> engine.execute(parse("\\exit")));
     }
 
@@ -435,8 +413,7 @@ class BasicEngineTest {
     void special_statement_halt_tx_active() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("\\halt"));
         assertFalse(cont);
     }
@@ -445,8 +422,7 @@ class BasicEngineTest {
     void special_statement_unknown() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         assertThrows(EngineException.class, () -> engine.execute(parse("\\UNKNOWN_COMMAND")));
     }
 
@@ -454,9 +430,14 @@ class BasicEngineTest {
     void erroneous_statement_unknown() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
-        var config = new ScriptConfig();
-        var engine = new BasicEngine(config, sql, rs);
+        var engine = newBasicEngine(sql, rs);
         assertThrows(EngineException.class, () -> engine.execute(parse("START TRANSACTION INVALID")));
+    }
+
+    private static BasicEngine newBasicEngine(MockSqlProcessor sql, MockResultProcessor rs) {
+        var config = new ScriptConfig();
+        var reporter = new BasicReporter();
+        return new BasicEngine(config, sql, rs, reporter);
     }
 
     private static Statement parse(String text) throws IOException {

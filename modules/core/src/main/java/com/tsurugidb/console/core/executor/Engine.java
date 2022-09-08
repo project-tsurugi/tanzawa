@@ -24,6 +24,15 @@ public interface Engine {
     }
 
     /**
+     * get reporter.
+     * 
+     * @return script reporter
+     */
+    default ScriptReporter getReporter() {
+        throw new UnsupportedOperationException("do override");
+    }
+
+    /**
      * Executes a statement.
      * 
      * @param statement the target statement
