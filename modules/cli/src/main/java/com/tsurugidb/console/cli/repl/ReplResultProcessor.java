@@ -1,8 +1,10 @@
-package com.tsurugidb.console.cli.jline;
+package com.tsurugidb.console.cli.repl;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+
+import javax.annotation.Nonnull;
 
 import org.jline.terminal.Terminal;
 
@@ -13,13 +15,14 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 
-public class JlResultProcessor implements ResultProcessor {
-
-    private static final String FIELD_NAME_PREFIX_UNNAMED = "@#";
+/**
+ * Tsurugi SQL console repl ResultProcessor
+ */
+public class ReplResultProcessor implements ResultProcessor {
 
     private final PrintWriter writer;
 
-    public JlResultProcessor(Terminal terminal) {
+    public ReplResultProcessor(@Nonnull Terminal terminal) {
         this.writer = terminal.writer();
     }
 
@@ -53,7 +56,7 @@ public class JlResultProcessor implements ResultProcessor {
         }
 
         public String getName() {
-            return getFieldName(column, index);
+            return ResultSetUtil.getFieldName(column, index);
         }
 
         public String getType() {
@@ -64,13 +67,6 @@ public class JlResultProcessor implements ResultProcessor {
         public String toString() {
             return getName() + ": " + getType();
         }
-    }
-
-    private static String getFieldName(SqlCommon.Column column, int index) {
-        if (column.getName().isEmpty()) {
-            return String.format("%s%d", FIELD_NAME_PREFIX_UNNAMED, index);
-        }
-        return column.getName();
     }
 
     private static String getFieldType(SqlCommon.Column column) {

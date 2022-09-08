@@ -22,6 +22,7 @@ import com.tsurugidb.console.core.executor.BasicResultProcessor;
 import com.tsurugidb.console.core.executor.BasicSqlProcessor;
 import com.tsurugidb.console.core.executor.Engine;
 import com.tsurugidb.console.core.executor.IoSupplier;
+import com.tsurugidb.console.core.executor.ResultProcessor;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.console.core.parser.SqlParser;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
@@ -86,11 +87,54 @@ public final class ScriptRunner {
         Objects.requireNonNull(script);
         Objects.requireNonNull(endpoint);
         Objects.requireNonNull(credential);
+
+        var config = new ScriptConfig();
+        config.setEndpoint(endpoint);
+        config.setCredential(credential);
+
+        return execute(script, config);
+    }
+
+    /**
+     * Executes the script using basic implementation.
+     * 
+     * @param script the script file
+     * @param config script configuration
+     * @return {@code true} if successfully completed, {@code false} otherwise
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while establishing connection
+     * @throws InterruptedException if interrupted while establishing connection
+     */
+    public static boolean execute(//
+            @Nonnull String script, //
+            @Nonnull ScriptConfig config) throws ServerException, IOException, InterruptedException {
+        Objects.requireNonNull(script);
+        Objects.requireNonNull(config);
+        return execute(toReaderSupplier(script), config);
+    }
+
+    /**
+     * Executes the script using basic implementation.
+     * 
+     * @param script the script file
+     * @param config script configuration
+     * @return {@code true} if successfully completed, {@code false} otherwise
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while establishing connection
+     * @throws InterruptedException if interrupted while establishing connection
+     */
+    public static boolean execute(//
+            @Nonnull IoSupplier<? extends Reader> script, //
+            @Nonnull ScriptConfig config) throws ServerException, IOException, InterruptedException {
+        Objects.requireNonNull(script);
+        Objects.requireNonNull(config);
+        var endpoint = config.getEndpoint();
+        var credential = config.getCredential();
         LOG.info("establishing connection: {}", endpoint);
         try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create();
                 var sqlProcessor = new BasicSqlProcessor(SqlClient.attach(session));
                 var resultProcessor = new BasicResultProcessor()) {
-            return execute(script, new BasicEngine(sqlProcessor, resultProcessor));
+            return execute(script, new BasicEngine(config, sqlProcessor, resultProcessor));
         }
     }
 
@@ -155,7 +199,44 @@ public final class ScriptRunner {
         return () -> Files.newBufferedReader(path, DEFAULT_SCRIPT_ENCODING);
     }
 
-    public static void repl(Reader reader, Engine engine) throws IOException {
+    /**
+     * Executes REPL.
+     * 
+     * @param config          script configuration
+     * @param reader          console reader
+     * @param resultProcessor result processer
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while establishing connection
+     * @throws InterruptedException if interrupted while establishing connection
+     */
+    public static void repl(//
+            @Nonnull ScriptConfig config, //
+            @Nonnull Reader reader, //
+            @Nonnull ResultProcessor resultProcessor) throws ServerException, IOException, InterruptedException {
+        Objects.requireNonNull(config);
+        Objects.requireNonNull(reader);
+        Objects.requireNonNull(resultProcessor);
+
+        var endpoint = config.getEndpoint();
+        var credential = config.getCredential();
+        LOG.info("establishing connection: {}", endpoint);
+        try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create(); //
+                var sqlProcessor = new BasicSqlProcessor(SqlClient.attach(session))) {
+            repl(reader, new BasicEngine(config, sqlProcessor, resultProcessor));
+        }
+    }
+
+    /**
+     * Executes REPL.
+     * 
+     * @param reader console reader
+     * @param engine the statement executor
+     * @throws IOException if I/O error was occurred while establishing connection
+     */
+    public static void repl(//
+            @Nonnull Reader reader, //
+            @Nonnull Engine engine) throws IOException {
+        LOG.info("start repl");
         try (var parser = new SqlParser(reader)) {
             while (true) {
                 try {
@@ -169,24 +250,21 @@ public final class ScriptRunner {
                         break;
                     }
                 } catch (ServerException e) {
+                    String message = e.getDiagnosticCode().name();
                     if (LOG.isDebugEnabled()) {
-                        LOG.warn("{}", e.getDiagnosticCode().name(), e);
+                        LOG.warn("{}", message, e);
                     } else {
-                        LOG.warn("{} ({})", e.getDiagnosticCode().name(), e.getMessage());
+                        LOG.warn("{} ({})", message, e.getMessage());
                     }
                 } catch (Exception e) {
-                    if (e.getMessage() != null) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.warn("{}", e.getMessage(), e);
-                        } else {
-                            LOG.warn("{}", e.getMessage());
-                        }
+                    String message = e.getMessage();
+                    if (message == null) {
+                        message = e.getClass().getName();
+                    }
+                    if (LOG.isDebugEnabled()) {
+                        LOG.warn("{}", message, e);
                     } else {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.warn("{}", e.getClass().getName(), e);
-                        } else {
-                            LOG.warn("{}", e.getClass().getName());
-                        }
+                        LOG.warn("{}", message);
                     }
                 }
             }

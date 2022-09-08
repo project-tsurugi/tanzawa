@@ -19,21 +19,22 @@ import com.tsurugidb.sql.proto.SqlCommon;
  */
 public final class ResultSetUtil {
 
+    private static final String FIELD_NAME_PREFIX_UNNAMED = "@#";
+
     /**
-     * Fetches the next row from the cursor.
-     * Each atom value will be mapped the original Java type,
-     * and arrays and row values are mapped into {@code List<Object>}.
-     * @param cursor the input cursor
-     * @param metadata the input metadata
+     * Fetches the next row from the cursor. Each atom value will be mapped the original Java type, and arrays and row values are mapped into {@code List<Object>}.
+     * 
+     * @param cursor      the input cursor
+     * @param metadata    the input metadata
      * @param destination the result destination
      * @return {@code true} if successfully fetched, or {@code false} otherwise
-     * @throws ServerException if server side error was occurred
-     * @throws IOException if I/O error was occurred while executing the statement
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    public static boolean fetchNextRow(
-            @Nonnull RelationCursor cursor,
-            @Nonnull RelationMetadata metadata,
+    public static boolean fetchNextRow(//
+            @Nonnull RelationCursor cursor, //
+            @Nonnull RelationMetadata metadata, //
             @Nonnull Consumer<Object> destination) throws IOException, ServerException, InterruptedException {
         Objects.requireNonNull(cursor);
         Objects.requireNonNull(metadata);
@@ -44,9 +45,9 @@ public final class ResultSetUtil {
         int columnAt = 0;
         for (var columnInfo : metadata.getColumns()) {
             if (!cursor.nextColumn()) {
-                throw new IllegalStateException(MessageFormat.format(
-                        "row data is shorter than the metadata: column={0}, at={1}",
-                        columnInfo,
+                throw new IllegalStateException(MessageFormat.format(//
+                        "row data is shorter than the metadata: column={0}, at={1}", //
+                        columnInfo, //
                         columnAt + 1));
             }
             Object value = fetchCurrentColumn(cursor, columnInfo);
@@ -56,15 +57,15 @@ public final class ResultSetUtil {
         return true;
     }
 
-    private static Object fetchCurrentColumn(
-            @Nonnull RelationCursor cursor,
+    private static Object fetchCurrentColumn(//
+            @Nonnull RelationCursor cursor, //
             @Nonnull SqlCommon.Column columnInfo) throws IOException, ServerException, InterruptedException {
         return fetchCurrentColumn0(cursor, columnInfo, columnInfo.getDimension());
     }
 
-    private static Object fetchCurrentColumn0(
-            @Nonnull RelationCursor cursor,
-            @Nonnull SqlCommon.Column columnInfo,
+    private static Object fetchCurrentColumn0(//
+            @Nonnull RelationCursor cursor, //
+            @Nonnull SqlCommon.Column columnInfo, //
             int dimension) throws IOException, ServerException, InterruptedException {
         if (cursor.isNull()) {
             return null;
@@ -74,16 +75,16 @@ public final class ResultSetUtil {
             var array = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
                 if (!cursor.nextColumn()) {
-                    throw new IllegalStateException(MessageFormat.format(
-                            "array data is broken: column={0}",
+                    throw new IllegalStateException(MessageFormat.format(//
+                            "array data is broken: column={0}", //
                             columnInfo));
                 }
                 Object element = fetchCurrentColumn0(cursor, columnInfo, dimension - 1);
                 array.add(element);
             }
             if (cursor.nextColumn()) {
-                throw new IllegalStateException(MessageFormat.format(
-                        "array data is broken: column={0}",
+                throw new IllegalStateException(MessageFormat.format(//
+                        "array data is broken: column={0}", //
                         columnInfo));
             }
             return array;
@@ -95,16 +96,16 @@ public final class ResultSetUtil {
             return fetchCurrentColumnRow(cursor, columnInfo, columnInfo.getRowType());
         case USER_TYPE:
         default:
-            throw new UnsupportedOperationException(MessageFormat.format(
-                    "unsupported column type: {0}, column={1}",
-                    columnInfo.getTypeInfoCase(),
+            throw new UnsupportedOperationException(MessageFormat.format(//
+                    "unsupported column type: {0}, column={1}", //
+                    columnInfo.getTypeInfoCase(), //
                     columnInfo));
         }
     }
 
-    private static Object fetchCurrentColumnAtom(
-            @Nonnull RelationCursor cursor,
-            @Nonnull SqlCommon.Column columnInfo,
+    private static Object fetchCurrentColumnAtom(//
+            @Nonnull RelationCursor cursor, //
+            @Nonnull SqlCommon.Column columnInfo, //
             @Nonnull SqlCommon.AtomType type) throws IOException, ServerException, InterruptedException {
         switch (type) {
         case BIT:
@@ -142,34 +143,41 @@ public final class ResultSetUtil {
         case UNRECOGNIZED:
         case TYPE_UNSPECIFIED:
         default:
-            throw new UnsupportedOperationException(MessageFormat.format(
-                    "unsupported column type: {0}, column={1}",
-                    type,
+            throw new UnsupportedOperationException(MessageFormat.format(//
+                    "unsupported column type: {0}, column={1}", //
+                    type, //
                     columnInfo));
         }
     }
 
-    private static Object fetchCurrentColumnRow(
-            @Nonnull RelationCursor cursor,
-            @Nonnull SqlCommon.Column columnInfo,
+    private static Object fetchCurrentColumnRow(//
+            @Nonnull RelationCursor cursor, //
+            @Nonnull SqlCommon.Column columnInfo, //
             @Nonnull SqlCommon.RowType type) throws IOException, ServerException, InterruptedException {
         int count = cursor.beginRowValue();
         var array = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             if (!cursor.nextColumn()) {
-                throw new IllegalStateException(MessageFormat.format(
-                        "row value data is broken: column={0}",
+                throw new IllegalStateException(MessageFormat.format(//
+                        "row value data is broken: column={0}", //
                         columnInfo));
             }
             Object element = fetchCurrentColumn(cursor, type.getColumns(i));
             array.add(element);
         }
         if (cursor.nextColumn()) {
-            throw new IllegalStateException(MessageFormat.format(
-                    "row value is broken: column={0}",
+            throw new IllegalStateException(MessageFormat.format(//
+                    "row value is broken: column={0}", //
                     columnInfo));
         }
         return array;
+    }
+
+    public static String getFieldName(SqlCommon.Column column, int index) {
+        if (column.getName().isEmpty()) {
+            return String.format("%s%d", FIELD_NAME_PREFIX_UNNAMED, index);
+        }
+        return column.getName();
     }
 
     private ResultSetUtil() {

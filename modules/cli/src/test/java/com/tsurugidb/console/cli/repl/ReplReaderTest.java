@@ -1,4 +1,4 @@
-package com.tsurugidb.console.cli.jline;
+package com.tsurugidb.console.cli.repl;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -8,11 +8,11 @@ import java.io.IOException;
 import org.jline.reader.EndOfFileException;
 import org.junit.jupiter.api.Test;
 
-class JlIoReaderTest {
+class ReplReaderTest {
 
     @Test
     void empty() throws IOException {
-        try (var target = new JlIoReaderTestMock("")) {
+        try (var target = new ReplReaderTestMock("")) {
             var buf = new char[3];
             int len = target.read(buf, 0, buf.length);
             assertEquals(0, len);
@@ -23,7 +23,7 @@ class JlIoReaderTest {
     @Test
     void eqBufSize() throws IOException {
         String text = "abc";
-        try (var target = new JlIoReaderTestMock(text)) {
+        try (var target = new ReplReaderTestMock(text)) {
             var buf = new char[text.length()];
             int len = target.read(buf, 0, buf.length);
             assertEquals(text.length(), len);
@@ -34,7 +34,7 @@ class JlIoReaderTest {
     @Test
     void startsBuf() throws IOException {
         String text = "abc";
-        try (var target = new JlIoReaderTestMock(text)) {
+        try (var target = new ReplReaderTestMock(text)) {
             var buf = new char[text.length() + 2];
             int len = target.read(buf, 0, text.length());
             assertEquals(text.length(), len);
@@ -45,7 +45,7 @@ class JlIoReaderTest {
     @Test
     void middleBuf() throws IOException {
         String text = "abc";
-        try (var target = new JlIoReaderTestMock(text)) {
+        try (var target = new ReplReaderTestMock(text)) {
             var buf = new char[text.length() + 2];
             int len = target.read(buf, 1, text.length());
             assertEquals(text.length(), len);
@@ -56,7 +56,7 @@ class JlIoReaderTest {
     @Test
     void endsBuf() throws IOException {
         String text = "abc";
-        try (var target = new JlIoReaderTestMock(text)) {
+        try (var target = new ReplReaderTestMock(text)) {
             var buf = new char[text.length() + 2];
             int len = target.read(buf, 2, text.length());
             assertEquals(text.length(), len);
@@ -67,7 +67,7 @@ class JlIoReaderTest {
     @Test
     void endsBufOver() throws IOException {
         String text = "abc";
-        try (var target = new JlIoReaderTestMock(text)) {
+        try (var target = new ReplReaderTestMock(text)) {
             var buf = new char[text.length() + 2];
             int len = target.read(buf, 3, text.length());
             assertEquals(text.length() - 1, len);
@@ -77,7 +77,7 @@ class JlIoReaderTest {
 
     @Test
     void split() throws IOException {
-        try (var target = new JlIoReaderTestMock("abcdef")) {
+        try (var target = new ReplReaderTestMock("abcdef")) {
             var buf1 = new char[3];
             int len1 = target.read(buf1);
             assertEquals(buf1.length, len1);
@@ -97,7 +97,7 @@ class JlIoReaderTest {
 
     @Test
     void multiLine() throws IOException {
-        try (var target = new JlIoReaderTestMock("abc", "def")) {
+        try (var target = new ReplReaderTestMock("abc", "def")) {
             var buf1 = new char[3];
             int len1 = target.read(buf1);
             assertEquals(buf1.length, len1);
@@ -117,7 +117,7 @@ class JlIoReaderTest {
 
     @Test
     void multiLine2() throws IOException {
-        try (var target = new JlIoReaderTestMock("abc", "def")) {
+        try (var target = new ReplReaderTestMock("abc", "def")) {
             var buf1 = new char[2];
             int len1 = target.read(buf1);
             assertEquals(buf1.length, len1);
@@ -142,19 +142,19 @@ class JlIoReaderTest {
 
     @Test
     void eof() throws IOException {
-        try (var target = new JlIoReaderTestMock(new String[0])) {
+        try (var target = new ReplReaderTestMock(new String[0])) {
             var buf = new char[16];
             int len = target.read(buf, 0, buf.length);
             assertEquals(-1, len);
         }
     }
 
-    private static class JlIoReaderTestMock extends JlIoReader {
+    private static class ReplReaderTestMock extends ReplReader {
 
         private String[] text;
         private int index = 0;
 
-        public JlIoReaderTestMock(String... text) {
+        public ReplReaderTestMock(String... text) {
             this.text = text;
         }
 

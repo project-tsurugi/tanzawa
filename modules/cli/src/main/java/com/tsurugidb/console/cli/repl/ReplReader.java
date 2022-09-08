@@ -1,15 +1,17 @@
-package com.tsurugidb.console.cli.jline;
+package com.tsurugidb.console.cli.repl;
 
 import java.io.IOException;
 import java.io.Reader;
+
+import javax.annotation.Nonnull;
 
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 
 /**
- * Tsurugi SQL console java.io.Reader
+ * Tsurugi SQL console repl Reader
  */
-public class JlIoReader extends Reader {
+public class ReplReader extends Reader {
 
     private static final String PROMPT1 = "tgsql> ";
     private static final String PROMPT2 = "     | ";
@@ -18,14 +20,16 @@ public class JlIoReader extends Reader {
     private String buffer = null;
     private int index;
 
-    public JlIoReader(LineReader lineReader) throws IOException {
+    public ReplReader(@Nonnull LineReader lineReader) throws IOException {
         this.lineReader = lineReader;
 
         lineReader.setVariable(LineReader.SECONDARY_PROMPT_PATTERN, PROMPT2);
     }
 
-    // for test
-    JlIoReader() {
+    /**
+     * for test
+     */
+    ReplReader() {
         this.lineReader = null;
     }
 

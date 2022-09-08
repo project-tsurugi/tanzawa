@@ -23,8 +23,6 @@ import com.tsurugidb.sql.proto.SqlCommon;
  */
 public class BasicResultProcessor implements ResultProcessor {
 
-    private static final String FIELD_NAME_PREFIX_UNNAMED = "@#";
-
     private final IoSupplier<? extends Writer> outputs;
 
     private final JsonFactory factory;
@@ -94,7 +92,7 @@ public class BasicResultProcessor implements ResultProcessor {
         }
 
         generator.writeFieldName("label");
-        generator.writeString(getFieldName(column, index));
+        generator.writeString(ResultSetUtil.getFieldName(column, index));
 
         generator.writeFieldName("type");
         switch (column.getTypeInfoCase()) {
@@ -128,7 +126,7 @@ public class BasicResultProcessor implements ResultProcessor {
         for (int i = 0, n = elements.size(); i < n; i++) {
             var value = elements.get(i);
             var column = columns.get(i);
-            generator.writeFieldName(getFieldName(column, i));
+            generator.writeFieldName(ResultSetUtil.getFieldName(column, i));
             dumpValue(generator, value, column, column.getDimension());
         }
         generator.writeEndObject();
@@ -178,12 +176,5 @@ public class BasicResultProcessor implements ResultProcessor {
         } else {
             generator.writeString(String.valueOf(value));
         }
-    }
-
-    private static String getFieldName(SqlCommon.Column column, int index) {
-        if (column.getName().isEmpty()) {
-            return String.format("%s%d", FIELD_NAME_PREFIX_UNNAMED, index);
-        }
-        return column.getName();
     }
 }

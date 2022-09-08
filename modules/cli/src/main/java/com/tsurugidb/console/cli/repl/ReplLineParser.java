@@ -1,4 +1,4 @@
-package com.tsurugidb.console.cli.jline;
+package com.tsurugidb.console.cli.repl;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -13,7 +13,7 @@ import com.tsurugidb.console.core.parser.SqlParser;
 /**
  * Tsurugi SQL console JLine Parser
  */
-public class JlLineParser extends DefaultParser {
+public class ReplLineParser extends DefaultParser {
 
     @Override
     public ParsedLine parse(String line, int cursor, ParseContext context) {

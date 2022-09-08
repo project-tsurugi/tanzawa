@@ -1,9 +1,15 @@
 package com.tsurugidb.console.cli;
 
+import java.net.URI;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.tsurugidb.console.cli.jline.JLineMain;
+import com.tsurugidb.console.cli.repl.ReplReader;
+import com.tsurugidb.console.cli.repl.ReplLineReader;
+import com.tsurugidb.console.cli.repl.ReplResultProcessor;
+import com.tsurugidb.console.core.ScriptConfig;
 import com.tsurugidb.console.core.ScriptRunner;
+import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 
 /**
  * A program entry of Tsurugi SQL console cli.
@@ -39,13 +45,29 @@ public final class Main {
             return;
         }
 
+        var config = createConfig(argument);
+
         if (argument.isStdin()) {
-            JLineMain.main(argument);
+            var lineReader = ReplLineReader.create();
+            try (var reader = new ReplReader(lineReader); //
+                    var resultProcessor = new ReplResultProcessor(lineReader.getTerminal())) {
+                ScriptRunner.repl(config, reader, resultProcessor);
+            }
             return;
         }
 
-        // FIXME: use options class
-        ScriptRunner.main(argument.getScriptFile(), argument.getEndpoint());
+        ScriptRunner.execute(argument.getScriptFile(), config);
+    }
+
+    private static ScriptConfig createConfig(CliArgument argument) {
+        var config = new ScriptConfig();
+
+        var endpoint = URI.create(argument.getEndpoint());
+        config.setEndpoint(endpoint);
+
+        config.setCredential(NullCredential.INSTANCE);
+
+        return config;
     }
 
     private Main() {

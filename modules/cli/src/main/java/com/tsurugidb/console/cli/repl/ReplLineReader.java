@@ -1,4 +1,4 @@
-package com.tsurugidb.console.cli.jline;
+package com.tsurugidb.console.cli.repl;
 
 import java.io.IOException;
 
@@ -12,12 +12,12 @@ import org.jline.terminal.TerminalBuilder;
 /**
  * Tsurugi SQL console JLine LineReader
  */
-public final class JlLineReader {
+public final class ReplLineReader {
 
     public static LineReader create() throws IOException {
         var terminal = createTerminal();
 
-        var parser = new JlLineParser();
+        var parser = new ReplLineParser();
         parser.setEscapeChars(null);
 
         var reader = LineReaderBuilder.builder() //
@@ -39,7 +39,7 @@ public final class JlLineReader {
         return terminal;
     }
 
-    private JlLineReader() {
+    private ReplLineReader() {
         throw new AssertionError();
     }
 }
