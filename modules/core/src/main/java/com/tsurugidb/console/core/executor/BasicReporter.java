@@ -8,6 +8,11 @@ public class BasicReporter extends ScriptReporter {
     }
 
     @Override
+    public void implicit(String message) {
+        System.out.println(message);
+    }
+
+    @Override
     public void succeed(String message) {
         System.out.println(message);
     }

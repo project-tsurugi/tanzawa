@@ -12,6 +12,8 @@ public abstract class ScriptReporter {
 
     public abstract void info(String message);
 
+    public abstract void implicit(String message);
+
     public abstract void succeed(String message);
 
     public abstract void warn(String message);
@@ -23,32 +25,42 @@ public abstract class ScriptReporter {
         warn(message);
     }
 
-    public void reportStartTransaction(TransactionOption option) {
+    public void reportStartTransactionImplicitly(TransactionOption option) {
+        String message = MessageFormat.format("start transaction implicitly. option=[{0}]", //
+                option);
+        reportStartTransactionImplicitly(message, option);
+    }
+
+    protected void reportStartTransactionImplicitly(String message, TransactionOption option) {
+        implicit(message);
+    }
+
+    public void reportTransactionStarted(TransactionOption option) {
         String message = MessageFormat.format("transaction started. option=[{0}]", //
                 option);
-        reportStartTransaction(message, option);
+        reportTransactionStarted(message, option);
     }
 
-    protected void reportStartTransaction(String message, TransactionOption option) {
+    protected void reportTransactionStarted(String message, TransactionOption option) {
         succeed(message);
     }
 
-    public void reportCommitTransaction(Optional<CommitStatus> status) {
+    public void reportTransactionCommitted(Optional<CommitStatus> status) {
         String message = MessageFormat.format("transaction committed. status={0}", //
                 status.map(CommitStatus::name).orElse("DEFAULT"));
-        reportCommitTransaction(message, status);
+        reportTransactionCommitted(message, status);
     }
 
-    protected void reportCommitTransaction(String message, Optional<CommitStatus> status) {
+    protected void reportTransactionCommitted(String message, Optional<CommitStatus> status) {
         succeed(message);
     }
 
-    public void reportRollbackTransaction() {
+    public void reportTransactionRollbacked() {
         String message = "transaction rollbacked.";
-        reportRollbackTransaction(message);
+        reportTransactionRollbacked(message);
     }
 
-    protected void reportRollbackTransaction(String message) {
+    protected void reportTransactionRollbacked(String message) {
         succeed(message);
     }
 

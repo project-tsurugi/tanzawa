@@ -12,8 +12,9 @@ import com.tsurugidb.console.core.executor.ScriptReporter;
 
 public class ReplReporter extends ScriptReporter {
 
-    private static final int RED = 0xe00000;
-    private static final int GREEN = 0x00e000;
+    private static final int RED = 0xc00000;
+    private static final int GREEN = 0x00c000;
+    private static final int YELLOW = 0xc0c000;
 
     private final Terminal terminal;
 
@@ -24,6 +25,11 @@ public class ReplReporter extends ScriptReporter {
     @Override
     public void info(String message) {
         println(message);
+    }
+
+    @Override
+    public void implicit(String message) {
+        println(message, YELLOW);
     }
 
     @Override

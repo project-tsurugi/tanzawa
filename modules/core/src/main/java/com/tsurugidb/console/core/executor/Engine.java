@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
-import com.tsurugidb.console.core.ScriptConfig;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
@@ -13,15 +12,6 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
  */
 @FunctionalInterface
 public interface Engine {
-
-    /**
-     * get configuration.
-     * 
-     * @return script configuration
-     */
-    default ScriptConfig getConfig() {
-        throw new UnsupportedOperationException("do override");
-    }
 
     /**
      * get reporter.

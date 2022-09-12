@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.console.core.ScriptConfig;
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement;
@@ -27,6 +27,8 @@ public class BasicEngine extends AbstractEngine {
 
     static final Logger LOG = LoggerFactory.getLogger(BasicEngine.class);
 
+    private final ScriptConfig config;
+
     private final SqlProcessor sqlProcessor;
 
     private final ResultProcessor resultSetProcessor;
@@ -42,10 +44,11 @@ public class BasicEngine extends AbstractEngine {
      * @param reporter           reporter
      */
     public BasicEngine(@Nonnull ScriptConfig config, @Nonnull SqlProcessor sqlProcessor, @Nonnull ResultProcessor resultSetProcessor, @Nonnull ScriptReporter reporter) {
-        super(config);
+        Objects.requireNonNull(config);
         Objects.requireNonNull(sqlProcessor);
         Objects.requireNonNull(resultSetProcessor);
         Objects.requireNonNull(reporter);
+        this.config = config;
         this.sqlProcessor = sqlProcessor;
         this.resultSetProcessor = resultSetProcessor;
         this.reporter = reporter;
@@ -69,7 +72,7 @@ public class BasicEngine extends AbstractEngine {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
-        checkTransactionActive(statement);
+        checkTransactionActive(statement, true);
         try (var rs = sqlProcessor.execute(statement.getText(), statement.getRegion())) {
             if (rs != null) {
                 resultSetProcessor.process(rs);
@@ -86,7 +89,7 @@ public class BasicEngine extends AbstractEngine {
         checkTransactionInactive(statement);
         var option = ExecutorUtil.toTransactionOption(statement);
         sqlProcessor.startTransaction(option);
-        reporter.reportStartTransaction(option);
+        reporter.reportTransactionStarted(option);
         return true;
     }
 
@@ -95,10 +98,10 @@ public class BasicEngine extends AbstractEngine {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
-        checkTransactionActive(statement);
+        checkTransactionActive(statement, false);
         var status = ExecutorUtil.toCommitStatus(statement);
         sqlProcessor.commitTransaction(status.orElse(null));
-        reporter.reportCommitTransaction(status);
+        reporter.reportTransactionCommitted(status);
         return true;
     }
 
@@ -107,9 +110,9 @@ public class BasicEngine extends AbstractEngine {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
-        checkTransactionActive(statement);
+        checkTransactionActive(statement, false);
         sqlProcessor.rollbackTransaction();
-        reporter.reportRollbackTransaction();
+        reporter.reportTransactionRollbacked();
         return true;
     }
 
@@ -158,10 +161,21 @@ public class BasicEngine extends AbstractEngine {
                 statement.getOccurrence().getStartColumn() + 1));
     }
 
-    private void checkTransactionActive(Statement statement) throws EngineException {
-        if (!sqlProcessor.isTransactionActive()) {
-            throw new EngineException(MessageFormat.format("transaction is not started (line={0}, column={1})", statement.getRegion().getStartLine() + 1, statement.getRegion().getStartColumn() + 1));
+    private void checkTransactionActive(Statement statement, boolean startIfInactive) throws EngineException, ServerException, IOException, InterruptedException {
+        if (sqlProcessor.isTransactionActive()) {
+            return;
         }
+
+        if (startIfInactive) {
+            var option = config.getTransactionOption();
+            if (option != null) {
+                reporter.reportStartTransactionImplicitly(option);
+                sqlProcessor.startTransaction(option);
+                return;
+            }
+        }
+
+        throw new EngineException(MessageFormat.format("transaction is not started (line={0}, column={1})", statement.getRegion().getStartLine() + 1, statement.getRegion().getStartColumn() + 1));
     }
 
     private void checkTransactionInactive(Statement statement) throws EngineException {

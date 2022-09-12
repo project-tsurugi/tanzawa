@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
-import com.tsurugidb.console.core.ScriptConfig;
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement;
@@ -18,23 +17,6 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
  * An abstract implementation of {@link Engine}.
  */
 public abstract class AbstractEngine implements Engine {
-
-    private ScriptConfig config;
-
-    /**
-     * Creates a new instance.
-     * 
-     * @param config script configuration
-     */
-    public AbstractEngine(@Nonnull ScriptConfig config) {
-        Objects.requireNonNull(config);
-        this.config = config;
-    }
-
-    @Override
-    public ScriptConfig getConfig() {
-        return this.config;
-    }
 
     @Override
     public boolean execute(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException {

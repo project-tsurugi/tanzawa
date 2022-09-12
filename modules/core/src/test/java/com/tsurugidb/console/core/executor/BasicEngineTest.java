@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
 
-import com.tsurugidb.console.core.ScriptConfig;
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.console.core.parser.SqlParser;
