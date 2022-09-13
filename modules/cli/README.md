@@ -51,6 +51,11 @@ java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-
   * `--auth-token` - 認証トークン
   * `--credentials` - 認証情報ファイルのパス
   * `--no-auth` - 認証機構を利用しない
+  * `--user`, `--auth-token`, `--credentials`, `--no-auth` のいずれも指定されない場合、次の順序で解決する
+    1. 環境変数 `TSURUGI_AUTH_TOKEN` が空でなければ、認証トークンとしてその文字列を利用する
+    2. 既定の認証情報ファイルがあればそれを利用する
+    3. ユーザー名を入力するプロンプトを表示し、入力された文字列が空でなければユーザー名として利用する (その後、パスワードプロンプトも表示される)
+    4. 認証機構を利用しない
 
 ### SQL console
 

@@ -69,7 +69,11 @@ public final class Main {
                 throw new AssertionError(command);
             }
         } catch (ParameterException e) {
-            System.err.println(e.getMessage());
+            if (LOG.isDebugEnabled()) {
+                LOG.error(e.getMessage(), e);
+            } else {
+                LOG.error(e.getMessage());
+            }
 
             String command = commander.getParsedCommand();
             if (command != null) {

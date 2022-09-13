@@ -1,6 +1,7 @@
 package com.tsurugidb.console.cli.repl;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -14,8 +15,10 @@ import org.jline.terminal.TerminalBuilder;
  */
 public final class ReplLineReader {
 
-    public static LineReader create() throws IOException {
-        var terminal = createTerminal();
+    private static Terminal TERMINAL;
+
+    public static LineReader create() {
+        var terminal = getTerminal();
 
         var parser = new ReplLineParser();
         parser.setEscapeChars(null);
@@ -26,6 +29,25 @@ public final class ReplLineReader {
                 .parser(parser) //
                 .build();
         return reader;
+    }
+
+    public static LineReader createSimpleReader() {
+        var reader = LineReaderBuilder.builder() //
+                .appName("Tsurugi SQL console") //
+                .terminal(getTerminal()) //
+                .build();
+        return reader;
+    }
+
+    private static Terminal getTerminal() {
+        if (TERMINAL == null) {
+            try {
+                TERMINAL = createTerminal();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return TERMINAL;
     }
 
     private static Terminal createTerminal() throws IOException {

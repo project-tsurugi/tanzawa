@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -59,7 +58,7 @@ public class CommonArgument {
     @Parameter(names = { "--no-auth" }, arity = 0, description = "no auth")
     private Boolean noAuth;
 
-    @Nullable
+    @Nonnull
     public String getConnectionUri() {
         return this.connectionUri;
     }
@@ -72,7 +71,7 @@ public class CommonArgument {
         return this.propertyList;
     }
 
-    @Nullable
+    @Nonnull
     public TransactionEnum getTransaction() {
         return this.transaction;
     }
@@ -96,7 +95,7 @@ public class CommonArgument {
         var list = new ArrayList<Supplier<Credential>>();
         if (this.user != null) {
             list.add(() -> {
-                String password = null; // TODO input password
+                String password = ConfigUtil.readPassword();
                 return new UsernamePasswordCredential(user, password);
             });
         }

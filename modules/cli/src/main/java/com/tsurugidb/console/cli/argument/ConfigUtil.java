@@ -6,11 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.ParameterException;
 import com.tsurugidb.console.cli.argument.CommonArgument.TransactionEnum;
+import com.tsurugidb.console.cli.repl.ReplLineReader;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.sql.proto.SqlRequest;
@@ -18,6 +21,8 @@ import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
+import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
+import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredential;
 
 public final class ConfigUtil {
     private static final Logger LOG = LoggerFactory.getLogger(ConfigUtil.class);
@@ -94,19 +99,45 @@ public final class ConfigUtil {
         var credentialList = argument.getCredentialList();
         switch (credentialList.size()) {
         case 0:
-            // https://github.com/project-tsurugi/tateyama/blob/master/docs/cli-spec-ja.md#%E8%AA%8D%E8%A8%BC%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3
-            credential = NullCredential.INSTANCE; // TODO default credential
+            // 1. 環境変数TSURUGI_AUTH_TOKEN
+            String authToken = System.getenv("TSURUGI_AUTH_TOKEN");
+            if (authToken != null) {
+                credential = new RememberMeCredential(authToken);
+                break;
+            }
+            // TODO 2. 既定の認証情報ファイル
+            // 3. ユーザー入力
+            String user = readUser();
+            if (!user.isEmpty()) {
+                String password = readPassword();
+                credential = new UsernamePasswordCredential(user, password);
+                break;
+            }
+            // 4. 認証なし
+            credential = NullCredential.INSTANCE;
             break;
         case 1:
             var supplier = credentialList.get(0);
             credential = supplier.get();
             break;
         default:
-            throw new ParameterException("specify only one credential parameter");
+            throw new ParameterException("specify only one of [--user, --auth-token, --credentials, --no-auth]");
         }
 
         LOG.debug("credential={}", credential);
         config.setCredential(credential);
+    }
+
+    @Nonnull
+    public static String readUser() {
+        var lineReader = ReplLineReader.createSimpleReader();
+        return lineReader.readLine("user: ");
+    }
+
+    @Nonnull
+    public static String readPassword() {
+        var lineReader = ReplLineReader.createSimpleReader();
+        return lineReader.readLine("password: ", '*');
     }
 
     private void fillTransactionOption(CommonArgument argument) {
