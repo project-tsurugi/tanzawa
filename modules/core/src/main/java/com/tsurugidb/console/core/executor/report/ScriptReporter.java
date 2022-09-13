@@ -1,9 +1,10 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.report;
 
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 
+import com.tsurugidb.console.core.executor.engine.ExecutorUtil;
 import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 import com.tsurugidb.tsubakuro.exception.ServerException;
@@ -55,6 +56,16 @@ public abstract class ScriptReporter {
         succeed(message);
     }
 
+    public void reportTransactionCommittedImplicitly(CommitStatus status) {
+        String message = MessageFormat.format("transaction committed implicitly. status={0}", //
+                status);
+        reportTransactionCommittedImplicitly(message, status);
+    }
+
+    protected void reportTransactionCommittedImplicitly(String message, CommitStatus status) {
+        implicit(message);
+    }
+
     public void reportTransactionRollbacked() {
         String message = "transaction rollbacked.";
         reportTransactionRollbacked(message);
@@ -62,6 +73,15 @@ public abstract class ScriptReporter {
 
     protected void reportTransactionRollbacked(String message) {
         succeed(message);
+    }
+
+    public void reportTransactionRollbackedImplicitly() {
+        String message = "transaction rollbacked implicitly.";
+        reportTransactionRollbackedImplicitly(message);
+    }
+
+    protected void reportTransactionRollbackedImplicitly(String message) {
+        implicit(message);
     }
 
     public void reportTransactionStatus(boolean active) {

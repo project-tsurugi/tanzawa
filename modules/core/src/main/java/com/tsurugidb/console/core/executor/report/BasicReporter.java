@@ -1,24 +1,28 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.report;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BasicReporter extends ScriptReporter {
+    private static final Logger LOG = LoggerFactory.getLogger(BasicReporter.class);
 
     @Override
     public void info(String message) {
-        System.out.println(message);
+        LOG.info(message);
     }
 
     @Override
     public void implicit(String message) {
-        System.out.println(message);
+        LOG.debug(message);
     }
 
     @Override
     public void succeed(String message) {
-        System.out.println(message);
+        LOG.info(message);
     }
 
     @Override
     public void warn(String message) {
-        System.err.println(message);
+        LOG.warn(message);
     }
 }

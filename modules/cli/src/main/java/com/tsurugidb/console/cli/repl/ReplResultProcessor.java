@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
 
-import com.tsurugidb.console.core.executor.ResultProcessor;
-import com.tsurugidb.console.core.executor.ResultSetUtil;
+import com.tsurugidb.console.core.executor.result.ResultProcessor;
+import com.tsurugidb.console.core.executor.result.ResultSetUtil;
 import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;

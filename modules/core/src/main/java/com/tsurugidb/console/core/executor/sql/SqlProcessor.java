@@ -1,4 +1,4 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.sql;
 
 import java.io.IOException;
 

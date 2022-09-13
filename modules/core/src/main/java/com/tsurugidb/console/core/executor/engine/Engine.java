@@ -1,9 +1,10 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.engine;
 
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
+import com.tsurugidb.console.core.executor.report.ScriptReporter;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
@@ -33,4 +34,14 @@ public interface Engine {
      * @throws InterruptedException if interrupted while executing the statement
      */
     boolean execute(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException;
+
+    /**
+     * finish Engine
+     * 
+     * @param succeed {@code true} to successful end
+     * @throws IOException if I/O error was occurred while executing the statement
+     */
+    default void finish(boolean succeed) throws IOException {
+        // do override
+    }
 }

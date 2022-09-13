@@ -1,7 +1,8 @@
 package com.tsurugidb.console.cli.argument;
 
+import javax.annotation.Nullable;
+
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 
 @Parameters(commandDescription = "SQL console")
@@ -13,19 +14,13 @@ public class ConsoleArgument extends CommonArgument {
     @Parameter(names = { "--no-auto-commit" }, arity = 0, description = "commit only if you explicitly specify a COMMIT statement (default)")
     private Boolean noAutoCommit;
 
-    public boolean isAutoCommit() {
-        if (this.autoCommit == null && this.noAutoCommit == null) {
-            return false; // default
-        }
-        if (this.autoCommit == null) {
-            return !(this.noAutoCommit != null && this.noAutoCommit);
-        }
-        if (this.noAutoCommit == null) {
-            return /* this.autoCommit != null && */ this.autoCommit;
-        }
+    @Nullable
+    public Boolean getAutoCommit() {
+        return this.autoCommit;
+    }
 
-        assert this.autoCommit == true;
-        assert this.noAutoCommit == true;
-        throw new ParameterException("specify either --auto-commit or --no-auto-commit");
+    @Nullable
+    public Boolean getNoAutoCommit() {
+        return this.noAutoCommit;
     }
 }

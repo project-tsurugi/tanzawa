@@ -1,5 +1,6 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.result;
 
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -7,6 +8,8 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
+
+import com.tsurugidb.console.core.executor.IoSupplier;
 
 /**
  * Provides standard output.
@@ -24,6 +27,7 @@ public class StandardWriterSupplier implements IoSupplier<Writer> {
 
     /**
      * Creates a new instance.
+     * 
      * @param charset the output charset
      */
     public StandardWriterSupplier(@Nonnull Charset charset) {
@@ -33,6 +37,13 @@ public class StandardWriterSupplier implements IoSupplier<Writer> {
 
     @Override
     public Writer get() throws IOException {
-        return new OutputStreamWriter(System.out, charset);
+        var out = new FilterOutputStream(System.out) {
+            @Override
+            public void close() throws IOException {
+                flush();
+                // super.close(); // System.out does not close
+            }
+        };
+        return new OutputStreamWriter(out, charset);
     }
 }

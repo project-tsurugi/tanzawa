@@ -20,6 +20,8 @@ public class ScriptConfig {
 
     private SqlRequest.TransactionOption transactionOption;
 
+    private ScriptCommitMode commitMode;
+
     public void setEndpoint(@Nonnull URI endpoint) {
         Objects.requireNonNull(endpoint);
         this.endpoint = endpoint;
@@ -47,5 +49,15 @@ public class ScriptConfig {
     @Nullable
     public SqlRequest.TransactionOption getTransactionOption() {
         return this.transactionOption;
+    }
+
+    public void setCommitMode(@Nonnull ScriptCommitMode commitMode) {
+        Objects.requireNonNull(commitMode);
+        this.commitMode = commitMode;
+    }
+
+    @Nonnull
+    public ScriptCommitMode getCommitMode() {
+        return this.commitMode;
     }
 }

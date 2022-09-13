@@ -11,9 +11,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.tsurugidb.console.core.executor.Engine;
-import com.tsurugidb.console.core.executor.EngineException;
 import com.tsurugidb.console.core.executor.IoSupplier;
+import com.tsurugidb.console.core.executor.engine.Engine;
+import com.tsurugidb.console.core.executor.engine.EngineException;
 import com.tsurugidb.console.core.model.ErroneousStatement;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.Statement;

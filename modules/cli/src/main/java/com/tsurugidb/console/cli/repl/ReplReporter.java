@@ -8,7 +8,7 @@ import org.jline.terminal.Terminal;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
-import com.tsurugidb.console.core.executor.ScriptReporter;
+import com.tsurugidb.console.core.executor.report.ScriptReporter;
 
 public class ReplReporter extends ScriptReporter {
 

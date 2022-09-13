@@ -23,9 +23,6 @@ public class CommonArgument {
     @Parameter(names = { "--property", "-P" }, arity = 1, description = "SQL setting. <key>=<value>")
     private List<String> propertyList;
 
-    @Parameter(names = { "--java-property", "-J" }, arity = 1, description = "JVM option. <key>=<value>")
-    private List<String> javaPropertyList;
-
     public enum TransactionEnum {
         SHORT("short"), OCC("OCC"), //
         LONG("long"), LTX("LTX"), //
@@ -73,14 +70,6 @@ public class CommonArgument {
             return List.of();
         }
         return this.propertyList;
-    }
-
-    @Nonnull
-    public List<String> getJavaPropertyList() {
-        if (this.javaPropertyList == null) {
-            return List.of();
-        }
-        return this.javaPropertyList;
     }
 
     @Nullable

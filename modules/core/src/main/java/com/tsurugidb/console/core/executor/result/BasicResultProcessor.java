@@ -1,4 +1,4 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.result;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
+import com.tsurugidb.console.core.executor.IoSupplier;
 import com.tsurugidb.sql.proto.SqlCommon;
 
 /**

@@ -1,4 +1,4 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.result;
 
 import static com.tsurugidb.tsubakuro.sql.Types.column;
 import static com.tsurugidb.tsubakuro.sql.Types.row;
@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.tsurugidb.console.core.executor.IoSupplier;
 import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.sql.proto.SqlResponse;
 import com.tsurugidb.tsubakuro.sql.ResultSet;

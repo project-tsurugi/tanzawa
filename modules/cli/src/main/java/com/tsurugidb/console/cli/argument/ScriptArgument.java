@@ -3,6 +3,7 @@ package com.tsurugidb.console.cli.argument;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.beust.jcommander.Parameter;
@@ -29,13 +30,29 @@ public class ScriptArgument extends CommonArgument {
     @Parameter(description = "</path/to/script.sql>", required = true)
     private List<String> scriptList;
 
+    @Nonnull
     public String getEncoding() {
         return this.encoding;
     }
 
-    public int getCommitType() {
-        // TODO commit type
-        return 0;
+    @Nullable
+    public Boolean getAutoCommit() {
+        return this.autoCommit;
+    }
+
+    @Nullable
+    public Boolean getNoAutoCommit() {
+        return this.noAutoCommit;
+    }
+
+    @Nullable
+    public Boolean getCommit() {
+        return this.commit;
+    }
+
+    @Nullable
+    public Boolean getNoCommit() {
+        return this.noCommit;
     }
 
     @Nullable

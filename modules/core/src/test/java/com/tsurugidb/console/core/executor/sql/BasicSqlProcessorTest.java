@@ -1,4 +1,4 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.sql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

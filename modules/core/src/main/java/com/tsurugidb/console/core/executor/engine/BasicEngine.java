@@ -1,4 +1,4 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.engine;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -9,13 +9,18 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptConfig;
+import com.tsurugidb.console.core.executor.report.ScriptReporter;
+import com.tsurugidb.console.core.executor.result.ResultProcessor;
+import com.tsurugidb.console.core.executor.sql.SqlProcessor;
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.StartTransactionStatement;
 import com.tsurugidb.console.core.model.Statement;
+import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -77,6 +82,19 @@ public class BasicEngine extends AbstractEngine {
             if (rs != null) {
                 resultSetProcessor.process(rs);
             }
+        } catch (Exception e) {
+            if (config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
+                try {
+                    executeRollbackImplicitly();
+                } catch (Exception e1) {
+                    e.addSuppressed(e1);
+                }
+            }
+            throw e;
+        }
+
+        if (config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
+            executeCommitImplicitly();
         }
         return true;
     }
@@ -105,6 +123,12 @@ public class BasicEngine extends AbstractEngine {
         return true;
     }
 
+    protected void executeCommitImplicitly() throws ServerException, IOException, InterruptedException {
+        var status = SqlRequest.CommitStatus.COMMIT_STATUS_UNSPECIFIED;
+        sqlProcessor.commitTransaction(status);
+        reporter.reportTransactionCommittedImplicitly(status);
+    }
+
     @Override
     protected boolean executeRollbackStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
@@ -114,6 +138,11 @@ public class BasicEngine extends AbstractEngine {
         sqlProcessor.rollbackTransaction();
         reporter.reportTransactionRollbacked();
         return true;
+    }
+
+    protected void executeRollbackImplicitly() throws ServerException, IOException, InterruptedException {
+        sqlProcessor.rollbackTransaction();
+        reporter.reportTransactionRollbackedImplicitly();
     }
 
     @Override
@@ -159,6 +188,34 @@ public class BasicEngine extends AbstractEngine {
 
         throw new EngineException(MessageFormat.format("[{0}] {1} (line={2}, column={3})", statement.getErrorKind(), statement.getMessage(), statement.getOccurrence().getStartLine() + 1,
                 statement.getOccurrence().getStartColumn() + 1));
+    }
+
+    @Override
+    public void finish(boolean succeed) throws IOException {
+        var commitMode = config.getCommitMode();
+        LOG.debug("finish succeed={}, commitMode={}", succeed, commitMode);
+        try {
+            switch (commitMode) {
+            case COMMIT: // commit on success, rollback on failure
+                if (sqlProcessor.isTransactionActive()) {
+                    if (succeed) {
+                        executeCommitImplicitly();
+                    } else {
+                        executeRollbackImplicitly();
+                    }
+                }
+                break;
+            case NO_COMMIT: // always rollback
+                if (sqlProcessor.isTransactionActive()) {
+                    executeRollbackImplicitly();
+                }
+                break;
+            default:
+                break;
+            }
+        } catch (ServerException | InterruptedException e) {
+            throw new IOException(e);
+        }
     }
 
     private void checkTransactionActive(Statement statement, boolean startIfInactive) throws EngineException, ServerException, IOException, InterruptedException {

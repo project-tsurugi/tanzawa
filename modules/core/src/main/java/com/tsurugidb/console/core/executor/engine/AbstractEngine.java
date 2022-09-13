@@ -1,4 +1,4 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.engine;
 
 import java.io.IOException;
 import java.util.Objects;

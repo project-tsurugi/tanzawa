@@ -18,14 +18,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.config.ScriptConfig;
-import com.tsurugidb.console.core.executor.BasicEngine;
-import com.tsurugidb.console.core.executor.BasicReporter;
-import com.tsurugidb.console.core.executor.BasicResultProcessor;
-import com.tsurugidb.console.core.executor.BasicSqlProcessor;
-import com.tsurugidb.console.core.executor.Engine;
 import com.tsurugidb.console.core.executor.IoSupplier;
-import com.tsurugidb.console.core.executor.ResultProcessor;
-import com.tsurugidb.console.core.executor.ScriptReporter;
+import com.tsurugidb.console.core.executor.engine.BasicEngine;
+import com.tsurugidb.console.core.executor.engine.Engine;
+import com.tsurugidb.console.core.executor.report.BasicReporter;
+import com.tsurugidb.console.core.executor.report.ScriptReporter;
+import com.tsurugidb.console.core.executor.result.BasicResultProcessor;
+import com.tsurugidb.console.core.executor.result.ResultProcessor;
+import com.tsurugidb.console.core.executor.sql.BasicSqlProcessor;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.console.core.parser.SqlParser;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
@@ -176,10 +176,12 @@ public final class ScriptRunner {
                             statement.getRegion().getStartLine() + 1, //
                             statement.getRegion().getStartColumn() + 1, //
                             e);
+                    engine.finish(false);
                     return false;
                 }
             }
         }
+        engine.finish(true);
         LOG.info("script execution was successfully completed");
         return true;
     }
@@ -248,6 +250,7 @@ public final class ScriptRunner {
                 try {
                     Statement statement = parser.next();
                     if (statement == null) {
+                        // EOF
                         break;
                     }
                     boolean cont = engine.execute(statement);
@@ -272,6 +275,7 @@ public final class ScriptRunner {
                 }
             }
         }
+        engine.finish(true);
         LOG.info("repl execution was successfully completed");
     }
 

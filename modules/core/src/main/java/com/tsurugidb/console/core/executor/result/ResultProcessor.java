@@ -1,4 +1,4 @@
-package com.tsurugidb.console.core.executor;
+package com.tsurugidb.console.core.executor.result;
 
 import java.io.Closeable;
 import java.io.IOException;
