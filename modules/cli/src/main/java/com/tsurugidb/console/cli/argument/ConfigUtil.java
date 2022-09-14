@@ -1,6 +1,8 @@
 package com.tsurugidb.console.cli.argument;
 
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +92,7 @@ public final class ConfigUtil {
             throw new RuntimeException("invalid connection-uri", e);
         }
 
-        LOG.debug("endpoint={}", endpoint);
+        LOG.debug("config.endpoint={}", endpoint);
         config.setEndpoint(endpoint);
     }
 
@@ -99,33 +101,53 @@ public final class ConfigUtil {
         var credentialList = argument.getCredentialList();
         switch (credentialList.size()) {
         case 0:
-            // 1. 環境変数TSURUGI_AUTH_TOKEN
-            String authToken = System.getenv("TSURUGI_AUTH_TOKEN");
-            if (authToken != null) {
-                credential = new RememberMeCredential(authToken);
-                break;
-            }
-            // TODO 2. 既定の認証情報ファイル
-            // 3. ユーザー入力
-            String user = readUser();
-            if (!user.isEmpty()) {
-                String password = readPassword();
-                credential = new UsernamePasswordCredential(user, password);
-                break;
-            }
-            // 4. 認証なし
-            credential = NullCredential.INSTANCE;
+            credential = getDefaultCredential();
             break;
         case 1:
-            var supplier = credentialList.get(0);
+            Supplier<Credential> supplier = credentialList.get(0);
             credential = supplier.get();
             break;
         default:
             throw new ParameterException("specify only one of [--user, --auth-token, --credentials, --no-auth]");
         }
 
-        LOG.debug("credential={}", credential);
+        LOG.debug("config.credential={}", credential);
         config.setCredential(credential);
+    }
+
+    private Credential getDefaultCredential() {
+        // 1. 環境変数TSURUGI_AUTH_TOKEN
+        String authToken = System.getenv("TSURUGI_AUTH_TOKEN");
+        boolean hasAuthToken = (authToken != null);
+        LOG.trace("default credential 1. env.TSURUGI_AUTH_TOKEN={}", hasAuthToken ? "<not null>" : "null");
+        if (hasAuthToken) {
+            return new RememberMeCredential(authToken);
+        }
+
+        // 2. 既定の認証情報ファイル
+        String home = System.getProperty("user.home");
+        if (home == null) {
+            LOG.trace("default credential 2. user.home=null");
+        } else {
+            var path = Paths.get(home, ".tsurugidb/credentials.json");
+            boolean exists = Files.exists(path);
+            LOG.trace("default credential 2. path={}, exists={}", path, exists);
+//            if (exists) {
+            // TODO return FileCredential.load(path);
+//            }
+        }
+
+        // 3. ユーザー入力
+        String user = readUser();
+        LOG.trace("default credential 3. user=[{}]", user);
+        if (!user.isEmpty()) {
+            String password = readPassword();
+            return new UsernamePasswordCredential(user, password);
+        }
+
+        // 4. 認証なし
+        LOG.trace("default credential 4. no auth");
+        return NullCredential.INSTANCE;
     }
 
     @Nonnull
@@ -142,7 +164,6 @@ public final class ConfigUtil {
 
     private void fillTransactionOption(CommonArgument argument) {
         var options = SqlRequest.TransactionOption.newBuilder();
-        options.setLabel("tgsql-transaction");
 
         TransactionEnum transaction = argument.getTransaction();
         switch (transaction) {
@@ -153,11 +174,6 @@ public final class ConfigUtil {
         case LONG:
         case LTX:
             options.setType(TransactionType.LONG);
-            List<String> tableList = argument.getWritePreserve();
-            for (var tableName : tableList) {
-                var wp = WritePreserve.newBuilder().setTableName(tableName).build();
-                options.addWritePreserves(wp);
-            }
             break;
         case READ:
         case READONLY:
@@ -169,14 +185,30 @@ public final class ConfigUtil {
             return;
         }
 
+        List<String> writePreserve = argument.getWritePreserve();
+        for (var tableName : writePreserve) {
+            var wp = WritePreserve.newBuilder().setTableName(tableName).build();
+            options.addWritePreserves(wp);
+        }
+
+        // TODO List<String> readAreaInclude = argument.getReadAreaInclude();
+        // TODO List<String> readAreaExclude = argument.getReadAreaExclude();
+        // TODO List<String> execute = argument.getExecute();
+
+        String label = argument.getLabel();
+        options.setLabel(label);
+
+        // TODO Map<String, String> with = argument.getWith();
+
         var option = options.build();
-        LOG.debug("transactionOption={}", option);
+        LOG.debug("config.transactionOption={}", option);
         config.setTransactionOption(option);
     }
 
     private void fillProperty(CommonArgument argument) {
-        // TODO propertyList
-        argument.getPropertyList();
+        var property = argument.getProperty();
+        LOG.debug("config.property={}", property);
+        config.setProperty(property);
     }
 
     private void fillCommitMode(Boolean autoCommit, Boolean noAutoCommit, Boolean commit, Boolean noCommit, ScriptCommitMode defaultMode, Supplier<String> errorMessage) {
@@ -207,7 +239,7 @@ public final class ConfigUtil {
             throw new ParameterException(MessageFormat.format("specify only one of {0}", message));
         }
 
-        LOG.debug("commitMode={}", commitMode);
+        LOG.debug("config.commitMode={}", commitMode);
         config.setCommitMode(commitMode);
     }
 }

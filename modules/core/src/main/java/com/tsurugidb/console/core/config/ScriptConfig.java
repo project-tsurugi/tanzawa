@@ -1,6 +1,7 @@
 package com.tsurugidb.console.core.config;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
@@ -19,6 +20,8 @@ public class ScriptConfig {
     private Credential credential;
 
     private SqlRequest.TransactionOption transactionOption;
+
+    private Map<String, String> propertyMap;
 
     private ScriptCommitMode commitMode;
 
@@ -49,6 +52,14 @@ public class ScriptConfig {
     @Nullable
     public SqlRequest.TransactionOption getTransactionOption() {
         return this.transactionOption;
+    }
+
+    public void setProperty(Map<String, String> property) {
+        this.propertyMap = property;
+    }
+
+    public Map<String, String> getProperty() {
+        return propertyMap;
     }
 
     public void setCommitMode(@Nonnull ScriptCommitMode commitMode) {

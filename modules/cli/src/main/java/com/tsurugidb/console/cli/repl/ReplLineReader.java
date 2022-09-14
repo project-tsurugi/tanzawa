@@ -15,7 +15,7 @@ import org.jline.terminal.TerminalBuilder;
  */
 public final class ReplLineReader {
 
-    private static Terminal TERMINAL;
+    private static Terminal staticTerminal;
 
     public static LineReader create() {
         var terminal = getTerminal();
@@ -40,14 +40,14 @@ public final class ReplLineReader {
     }
 
     private static Terminal getTerminal() {
-        if (TERMINAL == null) {
+        if (staticTerminal == null) {
             try {
-                TERMINAL = createTerminal();
+                staticTerminal = createTerminal();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
         }
-        return TERMINAL;
+        return staticTerminal;
     }
 
     private static Terminal createTerminal() throws IOException {

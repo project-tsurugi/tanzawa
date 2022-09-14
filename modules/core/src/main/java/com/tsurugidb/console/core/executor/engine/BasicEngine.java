@@ -105,7 +105,7 @@ public class BasicEngine extends AbstractEngine {
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
         checkTransactionInactive(statement);
-        var option = ExecutorUtil.toTransactionOption(statement);
+        var option = ExecutorUtil.toTransactionOption(statement, config);
         sqlProcessor.startTransaction(option);
         reporter.reportTransactionStarted(option);
         return true;
@@ -193,7 +193,7 @@ public class BasicEngine extends AbstractEngine {
     @Override
     public void finish(boolean succeed) throws IOException {
         var commitMode = config.getCommitMode();
-        LOG.debug("finish succeed={}, commitMode={}", succeed, commitMode);
+        LOG.debug("finish: succeed={}, commitMode={}", succeed, commitMode);
         try {
             switch (commitMode) {
             case COMMIT: // commit on success, rollback on failure

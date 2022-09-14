@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement;
 import com.tsurugidb.console.core.model.Regioned;
@@ -38,10 +39,12 @@ public final class ExecutorUtil {
 
     /**
      * Extracts transaction option from the {@link StartTransactionStatement}.
+     * 
      * @param statement the extraction target statement
+     * @param config    script configuration
      * @return the extracted option
      */
-    public static SqlRequest.TransactionOption toTransactionOption(@Nonnull StartTransactionStatement statement) {
+    public static SqlRequest.TransactionOption toTransactionOption(@Nonnull StartTransactionStatement statement, ScriptConfig config) {
         Objects.requireNonNull(statement);
         var options = SqlRequest.TransactionOption.newBuilder();
         computeTransactionType(statement).ifPresent(options::setType);
@@ -49,23 +52,22 @@ public final class ExecutorUtil {
         statement.getLabel().ifPresent(it -> options.setLabel(it.getValue()));
         computeWritePreserve(statement).ifPresent(options::addAllWritePreserves);
         // FIXME: read area
-        // FIXME: properties
+        // FIXME: properties config.getProperty();
         return options.build();
     }
 
     private static Optional<SqlRequest.TransactionType> computeTransactionType(StartTransactionStatement statement) {
-        boolean ltx = unwrap(statement.getTransactionMode()) == TransactionMode.LONG
-                || unwrap(statement.getReadWriteMode()) == ReadWriteMode.READ_ONLY
-                || statement.getWritePreserve().isPresent()
-                || statement.getReadAreaInclude().isPresent()
+        boolean ltx = unwrap(statement.getTransactionMode()) == TransactionMode.LONG //
+                || unwrap(statement.getReadWriteMode()) == ReadWriteMode.READ_ONLY //
+                || statement.getWritePreserve().isPresent() //
+                || statement.getReadAreaInclude().isPresent() //
                 || statement.getReadAreaExclude().isPresent();
         boolean ro = unwrap(statement.getReadWriteMode()) == ReadWriteMode.READ_ONLY_DEFERRABLE;
         if (ltx) {
             if (ro) {
-                LOG.warn(MessageFormat.format(
-                        "transaction type is conflicted between LTX and RO; executes as LTX (line={0}, column={1})",
-                        statement.getRegion().getStartLine() + 1,
-                        statement.getRegion().getStartColumn() + 1));
+                LOG.warn("transaction type is conflicted between LTX and RO; executes as LTX (line={}, column={})", //
+                        statement.getRegion().getStartLine() + 1, //
+                        statement.getRegion().getStartColumn() + 1);
             }
             return Optional.of(SqlRequest.TransactionType.LONG);
         }
@@ -75,8 +77,7 @@ public final class ExecutorUtil {
         return Optional.empty();
     }
 
-    private static Optional<SqlRequest.TransactionPriority> computeTransactionPriority(
-            StartTransactionStatement statement) {
+    private static Optional<SqlRequest.TransactionPriority> computeTransactionPriority(StartTransactionStatement statement) {
         if (statement.getExclusiveMode().isEmpty()) {
             return Optional.empty();
         }
@@ -97,15 +98,16 @@ public final class ExecutorUtil {
         if (statement.getWritePreserve().isEmpty()) {
             return Optional.empty();
         }
-        var wps = statement.getWritePreserve().get().stream()
-                .map(Regioned::getValue)
-                .map(it -> SqlRequest.WritePreserve.newBuilder().setTableName(it).build())
+        var wps = statement.getWritePreserve().get().stream() //
+                .map(Regioned::getValue) //
+                .map(it -> SqlRequest.WritePreserve.newBuilder().setTableName(it).build()) //
                 .collect(Collectors.toList());
         return Optional.of(wps);
     }
 
     /**
      * Extracts commit option from the {@link CommitStatement}.
+     * 
      * @param statement the extraction target statement
      * @return the extracted option
      */
@@ -129,6 +131,7 @@ public final class ExecutorUtil {
 
     /**
      * Returns whether or not the statement represents {@code '\exit'} command.
+     * 
      * @param statement the extraction target statement
      * @return {@code true} if the statement represents such the command, or {@code false} otherwise
      */
@@ -139,6 +142,7 @@ public final class ExecutorUtil {
 
     /**
      * Returns whether or not the statement represents {@code '\halt'} command.
+     * 
      * @param statement the extraction target statement
      * @return {@code true} if the statement represents such the command, or {@code false} otherwise
      */
@@ -149,6 +153,7 @@ public final class ExecutorUtil {
 
     /**
      * Returns whether or not the statement represents {@code '\help'} command.
+     * 
      * @param statement the extraction target statement
      * @return {@code true} if the statement represents such the command, or {@code false} otherwise
      */
@@ -159,6 +164,7 @@ public final class ExecutorUtil {
 
     /**
      * Returns whether or not the statement represents {@code '\status'} command.
+     * 
      * @param statement the extraction target statement
      * @return {@code true} if the statement represents such the command, or {@code false} otherwise
      */
@@ -169,7 +175,8 @@ public final class ExecutorUtil {
 
     /**
      * Returns whether or not the statement represents the command.
-     * @param name the command name
+     * 
+     * @param name      the command name
      * @param statement the extraction target statement
      * @return {@code true} if the statement represents such the command, or {@code false} otherwise
      */
@@ -182,34 +189,36 @@ public final class ExecutorUtil {
 
     /**
      * Returns an {@link ErroneousStatement} from the unknown command.
+     * 
      * @param statement the unknown command
      * @return corresponding {@link ErroneousStatement}
      */
     public static ErroneousStatement toUnknownError(@Nonnull SpecialStatement statement) {
         Objects.requireNonNull(statement);
-        return new ErroneousStatement(
-                statement.getText(),
-                statement.getRegion(),
-                ErrorKind.UNKNOWN_SPECIAL_COMMAND,
-                statement.getCommandName().getRegion(),
-                MessageFormat.format(
-                        "unknown command: \"{0}\"",
+        return new ErroneousStatement(//
+                statement.getText(), //
+                statement.getRegion(), //
+                ErrorKind.UNKNOWN_SPECIAL_COMMAND, //
+                statement.getCommandName().getRegion(), //
+                MessageFormat.format(//
+                        "unknown command: \"{0}\"", //
                         statement.getCommandName().getValue()));
     }
 
     /**
      * Returns a help message.
+     * 
      * @return help message
      */
     public static List<String> getHelpMessage() {
-        return List.of(
-                "\\exit - exit script",
-                "\\halt - exit script forcibly",
-                "\\help - show this message",
-                "\\status - show transaction status",
-                "START TRANSACTION - starts a transaction",
-                "COMMIT - commits the current transaction",
-                "ROLLBACK - revokes the current transaction",
+        return List.of(//
+                "\\exit - exit script", //
+                "\\halt - exit script forcibly", //
+                "\\help - show this message", //
+                "\\status - show transaction status", //
+                "START TRANSACTION - starts a transaction", //
+                "COMMIT - commits the current transaction", //
+                "ROLLBACK - revokes the current transaction", //
                 "(other statements) - submit SQL command to server");
     }
 

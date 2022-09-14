@@ -44,6 +44,11 @@ java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-
     * `read, readonly, RO` - 読み込み専用
     * `manual` - トランザクションを自動で開始せず、 `BEGIN TRANSACTION` 文を指定する
   * `--write-preserve,-w` - 書き込み予約のテーブル (複数指定可)
+  * `--read-area-include` - read area include テーブル (複数指定可)
+  * `--read-area-exclude` - read area exclude テーブル (複数指定可)
+  * `--execute` - (`PRIOR`|`EXCLUDING`) (`DEFERRABLE`|`IMMEDIATE`)?
+  * `--label` - ラベル
+  * `--with` - トランザクションの設定 (複数指定可)
 * credential
 
   * `--user` - ユーザー名
