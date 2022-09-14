@@ -14,12 +14,12 @@ Developers can build other SQL scripting tools using following interfaces and cl
   * [BasicResultProcessor] - Prints result sets as JSON lines style
   * [SqlParser] - Splits SQL script into individual SQL statements
 
-[Engine]:src/main/java/com/tsurugidb/console/core/executor/Engine.java
-[SqlProcessor]:src/main/java/com/tsurugidb/console/core/executor/SqlProcessor.java
-[ResultProcessor]:src/main/java/com/tsurugidb/console/core/executor/ResultProcessor.java
-[BasicEngine]:src/main/java/com/tsurugidb/console/core/executor/BasicEngine.java
-[BasicSqlProcessor]:src/main/java/com/tsurugidb/console/core/executor/BasicSqlProcessor.java
-[BasicResultProcessor]:src/main/java/com/tsurugidb/console/core/executor/BasicResultProcessor.java
+[Engine]:src/main/java/com/tsurugidb/console/core/executor/engine/Engine.java
+[SqlProcessor]:src/main/java/com/tsurugidb/console/core/executor/sql/SqlProcessor.java
+[ResultProcessor]:src/main/java/com/tsurugidb/console/core/executor/result/ResultProcessor.java
+[BasicEngine]:src/main/java/com/tsurugidb/console/core/executor/engine/BasicEngine.java
+[BasicSqlProcessor]:src/main/java/com/tsurugidb/console/core/executor/sql/BasicSqlProcessor.java
+[BasicResultProcessor]:src/main/java/com/tsurugidb/console/core/executor/result/BasicResultProcessor.java
 [SqlParser]:src/main/java/com/tsurugidb/console/core/parser/SqlParser.java
 
 ## Language
@@ -147,11 +147,11 @@ Developers can build other SQL scripting tools using following interfaces and cl
   * `WARN` - print runtime error messages
   * `INFO` - program start/finish message
   * `DEBUG` - print program parameters
-* `com.tsurugidb.console.core.executor.BasicEngine`
+* `com.tsurugidb.console.core.executor.engine.BasicEngine`
   * `DEBUG` - print engine progress
-* `com.tsurugidb.console.core.executor.BasicSqlProcessor`
+* `com.tsurugidb.console.core.executor.sql.BasicSqlProcessor`
   * `DEBUG` - print actual SQL requests
-* `com.tsurugidb.console.core.executor.ExecutorUtil`
+* `com.tsurugidb.console.core.executor.engine.ExecutorUtil`
   * `WARN` - print warnings
 * `com.tsurugidb.console.core.parser.Segment`
   * `TRACE` - print each tokens
