@@ -28,10 +28,14 @@ public class ReplResultProcessor implements ResultProcessor {
         dumpMetadata(target.getMetadata());
 
         var list = new ArrayList<Object>();
+        int rowSize = 0;
         while (ResultSetUtil.fetchNextRow(target, target.getMetadata(), list::add)) {
             reporter.reportResultSetRow(list.toString());
+            rowSize++;
             list.clear();
         }
+
+        reporter.reportResultSetSize(rowSize);
     }
 
     private void dumpMetadata(ResultSetMetadata metadata) throws IOException {

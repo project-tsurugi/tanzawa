@@ -1,5 +1,6 @@
 package com.tsurugidb.console.cli.repl;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -62,6 +63,15 @@ public class ReplReporter extends ScriptReporter {
 
     public void reportResultSetRow(String text) {
         println(text);
+    }
+
+    public void reportResultSetSize(int size) {
+        String message = MessageFormat.format("({0} rows)", size);
+        reportResultSetSize(message);
+    }
+
+    protected void reportResultSetSize(String text) {
+        println(text, GREEN);
     }
 
     /**
