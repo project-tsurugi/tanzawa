@@ -35,9 +35,20 @@ public class HelpMessage {
      */
     public static final String BUNDLE_PATH = "/com/tsurugidb/console/help"; //$NON-NLS-1$
 
-    private static final String KEY_ROOT = ";"; //$NON-NLS-1$
+    /**
+     * The key prefix of messages for individual commands.
+     */
+    public static final String KEY_PREFIX_COMMAND = "command."; //$NON-NLS-1$
 
-    private static final String KEY_NOT_FOUND = "?"; //$NON-NLS-1$
+    /**
+     * The key of message for help command itself.
+     */
+    public static final String KEY_ROOT = "help"; //$NON-NLS-1$
+
+    /**
+     * The key of message for command is unrecognized.
+     */
+    public static final String KEY_NOT_FOUND = "unrecognized"; //$NON-NLS-1$
 
     private static final String PREFIX_REFERENCE = "@"; //$NON-NLS-1$
 
@@ -61,8 +72,8 @@ public class HelpMessage {
         this.availableSequences = messages.keySet().stream()
                 .filter(it -> it instanceof String)
                 .map(it -> (String) it)
-                .filter(it -> !it.equals(KEY_ROOT))
-                .filter(it -> !it.equals(KEY_NOT_FOUND))
+                .filter(it -> it.startsWith(KEY_PREFIX_COMMAND))
+                .map(it -> it.substring(KEY_PREFIX_COMMAND.length()))
                 .map(it -> it.replace('.', ' ').toUpperCase(Locale.ENGLISH))
                 .sorted()
                 .collect(Collectors.toList());
@@ -164,6 +175,8 @@ public class HelpMessage {
                 .collect(Collectors.joining(".")); //$NON-NLS-1$
         if (key.isEmpty()) {
             key = KEY_ROOT;
+        } else {
+            key = KEY_PREFIX_COMMAND + key;
         }
         var value = messages.getProperty(key);
         if (value == null) {
