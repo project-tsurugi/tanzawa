@@ -13,6 +13,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.CommaParameterSplitter;
+import com.tsurugidb.console.cli.config.ConfigBuilder;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
@@ -168,7 +169,7 @@ public class CommonArgument {
         var list = new ArrayList<Supplier<Credential>>();
         if (this.user != null) {
             list.add(() -> {
-                String password = ConfigUtil.readPassword();
+                String password = ConfigBuilder.readPassword();
                 return new UsernamePasswordCredential(user, password);
             });
         }
@@ -177,7 +178,7 @@ public class CommonArgument {
         }
         if (this.credentials != null) {
             list.add(() -> {
-                // var path = Paths.get(credentials);
+                // var path = Path.of(credentials);
                 // TODO return FileCredential.load(path);
                 throw new UnsupportedOperationException("not yet implemented --credentials");
             });

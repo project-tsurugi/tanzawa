@@ -1,19 +1,19 @@
 package com.tsurugidb.console.cli;
 
 import java.io.StringReader;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.tsurugidb.console.cli.argument.ConfigUtil;
 import com.tsurugidb.console.cli.argument.ConsoleArgument;
 import com.tsurugidb.console.cli.argument.ExecArgument;
 import com.tsurugidb.console.cli.argument.ScriptArgument;
+import com.tsurugidb.console.cli.config.ConsoleConfigBuilder;
+import com.tsurugidb.console.cli.config.ExecConfigBuilder;
+import com.tsurugidb.console.cli.config.ScriptConfigBuilder;
 import com.tsurugidb.console.cli.repl.ReplLineReader;
 import com.tsurugidb.console.cli.repl.ReplReader;
 import com.tsurugidb.console.cli.repl.ReplReporter;
@@ -90,7 +90,8 @@ public final class Main {
     }
 
     private static void executeConsole(JCommander commander, ConsoleArgument argument) throws Exception {
-        var config = ConfigUtil.createConsoleConfig(argument);
+        var builder = new ConsoleConfigBuilder(argument);
+        var config = builder.build();
 
         var lineReader = ReplLineReader.create();
         var reporter = new ReplReporter(lineReader.getTerminal());
@@ -101,10 +102,9 @@ public final class Main {
     }
 
     private static void executeExec(JCommander commander, ExecArgument argument) throws Exception {
-        var config = ConfigUtil.createExecConfig(argument);
-
-        var statement = argument.getStatement();
-        LOG.debug("statement=[{}]", statement);
+        var builder = new ExecConfigBuilder(argument);
+        var config = builder.build();
+        var statement = builder.getStatement();
 
         try (var reader = new StringReader(statement)) {
             ScriptRunner.execute(() -> reader, config);
@@ -112,17 +112,10 @@ public final class Main {
     }
 
     private static void executeScript(JCommander commander, ScriptArgument argument) throws Exception {
-        var config = ConfigUtil.createScriptConfig(argument);
-
-        var script = Path.of(argument.getScript());
-        LOG.debug("script={}", script);
-        Charset encoding;
-        try {
-            encoding = Charset.forName(argument.getEncoding());
-        } catch (Exception e) {
-            throw new RuntimeException("invalid encoding", e);
-        }
-        LOG.debug("encoding={}", encoding);
+        var builder = new ScriptConfigBuilder(argument);
+        var config = builder.build();
+        var script = builder.getScript();
+        var encoding = builder.getEncoding();
 
         try (var reader = Files.newBufferedReader(script, encoding)) {
             ScriptRunner.execute(() -> reader, config);

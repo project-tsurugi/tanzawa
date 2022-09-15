@@ -49,17 +49,22 @@ public class ScriptConfig {
         this.transactionOption = option;
     }
 
+    /**
+     * @return transaction option. if null means --transaction=manual
+     */
     @Nullable
     public SqlRequest.TransactionOption getTransactionOption() {
         return this.transactionOption;
     }
 
-    public void setProperty(Map<String, String> property) {
+    public void setProperty(@Nonnull Map<String, String> property) {
+        Objects.requireNonNull(property);
         this.propertyMap = property;
     }
 
+    @Nonnull
     public Map<String, String> getProperty() {
-        return propertyMap;
+        return this.propertyMap;
     }
 
     public void setCommitMode(@Nonnull ScriptCommitMode commitMode) {
