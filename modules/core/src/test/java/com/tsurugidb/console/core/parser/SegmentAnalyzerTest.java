@@ -889,6 +889,43 @@ class SegmentAnalyzerTest {
         assertEquals(Statement.Kind.SPECIAL, s.getKind());
         var t = (SpecialStatement) s;
         assertEquals("EXIT", t.getCommandName().getValue());
+        assertEquals(List.of(), t.getCommandOptions());
+    }
+
+    @Test
+    void special_options() throws Exception {
+        Statement s = analyze("\\HELP COMMIT");
+        assertEquals(Statement.Kind.SPECIAL, s.getKind());
+        var t = (SpecialStatement) s;
+        assertEquals("HELP", t.getCommandName().getValue());
+        assertEquals(List.of("COMMIT"), unwrapList(t.getCommandOptions()));
+    }
+
+    @Test
+    void special_options_linebreak() throws Exception {
+        Statement s = analyze("\\HELP COMMIT \n OK");
+        assertEquals(Statement.Kind.SPECIAL, s.getKind());
+        var t = (SpecialStatement) s;
+        assertEquals("HELP", t.getCommandName().getValue());
+        assertEquals(List.of("COMMIT"), unwrapList(t.getCommandOptions()));
+    }
+
+    @Test
+    void special_options_semicolon() throws Exception {
+        Statement s = analyze("\\HELP COMMIT; OK");
+        assertEquals(Statement.Kind.SPECIAL, s.getKind());
+        var t = (SpecialStatement) s;
+        assertEquals("HELP", t.getCommandName().getValue());
+        assertEquals(List.of("COMMIT"), unwrapList(t.getCommandOptions()));
+    }
+
+    @Test
+    void special_options_multiple() throws Exception {
+        Statement s = analyze("\\SET TRANSACTION READ ONLY");
+        assertEquals(Statement.Kind.SPECIAL, s.getKind());
+        var t = (SpecialStatement) s;
+        assertEquals("SET", t.getCommandName().getValue());
+        assertEquals(List.of("TRANSACTION", "READ", "ONLY"), unwrapList(t.getCommandOptions()));
     }
 
     @Test

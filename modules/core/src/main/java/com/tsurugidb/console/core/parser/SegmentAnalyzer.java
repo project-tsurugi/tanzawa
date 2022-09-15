@@ -5,10 +5,12 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -18,22 +20,24 @@ import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
+import com.tsurugidb.console.core.model.CommitStatement.CommitStatus;
+import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.console.core.model.Regioned;
 import com.tsurugidb.console.core.model.SimpleStatement;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.StartTransactionStatement;
-import com.tsurugidb.console.core.model.Statement;
-import com.tsurugidb.console.core.model.Value;
-import com.tsurugidb.console.core.model.CommitStatement.CommitStatus;
-import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.console.core.model.StartTransactionStatement.ExclusiveMode;
 import com.tsurugidb.console.core.model.StartTransactionStatement.ReadWriteMode;
+import com.tsurugidb.console.core.model.Statement;
+import com.tsurugidb.console.core.model.Value;
 
 /**
  * Analyzes {@link Segment} and returns the corresponding {@link Statement}.
  */
 final class SegmentAnalyzer {
+
+    static final Logger LOG = LoggerFactory.getLogger(SegmentAnalyzer.class);
 
     private static final String K_WITH = "WITH";
 
@@ -81,7 +85,7 @@ final class SegmentAnalyzer {
 
     private static final String K_CALL = "CALL";
 
-    static final Logger LOG = LoggerFactory.getLogger(SegmentAnalyzer.class);
+    private static final Pattern PATTERN_WHITESPACES = Pattern.compile("[ \t]+"); //$NON-NLS-1$
 
     static Statement analyze(@Nonnull Segment segment) throws ParseException {
         LOG.debug("analyze segment: {}", segment.getText()); //$NON-NLS-1$
@@ -144,13 +148,7 @@ final class SegmentAnalyzer {
         }
         if (testNext(TokenKind.SPECIAL_COMMAND)) {
             LOG.trace("found special command -> special statement"); //$NON-NLS-1$
-            var region = cursor.region(0);
-            var text = cursor.text(0);
-            cursor.consume(1);
-            if (!text.startsWith("\\")) {
-                throw new IllegalArgumentException("special command must start with \"\\\"");
-            }
-            return new SpecialStatement(segment.getText(), getSegmentRegion(), region.wrap(text.substring(1)));
+            return analyzeSpecial();
         }
         LOG.trace("not found statement signature -> generic SQL statement"); //$NON-NLS-1$
         return new SimpleStatement(Statement.Kind.GENERIC, segment.getText(), getSegmentRegion());
@@ -435,6 +433,40 @@ final class SegmentAnalyzer {
         expectNext(TokenKind.RIGHT_PAREN, ")"); //$NON-NLS-1$
         cursor.consume(1);
         return results;
+    }
+
+    private Statement analyzeSpecial() {
+        var bodyRegion = cursor.region(0);
+        var commandLine = cursor.text(0);
+        cursor.consume(1);
+        if (!commandLine.startsWith("\\")) {
+            throw new IllegalArgumentException("special command must start with \"\\\"");
+        }
+        int start = 1; // strip first back-slash
+        var matcher = PATTERN_WHITESPACES.matcher(commandLine);
+        var tokens = new LinkedList<Regioned<String>>();
+        while (matcher.find(start)) {
+            if (matcher.start() > start) {
+                var r = offset(bodyRegion, matcher.start(), start - matcher.start());
+                tokens.addLast(r.wrap(commandLine.substring(start, matcher.start())));
+            }
+            start = matcher.end();
+        }
+        if (commandLine.length() > start) {
+            var r = offset(bodyRegion, start, commandLine.length() - start);
+            tokens.addLast(r.wrap(commandLine.substring(start)));
+        }
+        assert !tokens.isEmpty();
+        var command = tokens.removeFirst();
+        return new SpecialStatement(segment.getText(), getSegmentRegion(), command, tokens);
+    }
+
+    private Region offset(Region region, int offset, int length) {
+        return new Region(
+                region.getPosition() + offset,
+                length,
+                region.getStartLine(),
+                region.getStartColumn() + length);
     }
 
     private Regioned<String> consumeNameOrString() throws ParseException {

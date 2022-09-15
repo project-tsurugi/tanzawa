@@ -85,7 +85,7 @@
 <special-statement> ::= "\EXIT"
                      |  "\HALT"
                      |  "\STATUS"
-                     |  "\HELP"
+                     |  "\HELP" (any character except line-break, ";" or "\")*
 
 <statement-delimiter> ::= ";"
                        |  EOF
@@ -111,5 +111,7 @@
 
 <character-string-literal> ::= "'" ( any character except "\\" and "'" | "\\" . )* "'"
 
-<boolean-literal> = ( "TRUE" | "FALSE" )
+<boolean-literal> ::= ( "TRUE" | "FALSE" )
+
+<word> ::= 
 ```
