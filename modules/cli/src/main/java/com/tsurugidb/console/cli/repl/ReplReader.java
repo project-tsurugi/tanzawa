@@ -19,6 +19,7 @@ public class ReplReader extends Reader {
     private final LineReader lineReader;
     private String buffer = null;
     private int index;
+    private boolean eof = false;
 
     public ReplReader(@Nonnull LineReader lineReader) throws IOException {
         this.lineReader = lineReader;
@@ -35,10 +36,15 @@ public class ReplReader extends Reader {
 
     @Override
     public int read(char[] cbuf, int off, int len) throws IOException {
+        if (this.eof) {
+            return -1;
+        }
+
         if (this.buffer == null) {
             try {
                 this.buffer = readBuffer();
             } catch (EndOfFileException e) {
+                this.eof = true;
                 return -1;
             }
             this.index = 0;

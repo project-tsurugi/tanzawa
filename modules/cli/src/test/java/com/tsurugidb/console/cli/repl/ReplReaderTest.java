@@ -146,6 +146,9 @@ class ReplReaderTest {
             var buf = new char[16];
             int len = target.read(buf, 0, buf.length);
             assertEquals(-1, len);
+
+            int len2 = target.read(buf, 0, buf.length);
+            assertEquals(-1, len2);
         }
     }
 

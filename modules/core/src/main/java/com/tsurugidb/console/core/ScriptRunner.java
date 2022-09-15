@@ -162,6 +162,7 @@ public final class ScriptRunner {
             while (true) {
                 Statement statement = parser.next();
                 if (statement == null) {
+                    LOG.trace("EOF");
                     break;
                 }
                 try {
@@ -250,12 +251,12 @@ public final class ScriptRunner {
                 try {
                     Statement statement = parser.next();
                     if (statement == null) {
-                        // EOF
+                        LOG.trace("EOF");
                         break;
                     }
                     boolean cont = engine.execute(statement);
                     if (!cont) {
-                        LOG.info("shutdown was requested");
+                        LOG.trace("shutdown was requested");
                         break;
                     }
                 } catch (ServerException e) {
