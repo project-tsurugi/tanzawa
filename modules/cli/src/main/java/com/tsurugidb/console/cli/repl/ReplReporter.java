@@ -24,7 +24,7 @@ public class ReplReporter extends ScriptReporter {
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param terminal JLine Terminal
      */
     public ReplReporter(@Nonnull Terminal terminal) {
@@ -58,7 +58,7 @@ public class ReplReporter extends ScriptReporter {
     }
 
     @Override
-    protected void reportHelp(List<String> list) {
+    public void reportHelp(List<String> list) {
         int color = 0xe0_e0_e0;
         for (var s : list) {
             println(s, color);
@@ -67,7 +67,7 @@ public class ReplReporter extends ScriptReporter {
 
     /**
      * output ResultSet header.
-     * 
+     *
      * @param text header
      */
     public void reportResultSetHeader(String text) {
@@ -76,7 +76,7 @@ public class ReplReporter extends ScriptReporter {
 
     /**
      * output ResultSet row.
-     * 
+     *
      * @param text row
      */
     public void reportResultSetRow(String text) {
@@ -85,7 +85,7 @@ public class ReplReporter extends ScriptReporter {
 
     /**
      * output ResultSet size.
-     * 
+     *
      * @param size row size
      */
     public void reportResultSetSize(int size) {

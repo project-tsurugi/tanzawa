@@ -14,10 +14,10 @@ import org.slf4j.LoggerFactory;
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement;
+import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.console.core.model.Regioned;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.StartTransactionStatement;
-import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.console.core.model.StartTransactionStatement.ReadWriteMode;
 import com.tsurugidb.console.core.model.StartTransactionStatement.TransactionMode;
 import com.tsurugidb.sql.proto.SqlRequest;
@@ -35,11 +35,13 @@ public final class ExecutorUtil {
 
     private static final String COMMAND_HELP = "help"; //$NON-NLS-1$
 
+    private static final String COMMAND_HELP_SHORT = "h"; //$NON-NLS-1$
+
     private static final String COMMAND_STATUS = "status"; //$NON-NLS-1$
 
     /**
      * Extracts transaction option from the {@link StartTransactionStatement}.
-     * 
+     *
      * @param statement the extraction target statement
      * @param config    script configuration
      * @return the extracted option
@@ -107,7 +109,7 @@ public final class ExecutorUtil {
 
     /**
      * Extracts commit option from the {@link CommitStatement}.
-     * 
+     *
      * @param statement the extraction target statement
      * @return the extracted option
      */
@@ -131,7 +133,7 @@ public final class ExecutorUtil {
 
     /**
      * Returns whether or not the statement represents {@code '\exit'} command.
-     * 
+     *
      * @param statement the extraction target statement
      * @return {@code true} if the statement represents such the command, or {@code false} otherwise
      */
@@ -142,7 +144,7 @@ public final class ExecutorUtil {
 
     /**
      * Returns whether or not the statement represents {@code '\halt'} command.
-     * 
+     *
      * @param statement the extraction target statement
      * @return {@code true} if the statement represents such the command, or {@code false} otherwise
      */
@@ -153,18 +155,18 @@ public final class ExecutorUtil {
 
     /**
      * Returns whether or not the statement represents {@code '\help'} command.
-     * 
+     *
      * @param statement the extraction target statement
      * @return {@code true} if the statement represents such the command, or {@code false} otherwise
      */
     public static boolean isHelpCommand(@Nonnull SpecialStatement statement) {
         Objects.requireNonNull(statement);
-        return isCommand(COMMAND_HELP, statement);
+        return isCommand(COMMAND_HELP, statement) || isCommand(COMMAND_HELP_SHORT, statement);
     }
 
     /**
      * Returns whether or not the statement represents {@code '\status'} command.
-     * 
+     *
      * @param statement the extraction target statement
      * @return {@code true} if the statement represents such the command, or {@code false} otherwise
      */
@@ -175,7 +177,7 @@ public final class ExecutorUtil {
 
     /**
      * Returns whether or not the statement represents the command.
-     * 
+     *
      * @param name      the command name
      * @param statement the extraction target statement
      * @return {@code true} if the statement represents such the command, or {@code false} otherwise
@@ -189,7 +191,7 @@ public final class ExecutorUtil {
 
     /**
      * Returns an {@link ErroneousStatement} from the unknown command.
-     * 
+     *
      * @param statement the unknown command
      * @return corresponding {@link ErroneousStatement}
      */
@@ -206,20 +208,25 @@ public final class ExecutorUtil {
     }
 
     /**
-     * Returns a help message.
-     * 
-     * @return help message
+     * Returns an {@link ErroneousStatement} from the unknown command.
+     *
+     * @param statement the special command
+     * @param option the unknown option token in the command
+     * @return corresponding {@link ErroneousStatement}
      */
-    public static List<String> getHelpMessage() {
-        return List.of(//
-                "\\exit - exit script", //
-                "\\halt - exit script forcibly", //
-                "\\help - show this message", //
-                "\\status - show transaction status", //
-                "START TRANSACTION - starts a transaction", //
-                "COMMIT - commits the current transaction", //
-                "ROLLBACK - revokes the current transaction", //
-                "(other statements) - submit SQL command to server");
+    public static ErroneousStatement toUnknownError(
+            @Nonnull SpecialStatement statement,
+            @Nonnull Regioned<String> option) {
+        Objects.requireNonNull(statement);
+        Objects.requireNonNull(option);
+        return new ErroneousStatement(//
+                statement.getText(), //
+                statement.getRegion(), //
+                ErrorKind.UNKNOWN_SPECIAL_COMMAND_OPTION, //
+                option.getRegion(), //
+                MessageFormat.format(//
+                        "unrecognized option: \"{0}\"", //
+                        option.getValue()));
     }
 
     private static <T> T unwrap(Optional<Regioned<T>> value) {
