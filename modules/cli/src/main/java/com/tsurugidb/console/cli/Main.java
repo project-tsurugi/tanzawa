@@ -1,5 +1,6 @@
 package com.tsurugidb.console.cli;
 
+import java.io.Closeable;
 import java.io.StringReader;
 import java.nio.file.Files;
 
@@ -14,10 +15,11 @@ import com.tsurugidb.console.cli.argument.ScriptArgument;
 import com.tsurugidb.console.cli.config.ConsoleConfigBuilder;
 import com.tsurugidb.console.cli.config.ExecConfigBuilder;
 import com.tsurugidb.console.cli.config.ScriptConfigBuilder;
-import com.tsurugidb.console.cli.repl.ReplLineReader;
 import com.tsurugidb.console.cli.repl.ReplReader;
 import com.tsurugidb.console.cli.repl.ReplReporter;
 import com.tsurugidb.console.cli.repl.ReplResultProcessor;
+import com.tsurugidb.console.cli.repl.jline.ReplJLineReader;
+import com.tsurugidb.console.cli.repl.jline.ReplJLineTerminal;
 import com.tsurugidb.console.core.ScriptRunner;
 
 /**
@@ -47,13 +49,13 @@ public final class Main {
                 .addCommand(EXEC, execArgument) //
                 .addCommand(SCRIPT, scriptArgument) //
                 .build();
-        try {
+        main: try (Closeable c0 = () -> ReplJLineTerminal.close()) {
             commander.parse(args);
 
             String command = commander.getParsedCommand();
             if (command == null) {
                 commander.usage();
-                return;
+                return; // exit(0)
             }
             switch (command) {
             case CONSOLE:
@@ -68,6 +70,7 @@ public final class Main {
             default:
                 throw new AssertionError(command);
             }
+            return; // exit(0)
         } catch (ParameterException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.error(e.getMessage(), e);
@@ -80,20 +83,20 @@ public final class Main {
                 var c = commander.getCommands().get(command);
                 if (c != null) {
                     c.usage();
-                    System.exit(1);
+                    break main; // exit(1)
                 }
             }
 
             commander.usage();
-            System.exit(1);
         }
+        System.exit(1);
     }
 
     private static void executeConsole(JCommander commander, ConsoleArgument argument) throws Exception {
         var builder = new ConsoleConfigBuilder(argument);
         var config = builder.build();
 
-        var lineReader = ReplLineReader.create();
+        var lineReader = ReplJLineReader.createReader();
         var reporter = new ReplReporter(lineReader.getTerminal());
         try (var reader = new ReplReader(lineReader); //
                 var resultProcessor = new ReplResultProcessor(reporter)) {

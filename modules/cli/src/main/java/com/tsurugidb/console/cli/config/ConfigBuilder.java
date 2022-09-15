@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.beust.jcommander.ParameterException;
 import com.tsurugidb.console.cli.argument.CommonArgument;
 import com.tsurugidb.console.cli.argument.CommonArgument.TransactionEnum;
-import com.tsurugidb.console.cli.repl.ReplLineReader;
+import com.tsurugidb.console.cli.repl.jline.ReplJLineReader;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.sql.proto.SqlRequest;
@@ -224,7 +224,7 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
      */
     @Nonnull
     public static String readUser() {
-        var lineReader = ReplLineReader.createSimpleReader();
+        var lineReader = ReplJLineReader.createSimpleReader();
         return lineReader.readLine("user: ");
     }
 
@@ -235,7 +235,7 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
      */
     @Nonnull
     public static String readPassword() {
-        var lineReader = ReplLineReader.createSimpleReader();
+        var lineReader = ReplJLineReader.createSimpleReader();
         return lineReader.readLine("password: ", '*');
     }
 }

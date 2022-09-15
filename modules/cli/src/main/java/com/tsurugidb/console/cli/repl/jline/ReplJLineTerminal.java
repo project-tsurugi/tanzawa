@@ -1,63 +1,31 @@
-package com.tsurugidb.console.cli.repl;
+package com.tsurugidb.console.cli.repl.jline;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Attributes;
 import org.jline.terminal.Attributes.ControlChar;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.OSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
 
 /**
- * Tsurugi SQL console JLine LineReader.
+ * Tsurugi SQL console JLine Terminal.
  */
-public final class ReplLineReader {
-    private static final Logger LOG = LoggerFactory.getLogger(ReplLineReader.class);
-
-    private static final String APP_NAME = "Tsurugi SQL console";
+public final class ReplJLineTerminal {
+    private static final Logger LOG = LoggerFactory.getLogger(ReplJLineTerminal.class);
 
     private static Terminal staticTerminal;
+    private static Attributes originalAttributes;
 
     /**
-     * create LineReader.
+     * get terminal.
      * 
-     * @return LineReader
+     * @return terminal
      */
-    public static LineReader create() {
-        var terminal = getTerminal();
-
-        var parser = new ReplLineParser();
-        parser.setEscapeChars(null);
-
-        var reader = LineReaderBuilder.builder() //
-                .appName(APP_NAME) //
-                .terminal(terminal) //
-                .parser(parser) //
-                .build();
-        return reader;
-    }
-
-    /**
-     * create simple LineReader.
-     * 
-     * @return LineReader
-     */
-    public static LineReader createSimpleReader() {
-        var terminal = getTerminal();
-
-        var reader = LineReaderBuilder.builder() //
-                .appName(APP_NAME) //
-                .terminal(terminal) //
-                .build();
-        return reader;
-    }
-
-    private static Terminal getTerminal() {
+    public static Terminal getTerminal() {
         if (staticTerminal == null) {
             try {
                 staticTerminal = createTerminal();
@@ -81,7 +49,7 @@ public final class ReplLineReader {
 
         if (OSUtils.IS_CYGWIN || OSUtils.IS_MSYSTEM) {
             LOG.debug("disable VINTR");
-            Attributes originalAttributes = terminal.getAttributes();
+            originalAttributes = terminal.getAttributes();
             Attributes attributes = new Attributes(originalAttributes);
             attributes.setControlChar(ControlChar.VINTR, 0); // disable Ctrl+C
             terminal.setAttributes(attributes);
@@ -90,7 +58,26 @@ public final class ReplLineReader {
         return terminal;
     }
 
-    private ReplLineReader() {
+    /**
+     * close terminal.
+     * 
+     * @throws IOException
+     */
+    public static void close() throws IOException {
+        if (staticTerminal != null) {
+            try {
+                if (originalAttributes != null) {
+                    staticTerminal.setAttributes(originalAttributes);
+                    originalAttributes = null;
+                }
+            } finally {
+                staticTerminal.close();
+                staticTerminal = null;
+            }
+        }
+    }
+
+    private ReplJLineTerminal() {
         throw new AssertionError();
     }
 }
