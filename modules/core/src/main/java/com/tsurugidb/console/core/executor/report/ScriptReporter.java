@@ -4,7 +4,6 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 
-import com.tsurugidb.console.core.executor.engine.ExecutorUtil;
 import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 import com.tsurugidb.tsubakuro.exception.ServerException;
@@ -16,35 +15,35 @@ public abstract class ScriptReporter {
 
     /**
      * output information message.
-     * 
+     *
      * @param message message
      */
     public abstract void info(String message);
 
     /**
      * output implicit message.
-     * 
+     *
      * @param message message
      */
     public abstract void implicit(String message);
 
     /**
      * output succeed message.
-     * 
+     *
      * @param message message
      */
     public abstract void succeed(String message);
 
     /**
      * output warning message.
-     * 
+     *
      * @param message message
      */
     public abstract void warn(String message);
 
     /**
      * output warning message.
-     * 
+     *
      * @param e ServerException
      */
     public void warn(ServerException e) {
@@ -56,7 +55,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for start transaction implicitly.
-     * 
+     *
      * @param option transaction option
      */
     public void reportStartTransactionImplicitly(TransactionOption option) {
@@ -67,7 +66,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for start transaction implicitly.
-     * 
+     *
      * @param message message
      * @param option  transaction option
      */
@@ -77,7 +76,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for transaction started.
-     * 
+     *
      * @param option transaction option
      */
     public void reportTransactionStarted(TransactionOption option) {
@@ -88,7 +87,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for transaction started.
-     * 
+     *
      * @param message message
      * @param option  transaction option
      */
@@ -98,7 +97,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for transaction committed.
-     * 
+     *
      * @param status commit status
      */
     public void reportTransactionCommitted(Optional<CommitStatus> status) {
@@ -109,7 +108,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for transaction committed.
-     * 
+     *
      * @param message message
      * @param status  commit status
      */
@@ -119,7 +118,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for transaction committed implicitly.
-     * 
+     *
      * @param status commit status
      */
     public void reportTransactionCommittedImplicitly(CommitStatus status) {
@@ -130,7 +129,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for transaction committed implicitly.
-     * 
+     *
      * @param message message
      * @param status  commit status
      */
@@ -148,7 +147,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for transaction rollbacked.
-     * 
+     *
      * @param message message
      */
     protected void reportTransactionRollbacked(String message) {
@@ -165,7 +164,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for transaction rollbacked implicitly.
-     * 
+     *
      * @param message message
      */
     protected void reportTransactionRollbackedImplicitly(String message) {
@@ -174,7 +173,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for transaction status.
-     * 
+     *
      * @param active {@code true} if transaction is active
      */
     public void reportTransactionStatus(boolean active) {
@@ -185,7 +184,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for transaction status.
-     * 
+     *
      * @param message message
      * @param active  {@code true} if transaction is active
      */
@@ -195,18 +194,10 @@ public abstract class ScriptReporter {
 
     /**
      * output message for help.
-     */
-    public void reportHelp() {
-        List<String> list = ExecutorUtil.getHelpMessage();
-        reportHelp(list);
-    }
-
-    /**
-     * output message for help.
-     * 
+     *
      * @param list message list
      */
-    protected void reportHelp(List<String> list) {
+    public void reportHelp(List<String> list) {
         for (var s : list) {
             info(s);
         }

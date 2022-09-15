@@ -2,6 +2,8 @@ package com.tsurugidb.console.core.executor.engine;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
@@ -40,9 +42,11 @@ public class BasicEngine extends AbstractEngine {
 
     private final ScriptReporter reporter;
 
+    private final HelpMessage help;
+
     /**
      * Creates a new instance.
-     * 
+     *
      * @param config             script configuration
      * @param sqlProcessor       the SQL processor
      * @param resultSetProcessor the result set processor
@@ -57,6 +61,16 @@ public class BasicEngine extends AbstractEngine {
         this.sqlProcessor = sqlProcessor;
         this.resultSetProcessor = resultSetProcessor;
         this.reporter = reporter;
+        this.help = initializeHelp();
+    }
+
+    private static HelpMessage initializeHelp() {
+        try {
+            return HelpMessage.load(Locale.getDefault().getLanguage());
+        } catch (IOException e) {
+            LOG.warn("failed to load help message bundle", e);
+            return new HelpMessage("help message bundle is not available.");
+        }
     }
 
     @Override
@@ -157,15 +171,25 @@ public class BasicEngine extends AbstractEngine {
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
         if (ExecutorUtil.isExitCommand(statement)) {
+            if (!statement.getCommandOptions().isEmpty()) {
+                return execute(ExecutorUtil.toUnknownError(statement, statement.getCommandOptions().get(0)));
+            }
             LOG.debug("starting shut-down"); //$NON-NLS-1$
             checkTransactionInactive(statement);
             return false;
         }
         if (ExecutorUtil.isHaltCommand(statement)) {
+            if (!statement.getCommandOptions().isEmpty()) {
+                return execute(ExecutorUtil.toUnknownError(statement, statement.getCommandOptions().get(0)));
+            }
             LOG.debug("starting force shut-down"); //$NON-NLS-1$
             return false;
         }
         if (ExecutorUtil.isStatusCommand(statement)) {
+            if (!statement.getCommandOptions().isEmpty()) {
+                // TODO more status?
+                return execute(ExecutorUtil.toUnknownError(statement, statement.getCommandOptions().get(0)));
+            }
             LOG.debug("show status"); //$NON-NLS-1$
             boolean active = sqlProcessor.isTransactionActive();
             reporter.reportTransactionStatus(active);
@@ -173,7 +197,8 @@ public class BasicEngine extends AbstractEngine {
         }
         if (ExecutorUtil.isHelpCommand(statement)) {
             LOG.debug("show help"); //$NON-NLS-1$
-            reporter.reportHelp();
+            List<String> message = help.find(statement);
+            reporter.reportHelp(message);
             return true;
         }
         // execute as erroneous

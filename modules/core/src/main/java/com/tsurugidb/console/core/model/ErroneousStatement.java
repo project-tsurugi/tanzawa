@@ -73,6 +73,12 @@ public class ErroneousStatement implements Statement {
         UNKNOWN_SPECIAL_COMMAND,
 
         /**
+         * invalid special command option.
+         * @see SpecialStatement#getCommandOptions()
+         */
+        UNKNOWN_SPECIAL_COMMAND_OPTION,
+
+        /**
          * Unexpected grammar.
          */
         UNSUPPORTED_GRAMMAR,

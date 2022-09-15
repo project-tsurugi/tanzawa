@@ -29,7 +29,7 @@ see [modules/cli/README.md](modules/cli/README.md).
 
 ## SQL language
 
-see [modules/core/README.md](modules/core/README.md#language)
+see [docs/grammar-rule.md](docs/grammar-rule.md).
 
 ## License
 

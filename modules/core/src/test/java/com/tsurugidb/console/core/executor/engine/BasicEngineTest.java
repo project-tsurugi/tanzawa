@@ -405,6 +405,33 @@ class BasicEngineTest {
     }
 
     @Test
+    void special_statement_help_command() throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(false);
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("\\help start transaction"));
+        assertTrue(cont);
+    }
+
+    @Test
+    void special_statement_help_alias() throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(false);
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("\\help begin"));
+        assertTrue(cont);
+    }
+
+    @Test
+    void special_statement_help_unknown() throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(false);
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("\\help ===UNKNWON==="));
+        assertTrue(cont);
+    }
+
+    @Test
     void special_statement_exit_tx_active() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
