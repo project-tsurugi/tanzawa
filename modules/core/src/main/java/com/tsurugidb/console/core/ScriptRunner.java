@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.config.ScriptConfig;
+import com.tsurugidb.console.core.exception.ScriptInterruptedException;
 import com.tsurugidb.console.core.executor.IoSupplier;
 import com.tsurugidb.console.core.executor.engine.BasicEngine;
 import com.tsurugidb.console.core.executor.engine.Engine;
@@ -259,6 +260,8 @@ public final class ScriptRunner {
                         LOG.trace("shutdown was requested");
                         break;
                     }
+                } catch (ScriptInterruptedException e) {
+                    LOG.trace("user interrupted", e);
                 } catch (ServerException e) {
                     if (LOG.isDebugEnabled()) {
                         LOG.warn("{}", e.getDiagnosticCode().name(), e);

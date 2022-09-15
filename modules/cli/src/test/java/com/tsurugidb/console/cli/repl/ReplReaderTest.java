@@ -2,11 +2,15 @@ package com.tsurugidb.console.cli.repl;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 
 import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 import org.junit.jupiter.api.Test;
+
+import com.tsurugidb.console.core.exception.ScriptInterruptedException;
 
 class ReplReaderTest {
 
@@ -141,8 +145,31 @@ class ReplReaderTest {
     }
 
     @Test
+    void interrupt() throws IOException {
+        try (var target = new ReplReaderTestMock() {
+            @Override
+            protected String readBuffer() {
+                throw new UserInterruptException(null);
+            }
+        }) {
+            var buf = new char[16];
+            assertThrows(ScriptInterruptedException.class, () -> target.read(buf, 0, buf.length));
+        }
+    }
+
+    @Test
     void eof() throws IOException {
-        try (var target = new ReplReaderTestMock(new String[0])) {
+        try (var target = new ReplReaderTestMock() {
+            private int count = 0;
+
+            @Override
+            protected String readBuffer() {
+                if (count++ == 0) {
+                    return super.readBuffer();
+                }
+                throw new AssertionError();
+            }
+        }) {
             var buf = new char[16];
             int len = target.read(buf, 0, buf.length);
             assertEquals(-1, len);

@@ -7,6 +7,9 @@ import javax.annotation.Nonnull;
 
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
+import org.jline.reader.UserInterruptException;
+
+import com.tsurugidb.console.core.exception.ScriptInterruptedException;
 
 /**
  * Tsurugi SQL console repl Reader
@@ -43,6 +46,8 @@ public class ReplReader extends Reader {
         if (this.buffer == null) {
             try {
                 this.buffer = readBuffer();
+            } catch (UserInterruptException e) {
+                throw new ScriptInterruptedException(e);
             } catch (EndOfFileException e) {
                 this.eof = true;
                 return -1;
