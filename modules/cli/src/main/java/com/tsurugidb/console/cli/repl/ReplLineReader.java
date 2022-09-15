@@ -14,7 +14,7 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
 /**
- * Tsurugi SQL console JLine LineReader
+ * Tsurugi SQL console JLine LineReader.
  */
 public final class ReplLineReader {
     private static final Logger LOG = LoggerFactory.getLogger(ReplLineReader.class);
@@ -23,6 +23,11 @@ public final class ReplLineReader {
 
     private static Terminal staticTerminal;
 
+    /**
+     * create LineReader.
+     * 
+     * @return LineReader
+     */
     public static LineReader create() {
         var terminal = getTerminal();
 
@@ -37,6 +42,11 @@ public final class ReplLineReader {
         return reader;
     }
 
+    /**
+     * create simple LineReader.
+     * 
+     * @return LineReader
+     */
     public static LineReader createSimpleReader() {
         var terminal = getTerminal();
 
@@ -66,8 +76,7 @@ public final class ReplLineReader {
                     + ", IS_CYGWIN=" + OSUtils.IS_CYGWIN //
                     + ", IS_MSYSTEM=" + OSUtils.IS_MSYSTEM //
                     + ", IS_CONEMU=" + OSUtils.IS_CONEMU //
-                    + ", IS_OSX=" + OSUtils.IS_OSX //
-            );
+                    + ", IS_OSX=" + OSUtils.IS_OSX);
         }
 
         if (OSUtils.IS_CYGWIN || OSUtils.IS_MSYSTEM) {

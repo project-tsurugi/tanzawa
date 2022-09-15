@@ -12,13 +12,18 @@ import com.tsurugidb.console.cli.argument.ScriptArgument;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 
 /**
- * ConfigBuilder for script
+ * ConfigBuilder for script.
  */
 public class ScriptConfigBuilder extends ConfigBuilder<ScriptArgument> {
 
     private Charset encoding;
     private Path script;
 
+    /**
+     * Creates a new instance.
+     * 
+     * @param argument argument
+     */
     public ScriptConfigBuilder(ScriptArgument argument) {
         super(argument);
     }
@@ -44,6 +49,11 @@ public class ScriptConfigBuilder extends ConfigBuilder<ScriptArgument> {
         log.debug("config.encoding={}", encoding);
     }
 
+    /**
+     * get script file encoding.
+     * 
+     * @return encoding
+     */
     @Nonnull
     public Charset getEncoding() {
         return this.encoding;
@@ -61,6 +71,11 @@ public class ScriptConfigBuilder extends ConfigBuilder<ScriptArgument> {
         log.debug("config.script={}", script);
     }
 
+    /**
+     * get script.
+     * 
+     * @return script file path
+     */
     @Nonnull
     public Path getScript() {
         return this.script;

@@ -8,12 +8,17 @@ import com.tsurugidb.console.cli.argument.ExecArgument;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 
 /**
- * ConfigBuilder for exec
+ * ConfigBuilder for exec.
  */
 public class ExecConfigBuilder extends ConfigBuilder<ExecArgument> {
 
     private String statement;
 
+    /**
+     * Creates a new instance.
+     * 
+     * @param argument argument
+     */
     public ExecConfigBuilder(ExecArgument argument) {
         super(argument);
     }
@@ -34,6 +39,11 @@ public class ExecConfigBuilder extends ConfigBuilder<ExecArgument> {
         log.debug("config.statement=[{}]", statement);
     }
 
+    /**
+     * get SQL statement.
+     * 
+     * @return statement
+     */
     @Nonnull
     public String getStatement() {
         return this.statement;

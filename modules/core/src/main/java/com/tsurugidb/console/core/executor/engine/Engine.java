@@ -36,7 +36,7 @@ public interface Engine {
     boolean execute(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException;
 
     /**
-     * finish Engine
+     * finish Engine.
      * 
      * @param succeed {@code true} to successful end
      * @throws IOException if I/O error was occurred while executing the statement

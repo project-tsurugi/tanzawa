@@ -11,10 +11,18 @@ import org.jline.reader.impl.DefaultParser;
 import com.tsurugidb.console.core.parser.SqlParser;
 
 /**
- * Tsurugi SQL console JLine Parser
+ * Tsurugi SQL console JLine Parser.
  */
 public class ReplLineParser extends DefaultParser {
 
+    /**
+     * parse.
+     * 
+     * @param line    input text
+     * @param cursor  cursor position
+     * @param context parse context
+     * @return parsed text
+     */
     @Override
     public ParsedLine parse(String line, int cursor, ParseContext context) {
         if (context == ParseContext.ACCEPT_LINE) {

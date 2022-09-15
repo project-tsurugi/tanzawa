@@ -19,6 +19,9 @@ import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredential;
 
+/**
+ * Common argument for Tsurugi SQL console cli.
+ */
 @Parameters
 public class CommonArgument {
 
@@ -32,6 +35,9 @@ public class CommonArgument {
      * transaction
      */
 
+    /**
+     * value for --transaction.
+     */
     public enum TransactionEnum {
         SHORT("short"), OCC("OCC"), //
         LONG("long"), LTX("LTX"), //
@@ -87,21 +93,41 @@ public class CommonArgument {
     @Parameter(names = { "--no-auth" }, arity = 0, description = "no auth")
     private Boolean noAuth;
 
+    /**
+     * get --connection-uri.
+     * 
+     * @return connection uri
+     */
     @Nonnull // required = true
     public String getConnectionUri() {
         return this.connectionUri;
     }
 
+    /**
+     * get --property.
+     * 
+     * @return property
+     */
     @Nonnull
     public Map<String, String> getProperty() {
         return this.propertyMap;
     }
 
+    /**
+     * get --transaction.
+     * 
+     * @return transaction
+     */
     @Nonnull // has default value
     public TransactionEnum getTransaction() {
         return this.transaction;
     }
 
+    /**
+     * get --write-preserve.
+     * 
+     * @return write preserve
+     */
     @Nonnull
     public List<String> getWritePreserve() {
         if (this.writePreserve == null) {
@@ -110,6 +136,11 @@ public class CommonArgument {
         return this.writePreserve;
     }
 
+    /**
+     * get --read-area-include.
+     * 
+     * @return read area include
+     */
     @Nonnull
     public List<String> getReadAreaInclude() {
         if (this.readAreaInclude == null) {
@@ -118,6 +149,11 @@ public class CommonArgument {
         return this.readAreaInclude;
     }
 
+    /**
+     * get --read-area-exclude.
+     * 
+     * @return read area exclude
+     */
     @Nonnull
     public List<String> getReadAreaExclude() {
         if (this.readAreaExclude == null) {
@@ -126,6 +162,11 @@ public class CommonArgument {
         return this.readAreaExclude;
     }
 
+    /**
+     * get --execute.
+     * 
+     * @return execute
+     */
     @Nonnull
     public List<String> getExecute() {
         if (this.execute == null) {
@@ -154,16 +195,31 @@ public class CommonArgument {
         return this.execute;
     }
 
+    /**
+     * get --label.
+     * 
+     * @return label
+     */
     @Nonnull // has default value
     public String getLabel() {
         return this.label;
     }
 
+    /**
+     * get --with.
+     * 
+     * @return with
+     */
     @Nonnull
     public Map<String, String> getWith() {
         return this.withMap;
     }
 
+    /**
+     * get credentials.
+     * 
+     * @return credential list
+     */
     @Nonnull
     public List<Supplier<Credential>> getCredentialList() {
         var list = new ArrayList<Supplier<Credential>>();

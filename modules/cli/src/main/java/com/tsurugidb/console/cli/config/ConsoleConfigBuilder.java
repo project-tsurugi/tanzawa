@@ -6,10 +6,15 @@ import com.tsurugidb.console.cli.argument.ConsoleArgument;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 
 /**
- * ConfigBuilder for console
+ * ConfigBuilder for console.
  */
 public class ConsoleConfigBuilder extends ConfigBuilder<ConsoleArgument> {
 
+    /**
+     * Creates a new instance.
+     * 
+     * @param argument argument
+     */
     public ConsoleConfigBuilder(ConsoleArgument argument) {
         super(argument);
     }

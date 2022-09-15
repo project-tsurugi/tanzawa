@@ -3,6 +3,9 @@ package com.tsurugidb.console.core.executor.report;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A basic implementation of {@link ScriptReporter}.
+ */
 public class BasicReporter extends ScriptReporter {
     private static final Logger LOG = LoggerFactory.getLogger(BasicReporter.class);
 

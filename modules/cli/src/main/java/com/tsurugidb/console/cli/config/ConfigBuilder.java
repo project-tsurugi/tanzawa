@@ -27,16 +27,31 @@ import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredential;
 
+/**
+ * Configuration builder.
+ *
+ * @param <A> argument
+ */
 public abstract class ConfigBuilder<A extends CommonArgument> {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final ScriptConfig config = new ScriptConfig();
     protected final A argument;
 
+    /**
+     * Creates a new instance.
+     * 
+     * @param argument argument
+     */
     public ConfigBuilder(A argument) {
         this.argument = argument;
     }
 
+    /**
+     * create configuration.
+     * 
+     * @return script configuration
+     */
     public ScriptConfig build() {
         fillEndpoint();
         fillTransactionOption();
@@ -148,7 +163,7 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
      * credential
      */
 
-    public void fillCredential() {
+    private void fillCredential() {
         var credential = getCredential();
         log.debug("config.credential={}", credential);
         config.setCredential(credential);
@@ -203,7 +218,7 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
     }
 
     /**
-     * get user from console
+     * get user from console.
      * 
      * @return user
      */
@@ -214,7 +229,7 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
     }
 
     /**
-     * get password from console
+     * get password from console.
      * 
      * @return password
      */

@@ -12,7 +12,7 @@ import org.jline.reader.UserInterruptException;
 import com.tsurugidb.console.core.exception.ScriptInterruptedException;
 
 /**
- * Tsurugi SQL console repl Reader
+ * Tsurugi SQL console repl Reader.
  */
 public class ReplReader extends Reader {
 
@@ -24,7 +24,12 @@ public class ReplReader extends Reader {
     private int index;
     private boolean eof = false;
 
-    public ReplReader(@Nonnull LineReader lineReader) throws IOException {
+    /**
+     * Creates a new instance.
+     * 
+     * @param lineReader LineReader
+     */
+    public ReplReader(@Nonnull LineReader lineReader) {
         this.lineReader = lineReader;
 
         lineReader.setVariable(LineReader.SECONDARY_PROMPT_PATTERN, PROMPT2);

@@ -13,12 +13,17 @@ import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 
 /**
- * Tsurugi SQL console repl ResultProcessor
+ * Tsurugi SQL console repl ResultProcessor.
  */
 public class ReplResultProcessor implements ResultProcessor {
 
     private final ReplReporter reporter;
 
+    /**
+     * Creates a new instance.
+     * 
+     * @param reporter ReplReporter
+     */
     public ReplResultProcessor(@Nonnull ReplReporter reporter) {
         this.reporter = reporter;
     }

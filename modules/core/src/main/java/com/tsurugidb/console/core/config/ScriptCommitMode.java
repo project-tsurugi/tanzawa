@@ -1,5 +1,8 @@
 package com.tsurugidb.console.core.config;
 
+/**
+ * Commit mode.
+ */
 public enum ScriptCommitMode {
     /** commit every statement */
     AUTO_COMMIT,

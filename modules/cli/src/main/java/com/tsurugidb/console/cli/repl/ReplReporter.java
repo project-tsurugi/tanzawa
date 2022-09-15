@@ -11,14 +11,22 @@ import org.jline.utils.AttributedStyle;
 
 import com.tsurugidb.console.core.executor.report.ScriptReporter;
 
+/**
+ * Tsurugi SQL console repl Reporter.
+ */
 public class ReplReporter extends ScriptReporter {
 
-    private static final int RED = 0xc00000;
-    private static final int GREEN = 0x00c000;
-    private static final int YELLOW = 0xc0c000;
+    private static final int RED = 0xc0_00_00;
+    private static final int GREEN = 0x00_c0_00;
+    private static final int YELLOW = 0xc0_c0_00;
 
     private final Terminal terminal;
 
+    /**
+     * Creates a new instance.
+     * 
+     * @param terminal JLine Terminal
+     */
     public ReplReporter(@Nonnull Terminal terminal) {
         this.terminal = terminal;
     }
@@ -51,27 +59,42 @@ public class ReplReporter extends ScriptReporter {
 
     @Override
     protected void reportHelp(List<String> list) {
-        int color = 0xe0e0e0;
+        int color = 0xe0_e0_e0;
         for (var s : list) {
             println(s, color);
         }
     }
 
+    /**
+     * output ResultSet header.
+     * 
+     * @param text header
+     */
     public void reportResultSetHeader(String text) {
         printlnBold(text);
     }
 
+    /**
+     * output ResultSet row.
+     * 
+     * @param text row
+     */
     public void reportResultSetRow(String text) {
         println(text);
     }
 
+    /**
+     * output ResultSet size.
+     * 
+     * @param size row size
+     */
     public void reportResultSetSize(int size) {
         String message = MessageFormat.format("({0} rows)", size);
         reportResultSetSize(message);
     }
 
     protected void reportResultSetSize(String text) {
-        println(text, GREEN);
+        succeed(text);
     }
 
     /**

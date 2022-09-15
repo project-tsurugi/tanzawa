@@ -173,11 +173,19 @@ public final class ResultSetUtil {
         return array;
     }
 
+    /**
+     * get field name.
+     * 
+     * @param column column
+     * @param index  column index
+     * @return field name
+     */
     public static String getFieldName(SqlCommon.Column column, int index) {
-        if (column.getName().isEmpty()) {
+        String name = column.getName();
+        if (name.isEmpty()) {
             return String.format("%s%d", FIELD_NAME_PREFIX_UNNAMED, index);
         }
-        return column.getName();
+        return name;
     }
 
     private ResultSetUtil() {
