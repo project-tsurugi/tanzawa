@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'tanzawa.java-base'
 }
 
 tasks.register('allJavadoc', Javadoc)
@@ -10,4 +10,3 @@ tasks.named('allJavadoc') {
     title = "Tanzawa All JavaDoc"
     options.links "https://docs.oracle.com/en/java/javase/11/docs/api/"
 }
-
