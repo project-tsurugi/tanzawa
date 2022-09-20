@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
@@ -184,19 +185,19 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
 
     private Credential getDefaultCredential() {
         // 1. 環境変数TSURUGI_AUTH_TOKEN
-        String authToken = System.getenv("TSURUGI_AUTH_TOKEN");
-        boolean hasAuthToken = (authToken != null);
+        Optional<String> authToken = CliEnvironment.findTsurugiAuthToken();
+        boolean hasAuthToken = authToken.isPresent();
         log.trace("default credential 1. env.TSURUGI_AUTH_TOKEN={}", hasAuthToken ? "<not null>" : "null");
         if (hasAuthToken) {
-            return new RememberMeCredential(authToken);
+            return new RememberMeCredential(authToken.get());
         }
 
         // 2. 既定の認証情報ファイル
-        String home = System.getProperty("user.home");
-        if (home == null) {
+        Optional<Path> credentialPath = CliEnvironment.findUserHomeCredentialPath();
+        if (credentialPath.isEmpty()) {
             log.trace("default credential 2. user.home=null");
         } else {
-            var path = Path.of(home, ".tsurugidb/credentials.json");
+            var path = credentialPath.get();
             boolean exists = Files.exists(path);
             log.trace("default credential 2. path={}, exists={}", path, exists);
 //            if (exists) {

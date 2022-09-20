@@ -3,12 +3,14 @@ package com.tsurugidb.console.cli.repl.jline;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 
+import com.tsurugidb.console.cli.config.CliEnvironment;
+
 /**
  * Tsurugi SQL console JLine LineReader.
  */
 public final class ReplJLineReader {
 
-    private static final String APP_NAME = "Tsurugi SQL console";
+    private static final String APP_NAME = "Tsurugi SQL console"; //$NON-NLS-1$
 
     /**
      * create LineReader.
@@ -26,6 +28,9 @@ public final class ReplJLineReader {
                 .terminal(terminal) //
                 .parser(parser) //
                 .build();
+        CliEnvironment.findUserHomeReplHistoryPath().ifPresent(path -> {
+            reader.setVariable(LineReader.HISTORY_FILE, path);
+        });
         return reader;
     }
 
