@@ -3,8 +3,8 @@ package com.tsurugidb.console.core.executor.engine;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptConfig;
+import com.tsurugidb.console.core.executor.engine.command.SpecialCommand;
 import com.tsurugidb.console.core.executor.report.ScriptReporter;
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
 import com.tsurugidb.console.core.executor.sql.SqlProcessor;
@@ -42,8 +43,6 @@ public class BasicEngine extends AbstractEngine {
 
     private final ScriptReporter reporter;
 
-    private final HelpMessage help;
-
     /**
      * Creates a new instance.
      *
@@ -61,16 +60,15 @@ public class BasicEngine extends AbstractEngine {
         this.sqlProcessor = sqlProcessor;
         this.resultSetProcessor = resultSetProcessor;
         this.reporter = reporter;
-        this.help = initializeHelp();
     }
 
-    private static HelpMessage initializeHelp() {
-        try {
-            return HelpMessage.load(Locale.getDefault().getLanguage());
-        } catch (IOException e) {
-            LOG.warn("failed to load help message bundle", e);
-            return new HelpMessage("help message bundle is not available.");
-        }
+    /**
+     * get sql processor.
+     * 
+     * @return sql processor
+     */
+    public SqlProcessor getSqlProcessor() {
+        return this.sqlProcessor;
     }
 
     @Override
@@ -170,40 +168,21 @@ public class BasicEngine extends AbstractEngine {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
-        if (ExecutorUtil.isExitCommand(statement)) {
-            if (!statement.getCommandOptions().isEmpty()) {
-                return execute(ExecutorUtil.toUnknownError(statement, statement.getCommandOptions().get(0)));
-            }
-            LOG.debug("starting shut-down"); //$NON-NLS-1$
-            checkTransactionInactive(statement);
-            return false;
+        var commandList = SpecialCommand.findCommand(statement);
+        switch (commandList.size()) {
+        case 0:
+            // execute as erroneous
+            LOG.debug("command is unrecognized: {}", statement.getCommandName()); //$NON-NLS-1$
+            return execute(SpecialCommand.toUnknownError(statement));
+        case 1:
+            var command = commandList.get(0).command();
+            return command.execute(this, statement);
+        default:
+            // execute as erroneous
+            List<String> nameList = commandList.stream().map(c -> c.name()).collect(Collectors.toList());
+            LOG.debug("command is ambiguous: {} in {}", statement.getCommandName(), nameList); //$NON-NLS-1$
+            return execute(SpecialCommand.toUnknownError(statement, nameList));
         }
-        if (ExecutorUtil.isHaltCommand(statement)) {
-            if (!statement.getCommandOptions().isEmpty()) {
-                return execute(ExecutorUtil.toUnknownError(statement, statement.getCommandOptions().get(0)));
-            }
-            LOG.debug("starting force shut-down"); //$NON-NLS-1$
-            return false;
-        }
-        if (ExecutorUtil.isStatusCommand(statement)) {
-            if (!statement.getCommandOptions().isEmpty()) {
-                // TODO more status?
-                return execute(ExecutorUtil.toUnknownError(statement, statement.getCommandOptions().get(0)));
-            }
-            LOG.debug("show status"); //$NON-NLS-1$
-            boolean active = sqlProcessor.isTransactionActive();
-            reporter.reportTransactionStatus(active);
-            return true;
-        }
-        if (ExecutorUtil.isHelpCommand(statement)) {
-            LOG.debug("show help"); //$NON-NLS-1$
-            List<String> message = help.find(statement);
-            reporter.reportHelp(message);
-            return true;
-        }
-        // execute as erroneous
-        LOG.debug("command is unrecognized: {}", statement.getCommandName()); //$NON-NLS-1$
-        return execute(ExecutorUtil.toUnknownError(statement));
     }
 
     @Override
@@ -211,8 +190,9 @@ public class BasicEngine extends AbstractEngine {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
-        throw new EngineException(MessageFormat.format("[{0}] {1} (line={2}, column={3})", statement.getErrorKind(), statement.getMessage(), statement.getOccurrence().getStartLine() + 1,
-                statement.getOccurrence().getStartColumn() + 1));
+        throw new EngineException(MessageFormat.format("[{0}] {1} (line={2}, column={3})", //
+                statement.getErrorKind(), statement.getMessage(), //
+                statement.getOccurrence().getStartLine() + 1, statement.getOccurrence().getStartColumn() + 1));
     }
 
     @Override
@@ -257,12 +237,21 @@ public class BasicEngine extends AbstractEngine {
             }
         }
 
-        throw new EngineException(MessageFormat.format("transaction is not started (line={0}, column={1})", statement.getRegion().getStartLine() + 1, statement.getRegion().getStartColumn() + 1));
+        throw new EngineException(MessageFormat.format("transaction is not started (line={0}, column={1})", //
+                statement.getRegion().getStartLine() + 1, statement.getRegion().getStartColumn() + 1));
     }
 
-    private void checkTransactionInactive(Statement statement) throws EngineException {
+    /**
+     * Check transaction inactive.
+     * 
+     * @param statement the target statement
+     * @throws EngineException if transaction is active
+     */
+    public void checkTransactionInactive(@Nonnull Statement statement) throws EngineException {
+        Objects.requireNonNull(statement);
         if (sqlProcessor.isTransactionActive()) {
-            throw new EngineException(MessageFormat.format("transaction is running (line={0}, column={1})", statement.getRegion().getStartLine() + 1, statement.getRegion().getStartColumn() + 1));
+            throw new EngineException(MessageFormat.format("transaction is running (line={0}, column={1})", //
+                    statement.getRegion().getStartLine() + 1, statement.getRegion().getStartColumn() + 1));
         }
     }
 }
