@@ -132,8 +132,12 @@ public final class ResultSetUtil {
             return cursor.fetchOctetValue();
         case TIME_OF_DAY:
             return cursor.fetchTimeOfDayValue();
+        case TIME_OF_DAY_WITH_TIME_ZONE:
+            return cursor.fetchTimeOfDayWithTimeZoneValue();
         case TIME_POINT:
             return cursor.fetchTimePointValue();
+        case TIME_POINT_WITH_TIME_ZONE:
+            return cursor.fetchTimePointWithTimeZoneValue();
 
         case UNKNOWN:
             return null;

@@ -12,6 +12,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -269,10 +272,34 @@ class BasicResultProcessorTest {
     }
 
     @Test
+    void value_time_point_with_time_zone() throws Exception {
+        ResultSet rs = Relation.of(new Object[][] {
+            { OffsetDateTime.of(2022, 9, 22, 12, 28, 59, 0, ZoneOffset.ofHours(9)) },
+        }).getResultSet(meta(column(OffsetDateTime.class)));
+
+        try (var proc = create()) {
+            proc.process(rs);
+        }
+        assertEquals(1, outputs.size());
+    }
+
+    @Test
     void value_time_of_day() throws Exception {
         ResultSet rs = Relation.of(new Object[][] {
             { LocalTime.of(1, 2, 3) },
         }).getResultSet(meta(column(LocalTime.class)));
+
+        try (var proc = create()) {
+            proc.process(rs);
+        }
+        assertEquals(1, outputs.size());
+    }
+
+    @Test
+    void value_time_of_day_with_time_zone() throws Exception {
+        ResultSet rs = Relation.of(new Object[][] {
+            { OffsetTime.of(1, 2, 3, 4, ZoneOffset.ofHours(9)) },
+        }).getResultSet(meta(column(OffsetTime.class)));
 
         try (var proc = create()) {
             proc.process(rs);
