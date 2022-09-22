@@ -145,25 +145,21 @@ class SqlScannerTest {
     @Test
     void special_command() throws Exception {
         var ss = scan("\\EXIT", "\\Halt", "\\?");
-        assertEquals(4, ss.size());
+        assertEquals(3, ss.size());
         {
             var s = ss.get(0);
-            assertEquals(List.of(TokenKind.SPECIAL_COMMAND), kinds(s));
+            assertEquals(List.of(TokenKind.SPECIAL_COMMAND, TokenKind.END_OF_STATEMENT), kinds(s));
             assertEquals("\\EXIT", s.getText());
         }
         {
             var s = ss.get(1);
-            assertEquals(List.of(TokenKind.SPECIAL_COMMAND), kinds(s));
+            assertEquals(List.of(TokenKind.SPECIAL_COMMAND, TokenKind.END_OF_STATEMENT), kinds(s));
             assertEquals("\\Halt", s.getText());
         }
         {
             var s = ss.get(2);
-            assertEquals(List.of(TokenKind.SPECIAL_COMMAND), kinds(s));
+            assertEquals(List.of(TokenKind.SPECIAL_COMMAND, TokenKind.END_OF_STATEMENT), kinds(s));
             assertEquals("\\?", s.getText());
-        }
-        {
-            var s = ss.get(3);
-            assertEquals(List.of(TokenKind.END_OF_STATEMENT), kinds(s));
         }
     }
 
@@ -171,31 +167,33 @@ class SqlScannerTest {
     void special_command_options() throws Exception {
         var ss = scan(
                 "\\h SELECT",
-                "\\h some options;",
+                "\\h \"some\" \'options\';",
                 "\\h\tlast");
-        assertEquals(5, ss.size());
+        assertEquals(3, ss.size());
         {
             var s = ss.get(0);
-            assertEquals(List.of(TokenKind.SPECIAL_COMMAND), kinds(s));
+            assertEquals(List.of(
+                    TokenKind.SPECIAL_COMMAND,
+                    TokenKind.SPECIAL_COMMAND_ARGUMENT,
+                    TokenKind.END_OF_STATEMENT), kinds(s));
             assertEquals("\\h SELECT", s.getText());
         }
         {
             var s = ss.get(1);
-            assertEquals(List.of(TokenKind.SPECIAL_COMMAND), kinds(s));
-            assertEquals("\\h some options", s.getText());
+            assertEquals(List.of(
+                    TokenKind.SPECIAL_COMMAND,
+                    TokenKind.DELIMITED_IDENTIFIER,
+                    TokenKind.CHARACTER_STRING_LITERAL,
+                    TokenKind.END_OF_STATEMENT), kinds(s));
+            assertEquals("\\h \"some\" 'options'", s.getText());
         }
         {
             var s = ss.get(2);
-            assertEquals(List.of(TokenKind.END_OF_STATEMENT), kinds(s));
-        }
-        {
-            var s = ss.get(3);
-            assertEquals(List.of(TokenKind.SPECIAL_COMMAND), kinds(s));
+            assertEquals(List.of(
+                    TokenKind.SPECIAL_COMMAND,
+                    TokenKind.SPECIAL_COMMAND_ARGUMENT,
+                    TokenKind.END_OF_STATEMENT), kinds(s));
             assertEquals("\\h\tlast", s.getText());
-        }
-        {
-            var s = ss.get(4);
-            assertEquals(List.of(TokenKind.END_OF_STATEMENT), kinds(s));
         }
     }
 

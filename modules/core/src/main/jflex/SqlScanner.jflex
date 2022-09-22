@@ -88,7 +88,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
     }
 
     private boolean flushUnhandled() {
-        // TODO: continue unhandled text until statement delimiter was occurred
         if (textContinue) {
             long textEndOffset = yychar;
             buffer.addToken(new TokenInfo(
@@ -110,7 +109,9 @@ LETTER = [A-Za-z_]
 
 DIGIT = [0-9]
 
-WHITE_SPACES  = [ \t\r\n]+
+WHITE_SPACES  = [ \t]+
+
+LINE_BREAK  = [\r\n]+
 
 HYPHEN_COMMENT = "--" [^\r\n]*
 
@@ -135,9 +136,11 @@ CHARACTER_STRING_LITERAL = "'" ( "\\" . | [^\\'] )* "'"
 
 BINARY_STRING_LITERAL = "X" {CHARACTER_STRING_LITERAL}
 
-SPECIAL_COMMAND_LETTER = [^ \t\r\n;]
+SPECIAL_COMMAND_LETTER = [^ \t\r\n\"\';]
 
-SPECIAL_COMMAND = "\\" {SPECIAL_COMMAND_LETTER}+ ( [ \t]+ {SPECIAL_COMMAND_LETTER}+ )*
+SPECIAL_COMMAND = "\\" {SPECIAL_COMMAND_LETTER}*
+
+SPECIAL_COMMAND_ARGUMENT = {SPECIAL_COMMAND_LETTER}+
 
 // punctuations or operators
 DOT = "."
@@ -151,39 +154,55 @@ ASTERISK = "*"
 EQUAL = "="
 BACK_SLASH = "\\"
 
-TEXT = .
+%state SQL_BODY
+%state COMMAND_BODY
 
 %%
 
-{WHITE_SPACES}              { return skip(); }
+{WHITE_SPACES}              { /* keep state */ return skip(); }
 
 // comments
-{HYPHEN_COMMENT}            { return token(TokenKind.HYPHEN_COMMENT); }
-{SLASH_COMMENT}             { return token(TokenKind.SLASH_COMMENT); }
-{BLOCK_COMMENT}             { return token(TokenKind.BLOCK_COMMENT); }
+{HYPHEN_COMMENT}            { /* keep state */ return token(TokenKind.HYPHEN_COMMENT); }
+{SLASH_COMMENT}             { /* keep state */ return token(TokenKind.SLASH_COMMENT); }
+{BLOCK_COMMENT}             { /* keep state */ return token(TokenKind.BLOCK_COMMENT); }
 
-// values
-{TRUE_LITERAL}              { return token(TokenKind.TRUE_LITERAL); }
-{FALSE_LITERAL}             { return token(TokenKind.FALSE_LITERAL); }
-{NULL_LITERAL}              { return token(TokenKind.NULL_LITERAL); }
-{REGULAR_IDENTIFIER}        { return token(TokenKind.REGULAR_IDENTIFIER); }
-{DELIMITED_IDENTIFIER}      { return token(TokenKind.DELIMITED_IDENTIFIER); }
-{NUMERIC_LITERAL}           { return token(TokenKind.NUMERIC_LITERAL); }
-{CHARACTER_STRING_LITERAL}  { return token(TokenKind.CHARACTER_STRING_LITERAL); }
-{BINARY_STRING_LITERAL}     { return token(TokenKind.BINARY_STRING_LITERAL); }
-{SPECIAL_COMMAND}           { return token(TokenKind.SPECIAL_COMMAND); }
+<YYINITIAL, SQL_BODY> {
+    {LINE_BREAK}                { /* keep state */ return skip(); }
 
-// punctuations or operators
-{DOT}                       { return token(TokenKind.DOT); }
-{COMMA}                     { return token(TokenKind.COMMA); }
-{SEMICOLON}                 { return token(TokenKind.SEMICOLON); }
-{LEFT_PAREN}                { return token(TokenKind.LEFT_PAREN); }
-{RIGHT_PAREN}               { return token(TokenKind.RIGHT_PAREN); }
-{PLUS}                      { return token(TokenKind.PLUS); }
-{MINUS}                     { return token(TokenKind.MINUS); }
-{ASTERISK}                  { return token(TokenKind.ASTERISK); }
-{EQUAL}                     { return token(TokenKind.EQUAL); }
-{BACK_SLASH}                { return token(TokenKind.BACK_SLASH); }
+    // values
+    {TRUE_LITERAL}              { yybegin(SQL_BODY); return token(TokenKind.TRUE_LITERAL); }
+    {FALSE_LITERAL}             { yybegin(SQL_BODY); return token(TokenKind.FALSE_LITERAL); }
+    {NULL_LITERAL}              { yybegin(SQL_BODY); return token(TokenKind.NULL_LITERAL); }
+    {REGULAR_IDENTIFIER}        { yybegin(SQL_BODY); return token(TokenKind.REGULAR_IDENTIFIER); }
+    {DELIMITED_IDENTIFIER}      { yybegin(SQL_BODY); return token(TokenKind.DELIMITED_IDENTIFIER); }
+    {NUMERIC_LITERAL}           { yybegin(SQL_BODY); return token(TokenKind.NUMERIC_LITERAL); }
+    {CHARACTER_STRING_LITERAL}  { yybegin(SQL_BODY); return token(TokenKind.CHARACTER_STRING_LITERAL); }
+    {BINARY_STRING_LITERAL}     { yybegin(SQL_BODY); return token(TokenKind.BINARY_STRING_LITERAL); }
+
+    // punctuations or operators
+    {DOT}                       { yybegin(SQL_BODY); return token(TokenKind.DOT); }
+    {COMMA}                     { yybegin(SQL_BODY); return token(TokenKind.COMMA); }
+    {SEMICOLON}                 { yybegin(YYINITIAL); return token(TokenKind.SEMICOLON); }
+    {LEFT_PAREN}                { yybegin(SQL_BODY); return token(TokenKind.LEFT_PAREN); }
+    {RIGHT_PAREN}               { yybegin(SQL_BODY); return token(TokenKind.RIGHT_PAREN); }
+    {PLUS}                      { yybegin(SQL_BODY); return token(TokenKind.PLUS); }
+    {MINUS}                     { yybegin(SQL_BODY); return token(TokenKind.MINUS); }
+    {ASTERISK}                  { yybegin(SQL_BODY); return token(TokenKind.ASTERISK); }
+    {EQUAL}                     { yybegin(SQL_BODY); return token(TokenKind.EQUAL); }
+    {BACK_SLASH}                { yybegin(SQL_BODY); return token(TokenKind.BACK_SLASH); }
+}
+
+<YYINITIAL> {
+    {SPECIAL_COMMAND}           { yybegin(COMMAND_BODY); return token(TokenKind.SPECIAL_COMMAND); }
+}
+
+<COMMAND_BODY> {
+    {LINE_BREAK}                { yybegin(YYINITIAL); return token(TokenKind.LINE_BREAK); }
+    {DELIMITED_IDENTIFIER}      { yybegin(COMMAND_BODY); return token(TokenKind.DELIMITED_IDENTIFIER); }
+    {CHARACTER_STRING_LITERAL}  { yybegin(COMMAND_BODY); return token(TokenKind.CHARACTER_STRING_LITERAL); }
+    {SPECIAL_COMMAND_ARGUMENT}  { yybegin(COMMAND_BODY); return token(TokenKind.SPECIAL_COMMAND_ARGUMENT); }
+    {SEMICOLON}                 { yybegin(YYINITIAL); return token(TokenKind.SEMICOLON); }
+}
 
 // unhandled text
-{TEXT}                      { return unhandled(); }
+[^]                         { yybegin(SQL_BODY); return unhandled(); }
