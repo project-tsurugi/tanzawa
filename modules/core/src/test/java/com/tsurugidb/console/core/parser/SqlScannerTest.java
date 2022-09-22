@@ -144,7 +144,7 @@ class SqlScannerTest {
 
     @Test
     void special_command() throws Exception {
-        var ss = scan("\\EXIT \\Halt");
+        var ss = scan("\\EXIT", "\\Halt");
         assertEquals(3, ss.size());
         {
             var s = ss.get(0);

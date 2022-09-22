@@ -135,7 +135,7 @@ CHARACTER_STRING_LITERAL = "'" ( "\\" . | [^\\'] )* "'"
 
 BINARY_STRING_LITERAL = "X" {CHARACTER_STRING_LITERAL}
 
-SPECIAL_COMMAND = "\\" {LETTER} ( {LETTER} | {DIGIT} )* ( [ \t]+ [^ \t\r\n\\;]+ )*
+SPECIAL_COMMAND = "\\" {LETTER} ( {LETTER} | {DIGIT} )* ( [ \t]+ [^ \t\r\n;]+ )*
 
 // punctuations or operators
 DOT = "."

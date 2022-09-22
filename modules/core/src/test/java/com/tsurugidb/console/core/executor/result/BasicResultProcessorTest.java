@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -259,8 +259,8 @@ class BasicResultProcessorTest {
     @Test
     void value_time_point() throws Exception {
         ResultSet rs = Relation.of(new Object[][] {
-            { Instant.ofEpochSecond(123) },
-        }).getResultSet(meta(column(Instant.class)));
+            { LocalDateTime.of(2022, 9, 22, 12, 28) },
+        }).getResultSet(meta(column(LocalDateTime.class)));
 
         try (var proc = create()) {
             proc.process(rs);
