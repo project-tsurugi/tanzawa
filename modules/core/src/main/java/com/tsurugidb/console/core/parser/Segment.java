@@ -162,7 +162,7 @@ class Segment {
         private void normalizeDelimiter() {
             if (!tokens.isEmpty()) {
                 var last = tokens.get(tokens.size() - 1);
-                if (last.getKind() == TokenKind.EOF || last.getKind() == TokenKind.SEMICOLON) {
+                if (last.getKind().isStatementDelimiter()) {
                     tokens.set(tokens.size() - 1, new TokenInfo(
                             TokenKind.END_OF_STATEMENT,
                             last.getOffset(),

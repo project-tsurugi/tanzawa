@@ -108,9 +108,19 @@ enum TokenKind {
     BACK_SLASH,
 
     /**
-     * special commands.
+     * special command name.
      */
-    SPECIAL_COMMAND(true),
+    SPECIAL_COMMAND,
+
+    /**
+     * special command argument.
+     */
+    SPECIAL_COMMAND_ARGUMENT,
+
+    /**
+     * line break in special command.
+     */
+    LINE_BREAK(true),
 
     // comments
 

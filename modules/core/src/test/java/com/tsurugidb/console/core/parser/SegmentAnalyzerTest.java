@@ -902,6 +902,24 @@ class SegmentAnalyzerTest {
     }
 
     @Test
+    void special_options_backslash() throws Exception {
+        Statement s = analyze("\\HELP \\help");
+        assertEquals(Statement.Kind.SPECIAL, s.getKind());
+        var t = (SpecialStatement) s;
+        assertEquals("HELP", t.getCommandName().getValue());
+        assertEquals(List.of("\\help"), unwrapList(t.getCommandOptions()));
+    }
+
+    @Test
+    void special_options_quote() throws Exception {
+        Statement s = analyze("\\HELP \"-Dkey=Hello, \\\"world\\\"!\"");
+        assertEquals(Statement.Kind.SPECIAL, s.getKind());
+        var t = (SpecialStatement) s;
+        assertEquals("HELP", t.getCommandName().getValue());
+        assertEquals(List.of("-Dkey=Hello, \"world\"!"), unwrapList(t.getCommandOptions()));
+    }
+
+    @Test
     void special_options_linebreak() throws Exception {
         Statement s = analyze("\\HELP COMMIT \n OK");
         assertEquals(Statement.Kind.SPECIAL, s.getKind());
