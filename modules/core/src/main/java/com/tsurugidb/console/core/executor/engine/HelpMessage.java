@@ -182,14 +182,16 @@ public class HelpMessage {
         if (key.isEmpty()) {
             key = KEY_ROOT;
         } else {
-            var list = SpecialCommand.findCommand(key);
-            if (!list.isEmpty()) {
-                var result = new ArrayList<String>();
-                for (var command : list) {
-                    String commandName = command.command().getCommandName();
-                    result.addAll(findForSpecialCommand(commandName));
+            if (key.startsWith("\\")) {
+                var list = SpecialCommand.findCommand(key.substring(1));
+                if (!list.isEmpty()) {
+                    var result = new ArrayList<String>();
+                    for (var command : list) {
+                        String commandName = command.command().getCommandName();
+                        result.addAll(findForSpecialCommand(commandName));
+                    }
+                    return result;
                 }
-                return result;
             }
 
             key = KEY_PREFIX_COMMAND + key;

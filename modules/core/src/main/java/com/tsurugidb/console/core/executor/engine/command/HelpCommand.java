@@ -35,7 +35,7 @@ public class HelpCommand extends SpecialCommand {
      * Creates a new instance.
      */
     public HelpCommand() {
-        super("help", "h"); //$NON-NLS-1$
+        super("help", "h", "?"); //$NON-NLS-1$
     }
 
     @Override
