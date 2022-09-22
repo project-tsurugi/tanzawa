@@ -135,7 +135,9 @@ CHARACTER_STRING_LITERAL = "'" ( "\\" . | [^\\'] )* "'"
 
 BINARY_STRING_LITERAL = "X" {CHARACTER_STRING_LITERAL}
 
-SPECIAL_COMMAND = "\\" {LETTER} ( {LETTER} | {DIGIT} )* ( [ \t]+ [^ \t\r\n;]+ )*
+SPECIAL_COMMAND_LETTER = [^ \t\r\n;]
+
+SPECIAL_COMMAND = "\\" {SPECIAL_COMMAND_LETTER}+ ( [ \t]+ {SPECIAL_COMMAND_LETTER}+ )*
 
 // punctuations or operators
 DOT = "."
@@ -147,6 +149,7 @@ PLUS = "+"
 MINUS = "-"
 ASTERISK = "*"
 EQUAL = "="
+BACK_SLASH = "\\"
 
 TEXT = .
 
@@ -180,6 +183,7 @@ TEXT = .
 {MINUS}                     { return token(TokenKind.MINUS); }
 {ASTERISK}                  { return token(TokenKind.ASTERISK); }
 {EQUAL}                     { return token(TokenKind.EQUAL); }
+{BACK_SLASH}                { return token(TokenKind.BACK_SLASH); }
 
 // unhandled text
 {TEXT}                      { return unhandled(); }

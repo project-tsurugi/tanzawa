@@ -103,6 +103,11 @@ enum TokenKind {
     EQUAL,
 
     /**
+     * bare back-slash sign.
+     */
+    BACK_SLASH,
+
+    /**
      * special commands.
      */
     SPECIAL_COMMAND(true),
