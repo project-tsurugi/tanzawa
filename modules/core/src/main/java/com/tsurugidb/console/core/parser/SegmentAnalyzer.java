@@ -5,12 +5,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -84,8 +82,6 @@ final class SegmentAnalyzer {
     private static final String K_ROLLBACK = "ROLLBACK";
 
     private static final String K_CALL = "CALL";
-
-    private static final Pattern PATTERN_WHITESPACES = Pattern.compile("[ \t]+"); //$NON-NLS-1$
 
     static Statement analyze(@Nonnull Segment segment) throws ParseException {
         LOG.debug("analyze segment: {}", segment.getText()); //$NON-NLS-1$
@@ -435,38 +431,31 @@ final class SegmentAnalyzer {
         return results;
     }
 
-    private Statement analyzeSpecial() {
-        var bodyRegion = cursor.region(0);
-        var commandLine = cursor.text(0);
-        cursor.consume(1);
-        if (!commandLine.startsWith("\\")) {
+    private Statement analyzeSpecial() throws ParseException {
+        var name = cursor.text(0);
+        if (!name.startsWith("\\")) {
             throw new IllegalArgumentException("special command must start with \"\\\"");
         }
-        int start = 1; // strip first back-slash
-        var matcher = PATTERN_WHITESPACES.matcher(commandLine);
-        var tokens = new LinkedList<Regioned<String>>();
-        while (matcher.find(start)) {
-            if (matcher.start() > start) {
-                var r = offset(bodyRegion, matcher.start(), start - matcher.start());
-                tokens.addLast(r.wrap(commandLine.substring(start, matcher.start())));
-            }
-            start = matcher.end();
-        }
-        if (commandLine.length() > start) {
-            var r = offset(bodyRegion, start, commandLine.length() - start);
-            tokens.addLast(r.wrap(commandLine.substring(start)));
-        }
-        assert !tokens.isEmpty();
-        var command = tokens.removeFirst();
-        return new SpecialStatement(segment.getText(), getSegmentRegion(), command, tokens);
-    }
+        var command = cursor.region(0).wrap(name.substring(1));
+        cursor.consume(1);
 
-    private Region offset(Region region, int offset, int length) {
-        return new Region(
-                region.getPosition() + offset,
-                length,
-                region.getStartLine(),
-                region.getStartColumn() + length);
+        var arguments = new ArrayList<Regioned<String>>();
+        while (true) {
+            if (testNext(TokenKind.SPECIAL_COMMAND_ARGUMENT)) {
+                arguments.add(cursor.region(0).wrap(cursor.text(0)));
+            } else if (testNext(TokenKind.DELIMITED_IDENTIFIER)) {
+                var text = decodeEscape(cursor.text(0), '"');
+                arguments.add(cursor.region(0).wrap(text));
+            } else if (testNext(TokenKind.CHARACTER_STRING_LITERAL)) {
+                var text = decodeEscape(cursor.text(0), '\'');
+                arguments.add(cursor.region(0).wrap(text));
+            } else {
+                break;
+            }
+            cursor.consume(1);
+        }
+        expectEndOfStatement();
+        return new SpecialStatement(segment.getText(), getSegmentRegion(), command, arguments);
     }
 
     private Regioned<String> consumeNameOrString() throws ParseException {
@@ -596,7 +585,7 @@ final class SegmentAnalyzer {
     private Regioned<String> consumeCharacterStringLiteral() throws ParseException {
         if (testNext(TokenKind.CHARACTER_STRING_LITERAL)) {
             var region = cursor.region(0);
-            var text = decodeCharacterString(cursor.text(0));
+            var text = decodeEscape(cursor.text(0), '\'');
             cursor.consume(1);
             return region.wrap(text);
         }
@@ -606,14 +595,15 @@ final class SegmentAnalyzer {
                 cursor.token(0).getKind()));
     }
 
-    private static String decodeCharacterString(String text) {
-        StringBuilder buf = new StringBuilder();
-        if (text.length() < 2 || text.charAt(0) != '\'' || text.charAt(text.length() - 1) != '\'') {
+    private static String decodeEscape(String text, char quote) {
+        if (text.length() < 2 || text.charAt(0) != quote || text.charAt(text.length() - 1) != quote) {
             throw new IllegalArgumentException(MessageFormat.format(
-                    "invalid character string: {0}", //$NON-NLS-1$
-                    text));
+                    "invalid quoted text (missing quote pair {1}): {0}", //$NON-NLS-1$
+                    text,
+                    quote));
         }
         boolean sawEscape = false;
+        StringBuilder buf = new StringBuilder();
         for (int i = 1, n = text.length() - 1; i < n; i++) {
             char c = text.charAt(i);
             if (sawEscape) {
@@ -629,6 +619,11 @@ final class SegmentAnalyzer {
             } else {
                 buf.append(c);
             }
+        }
+        if (sawEscape) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "invalid quoted text: {0}", //$NON-NLS-1$
+                    text));
         }
         return buf.toString();
     }
