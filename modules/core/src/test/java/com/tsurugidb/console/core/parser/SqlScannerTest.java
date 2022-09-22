@@ -144,8 +144,8 @@ class SqlScannerTest {
 
     @Test
     void special_command() throws Exception {
-        var ss = scan("\\EXIT", "\\Halt");
-        assertEquals(3, ss.size());
+        var ss = scan("\\EXIT", "\\Halt", "\\?");
+        assertEquals(4, ss.size());
         {
             var s = ss.get(0);
             assertEquals(List.of(TokenKind.SPECIAL_COMMAND), kinds(s));
@@ -158,6 +158,11 @@ class SqlScannerTest {
         }
         {
             var s = ss.get(2);
+            assertEquals(List.of(TokenKind.SPECIAL_COMMAND), kinds(s));
+            assertEquals("\\?", s.getText());
+        }
+        {
+            var s = ss.get(3);
             assertEquals(List.of(TokenKind.END_OF_STATEMENT), kinds(s));
         }
     }
@@ -257,6 +262,14 @@ class SqlScannerTest {
                     TokenKind.EQUAL,
                     TokenKind.END_OF_STATEMENT), kinds(s));
         }
+    }
+
+    @Test
+    void back_slash() throws Exception {
+        var s = scanOne("\\");
+        assertEquals(List.of(
+                TokenKind.BACK_SLASH,
+                TokenKind.END_OF_STATEMENT), kinds(s));
     }
 
     private static List<TokenKind> kinds(Segment segment) {
