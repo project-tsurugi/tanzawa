@@ -85,7 +85,7 @@
 <special-statement> ::= "\EXIT"
                      |  "\HALT"
                      |  "\STATUS"
-                     |  "\HELP" (any character except line-break, ";" or "\")*
+                     |  "\HELP" (any character except line-break or ";")*
 
 <statement-delimiter> ::= ";"
                        |  EOF
