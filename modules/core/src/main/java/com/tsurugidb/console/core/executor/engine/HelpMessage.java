@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.console.core.executor.engine.command.SpecialCommand;
 import com.tsurugidb.console.core.model.Regioned;
 import com.tsurugidb.console.core.model.SpecialStatement;
 
@@ -39,6 +40,11 @@ public class HelpMessage {
      * The key prefix of messages for individual commands.
      */
     public static final String KEY_PREFIX_COMMAND = "command."; //$NON-NLS-1$
+
+    /**
+     * The key prefix of messages for individual special commands.
+     */
+    private static final String KEY_PREFIX_SPECIAL_COMMAND = "special."; //$NON-NLS-1$
 
     /**
      * The key of message for help command itself.
@@ -176,8 +182,22 @@ public class HelpMessage {
         if (key.isEmpty()) {
             key = KEY_ROOT;
         } else {
+            var list = SpecialCommand.findCommand(key);
+            if (!list.isEmpty()) {
+                var result = new ArrayList<String>();
+                for (var command : list) {
+                    String commandName = command.command().getCommandName();
+                    result.addAll(findForSpecialCommand(commandName));
+                }
+                return result;
+            }
+
             key = KEY_PREFIX_COMMAND + key;
         }
+        return find0(key);
+    }
+
+    private List<String> find0(String key) {
         var value = messages.getProperty(key);
         if (value == null) {
             value = messages.getProperty(KEY_NOT_FOUND, "unrecognized help command.");
@@ -185,5 +205,15 @@ public class HelpMessage {
             return find0(List.of(value.substring(PREFIX_REFERENCE.length()).trim()));
         }
         return Arrays.asList(value.split("\r?\n"));
+    }
+
+    /**
+     * Returns a help message for the special command.
+     * @param commandName special command name
+     * @return the help message
+     */
+    public List<String> findForSpecialCommand(String commandName) {
+        String key = KEY_PREFIX_SPECIAL_COMMAND + commandName;
+        return find0(key);
     }
 }

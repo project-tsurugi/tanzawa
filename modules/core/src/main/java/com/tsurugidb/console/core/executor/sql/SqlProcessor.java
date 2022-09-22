@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
+import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.util.ServerResource;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.sql.proto.SqlRequest;
@@ -15,6 +16,17 @@ import com.tsurugidb.sql.proto.SqlRequest;
  * Processes SQL-related actions.
  */
 public interface SqlProcessor extends ServerResource {
+
+    /**
+     * Returns table metadata.
+     * @param tableName table name
+     * @return table metadata, or null if table not found
+     * @throws ServerException if server side error was occurred
+     * @throws IOException if I/O error was occurred while executing the statement
+     * @throws InterruptedException if interrupted while executing the statement
+     */
+    @Nullable
+    TableMetadata getTableMetadata(String tableName) throws ServerException, IOException, InterruptedException;
 
     /**
      * Returns whether or not the holding transaction is active.

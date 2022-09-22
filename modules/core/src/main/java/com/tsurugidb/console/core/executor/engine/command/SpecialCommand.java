@@ -29,6 +29,7 @@ public abstract class SpecialCommand {
             new ExitCommand(), //
             new HaltCommand(), //
             new HelpCommand(), //
+            new ShowCommand(), //
             new StatusCommand(), //
     };
     static { // assertion
@@ -88,17 +89,29 @@ public abstract class SpecialCommand {
      */
     @Nonnull
     public static List<NameCommandPair> findCommand(@Nonnull SpecialStatement statement) {
-        String statementName = toLowerCase(statement.getCommandName().getValue());
+        String commandName = statement.getCommandName().getValue();
+        return findCommand(commandName);
+    }
+
+    /**
+     * get matched command list.
+     * 
+     * @param commandName command name
+     * @return command list
+     */
+    @Nonnull
+    public static List<NameCommandPair> findCommand(@Nonnull String commandName) {
+        String inputName = toLowerCase(commandName);
 
         var result = new ArrayList<NameCommandPair>();
         for (var command : COMMAND_LIST) {
             var list = new ArrayList<>(command.getCommandNameList());
             list.sort((s1, s2) -> Integer.compare(s1.length(), s2.length()));
             for (var name : list) {
-                if (name.equals(statementName)) {
+                if (name.equals(inputName)) {
                     return List.of(new NameCommandPair(name, command));
                 }
-                if (name.startsWith(statementName)) {
+                if (name.startsWith(inputName)) {
                     result.add(new NameCommandPair(name, command));
                     break;
                 }
@@ -120,14 +133,25 @@ public abstract class SpecialCommand {
         this.commandNameList = Collections.unmodifiableList(Arrays.stream(names).map(SpecialCommand::toLowerCase).collect(Collectors.toList()));
     }
 
-    private static String toLowerCase(String s) {
+    protected static String toLowerCase(String s) {
         return s.toLowerCase(Locale.ENGLISH);
+    }
+
+    /**
+     * get representative command name
+     * 
+     * @return command name
+     */
+    public String getCommandName() {
+        var index = 0;
+        assert index < commandNameList.size();
+        return commandNameList.get(index);
     }
 
     /**
      * get command names.
      * 
-     * @return names
+     * @return command name list
      */
     @Nonnull
     public List<String> getCommandNameList() {
@@ -213,5 +237,10 @@ public abstract class SpecialCommand {
                 MessageFormat.format(//
                         "unrecognized option: \"{0}\"", //
                         option.getValue()));
+    }
+
+    protected void printHelp(BasicEngine engine) {
+        String commandName = getCommandName();
+        HelpCommand.printHelp(commandName, engine.getReporter());
     }
 }

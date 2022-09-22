@@ -9,12 +9,14 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.console.core.model.Region;
+import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
+import com.tsurugidb.tsubakuro.sql.SqlServiceCode;
+import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.Transaction;
-import com.tsurugidb.console.core.model.Region;
-import com.tsurugidb.sql.proto.SqlRequest;
 
 /**
  * A basic implementation of {@link SqlProcessor}.
@@ -29,6 +31,7 @@ public class BasicSqlProcessor implements SqlProcessor {
 
     /**
      * Creates a new instance.
+     * 
      * @param client the SQL client: It will be closed after this object was closed
      */
     public BasicSqlProcessor(@Nonnull SqlClient client) {
@@ -37,8 +40,21 @@ public class BasicSqlProcessor implements SqlProcessor {
     }
 
     @Override
-    public void startTransaction(
-            @Nonnull SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+    public TableMetadata getTableMetadata(@Nonnull String tableName) throws ServerException, IOException, InterruptedException {
+        Objects.requireNonNull(tableName);
+        try {
+            return client.getTableMetadata(tableName).await();
+        } catch (ServerException e) {
+            var code = e.getDiagnosticCode();
+            if (code == SqlServiceCode.ERR_NOT_FOUND) {
+                return null;
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public void startTransaction(@Nonnull SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(option);
         desireInactive();
         LOG.debug("start transaction: {}", option);
@@ -46,8 +62,7 @@ public class BasicSqlProcessor implements SqlProcessor {
     }
 
     @Override
-    public void commitTransaction(
-            @Nullable SqlRequest.CommitStatus status) throws ServerException, IOException, InterruptedException {
+    public void commitTransaction(@Nullable SqlRequest.CommitStatus status) throws ServerException, IOException, InterruptedException {
         LOG.debug("start commit: {}", status); //$NON-NLS-1$
         desireActive();
         try (var t = transaction) {
@@ -74,9 +89,7 @@ public class BasicSqlProcessor implements SqlProcessor {
     }
 
     @Override
-    public @Nullable ResultSet execute(
-            @Nonnull String statement,
-            @Nullable Region region) throws ServerException, IOException, InterruptedException {
+    public @Nullable ResultSet execute(@Nonnull String statement, @Nullable Region region) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("start prepare: '{}'", statement);
         desireActive();
@@ -98,6 +111,7 @@ public class BasicSqlProcessor implements SqlProcessor {
 
     /**
      * Returns the running transaction.
+     * 
      * @return the running transaction, or {@code null} if there is no active transactions
      */
     public @Nullable Transaction getTransaction() {

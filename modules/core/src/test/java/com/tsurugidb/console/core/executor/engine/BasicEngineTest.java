@@ -23,6 +23,7 @@ import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlResponse;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
+import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.Types;
 import com.tsurugidb.tsubakuro.sql.impl.ResultSetMetadataAdapter;
 import com.tsurugidb.tsubakuro.sql.impl.testing.Relation;
@@ -39,6 +40,11 @@ class BasicEngineTest {
 
         MockSqlProcessor(boolean active) {
             this.active = active;
+        }
+
+        @Override
+        public TableMetadata getTableMetadata(String tableName) throws ServerException, IOException, InterruptedException {
+            throw new UnsupportedOperationException();
         }
 
         @Override

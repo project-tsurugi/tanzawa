@@ -4,9 +4,13 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
+import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 import com.tsurugidb.tsubakuro.exception.ServerException;
+import com.tsurugidb.tsubakuro.sql.TableMetadata;
 
 /**
  * reporter of Tsurugi SQL console.
@@ -190,6 +194,63 @@ public abstract class ScriptReporter {
      */
     protected void reportTransactionStatus(String message, boolean active) {
         info(message);
+    }
+
+    /**
+     * output message for table metadata.
+     * 
+     * @param specifiedTableName table name
+     * @param data               metadata
+     */
+    public void reportTableMetadata(String specifiedTableName, @Nullable TableMetadata data) {
+        if (data == null) {
+            String message = MessageFormat.format("''{0}'' table not found", specifiedTableName);
+            warn(message);
+            return;
+        }
+
+        String databaseName = data.getDatabaseName().orElse(null);
+        reportTableMetadata("databaseName", databaseName);
+        String schemaName = data.getSchemaName().orElse(null);
+        reportTableMetadata("schemaName", schemaName);
+        String tableName = data.getTableName();
+        reportTableMetadata("tableName", tableName);
+
+        int i = 0;
+        for (var column : data.getColumns()) {
+            reportTableMetadata(column, i++);
+        }
+    }
+
+    protected void reportTableMetadata(String title, String name) {
+        String message;
+        if (name != null) {
+            message = MessageFormat.format("{0}=''{1}''", title, name);
+        } else {
+            message = MessageFormat.format("{0}=null", title);
+        }
+        info(message);
+    }
+
+    protected void reportTableMetadata(SqlCommon.Column column, int index) {
+        String name = column.getName();
+        String type = getFieldType(column);
+        String message = MessageFormat.format("({0}) {1}: {2}", index, name, type);
+        info(message);
+    }
+
+    protected String getFieldType(SqlCommon.Column column) {
+        switch (column.getTypeInfoCase()) {
+        case ATOM_TYPE:
+            return column.getAtomType().name();
+        case ROW_TYPE:
+            return column.getRowType().getColumnsList().toString();
+        case USER_TYPE:
+            return column.getUserType().getName();
+        case TYPEINFO_NOT_SET:
+        default:
+            return null;
+        }
     }
 
     /**

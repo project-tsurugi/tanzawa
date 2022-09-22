@@ -44,6 +44,12 @@ class HelpMessageTest {
     }
 
     @Test
+    void special() throws Exception {
+        HelpMessage help = load();
+        assertEquals(List.of("SA"), help.findForSpecialCommand("a"));
+    }
+
+    @Test
     void locale_unknown() throws Exception {
         HelpMessage help = HelpMessage.load("UNKNOWN_LOCALE");
         help.find().forEach(it -> LOG.debug("{}", it));
