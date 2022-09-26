@@ -23,10 +23,13 @@ public final class ReplJLineReader {
         var parser = new ReplJLineParser();
         parser.setEscapeChars(null);
 
+        var history = new ReplJLineHistory();
+
         var reader = LineReaderBuilder.builder() //
                 .appName(APP_NAME) //
                 .terminal(terminal) //
                 .parser(parser) //
+                .history(history) //
                 .build();
         CliEnvironment.findUserHomeReplHistoryPath().ifPresent(path -> {
             reader.setVariable(LineReader.HISTORY_FILE, path);
