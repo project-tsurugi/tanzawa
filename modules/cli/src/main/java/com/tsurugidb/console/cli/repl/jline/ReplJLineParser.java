@@ -7,6 +7,8 @@ import java.io.UncheckedIOException;
 import org.jline.reader.EOFError;
 import org.jline.reader.ParsedLine;
 import org.jline.reader.impl.DefaultParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.parser.SqlParser;
 
@@ -14,6 +16,7 @@ import com.tsurugidb.console.core.parser.SqlParser;
  * Tsurugi SQL console JLine Parser.
  */
 public class ReplJLineParser extends DefaultParser {
+    private static final Logger LOG = LoggerFactory.getLogger(ReplJLineParser.class);
 
     /**
      * parse.
@@ -26,12 +29,17 @@ public class ReplJLineParser extends DefaultParser {
     @Override
     public ParsedLine parse(String line, int cursor, ParseContext context) {
         if (context == ParseContext.ACCEPT_LINE) {
-            try (var reader = new StringReader(line); //
+            String input = line + "\n"; //$NON-NLS-1$
+            LOG.trace("input=[{}]", input); //$NON-NLS-1$
+            try (var reader = new StringReader(input); //
                     var parser = new SqlParser(reader)) {
                 var statement = parser.next();
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("statement={}, sawEof={}", statement, parser.sawEof()); //$NON-NLS-1$
+                }
                 if (statement != null) {
                     if (parser.sawEof()) {
-                        throw new EOFError(-1, -1, "end of statement");
+                        throw new EOFError(-1, -1, "end of statement"); //$NON-NLS-1$
                     }
                 }
             } catch (IOException e) {

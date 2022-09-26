@@ -111,7 +111,7 @@ DIGIT = [0-9]
 
 WHITE_SPACES  = [ \t]+
 
-LINE_BREAK  = [\r\n]+
+LINE_BREAK  = ( "\r" )? "\n"
 
 HYPHEN_COMMENT = "--" [^\r\n]*
 

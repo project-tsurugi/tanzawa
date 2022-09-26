@@ -39,11 +39,11 @@ public final class ReplJLineTerminal {
     private static Terminal createTerminal() throws IOException {
         var terminal = TerminalBuilder.terminal();
         if (LOG.isDebugEnabled()) {
-            LOG.debug("terminal.class={}", terminal.getClass().getName());
-            LOG.debug("IS_WINDOWS=" + OSUtils.IS_WINDOWS //
-                    + ", IS_CYGWIN=" + OSUtils.IS_CYGWIN //
-                    + ", IS_MSYSTEM=" + OSUtils.IS_MSYSTEM //
-                    + ", IS_CONEMU=" + OSUtils.IS_CONEMU //
+            LOG.debug("terminal.class={}", terminal.getClass().getName()); //$NON-NLS-1$
+            LOG.debug("IS_WINDOWS=" + OSUtils.IS_WINDOWS //$NON-NLS-1$
+                    + ", IS_CYGWIN=" + OSUtils.IS_CYGWIN //$NON-NLS-1$
+                    + ", IS_MSYSTEM=" + OSUtils.IS_MSYSTEM //$NON-NLS-1$
+                    + ", IS_CONEMU=" + OSUtils.IS_CONEMU //$NON-NLS-1$
                     + ", IS_OSX=" + OSUtils.IS_OSX);
         }
 

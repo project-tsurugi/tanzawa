@@ -8,6 +8,8 @@ import javax.annotation.Nonnull;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.UserInterruptException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.exception.ScriptInterruptedException;
 
@@ -15,6 +17,7 @@ import com.tsurugidb.console.core.exception.ScriptInterruptedException;
  * Tsurugi SQL console repl Reader.
  */
 public class ReplReader extends Reader {
+    private static final Logger LOG = LoggerFactory.getLogger(ReplReader.class);
 
     private static final String PROMPT1 = "tgsql> ";
     private static final String PROMPT2 = "     | ";
@@ -78,7 +81,9 @@ public class ReplReader extends Reader {
     }
 
     protected String readBuffer() {
-        return lineReader.readLine(PROMPT1) + "\n";
+        String text = lineReader.readLine(PROMPT1) + "\n"; //$NON-NLS-1$
+        LOG.trace("read=[{}]", text); //$NON-NLS-1$
+        return text;
     }
 
     @Override
