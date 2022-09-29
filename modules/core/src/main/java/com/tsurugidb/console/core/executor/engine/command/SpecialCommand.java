@@ -25,6 +25,11 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
  */
 public abstract class SpecialCommand {
 
+    /**
+     * special command prefix
+     */
+    public static final String COMMAND_PREFIX = "\\"; //$NON-NLS-1$
+
     private static final SpecialCommand[] COMMAND_LIST = { //
             new ExitCommand(), //
             new HaltCommand(), //
@@ -156,6 +161,31 @@ public abstract class SpecialCommand {
     @Nonnull
     public List<String> getCommandNameList() {
         return this.commandNameList;
+    }
+
+    /**
+     * get completer candidates.
+     * 
+     * @return candidates
+     */
+    public static List<List<String>> getCompleterCandidateList() {
+        var result = new ArrayList<List<String>>();
+        for (var command : COMMAND_LIST) {
+            command.collectCompleterCandidate(result);
+        }
+        return result;
+    }
+
+    /**
+     * collect completer candidates.
+     * 
+     * @param result candidates
+     */
+    protected void collectCompleterCandidate(List<List<String>> result) {
+        var list = getCommandNameList();
+        for (String name : list) {
+            result.add(List.of(COMMAND_PREFIX + name));
+        }
     }
 
     /**

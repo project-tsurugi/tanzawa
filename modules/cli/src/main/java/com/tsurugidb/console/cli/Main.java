@@ -29,9 +29,9 @@ public final class Main {
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
     // command name
-    private static final String CONSOLE = "console";
-    private static final String EXEC = "exec";
-    private static final String SCRIPT = "script";
+    private static final String CONSOLE = "console"; //$NON-NLS-1$
+    private static final String EXEC = "exec"; //$NON-NLS-1$
+    private static final String SCRIPT = "script"; //$NON-NLS-1$
 
     /**
      * Execute script.

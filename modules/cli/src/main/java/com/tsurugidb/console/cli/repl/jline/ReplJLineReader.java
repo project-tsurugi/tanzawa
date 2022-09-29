@@ -19,15 +19,14 @@ public final class ReplJLineReader {
      */
     public static LineReader createReader() {
         var terminal = ReplJLineTerminal.getTerminal();
-
+        var completer = new ReplJLineCompleter();
         var parser = new ReplJLineParser();
-        parser.setEscapeChars(null);
-
         var history = new ReplJLineHistory();
 
         var reader = LineReaderBuilder.builder() //
                 .appName(APP_NAME) //
                 .terminal(terminal) //
+                .completer(completer) //
                 .parser(parser) //
                 .history(history) //
                 .build();

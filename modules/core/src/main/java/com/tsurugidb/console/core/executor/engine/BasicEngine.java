@@ -176,6 +176,7 @@ public class BasicEngine extends AbstractEngine {
             return execute(SpecialCommand.toUnknownError(statement));
         case 1:
             var command = commandList.get(0).command();
+            LOG.debug("execute {}", command.getClass().getSimpleName());
             return command.execute(this, statement);
         default:
             // execute as erroneous

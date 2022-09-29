@@ -19,6 +19,13 @@ public class ReplJLineParser extends DefaultParser {
     private static final Logger LOG = LoggerFactory.getLogger(ReplJLineParser.class);
 
     /**
+     * Creates a new instance.
+     */
+    public ReplJLineParser() {
+        setEscapeChars(null);
+    }
+
+    /**
      * parse.
      * 
      * @param line    input text

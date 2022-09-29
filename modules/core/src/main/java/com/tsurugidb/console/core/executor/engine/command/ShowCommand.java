@@ -25,22 +25,6 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 public class ShowCommand extends SpecialCommand {
     private static final Logger LOG = LoggerFactory.getLogger(ShowCommand.class);
 
-    private final List<SubCommand> subCommandList = new ArrayList<>();
-
-    /**
-     * Creates a new instance.
-     */
-    public ShowCommand() {
-        super("show"); //$NON-NLS-1$
-
-        add("table", ShowCommand::executeShowTable); //$NON-NLS-1$
-        add("transaction", ShowCommand::executeShowTransaction); //$NON-NLS-1$
-    }
-
-    private void add(String name, Executor executor) {
-        subCommandList.add(new SubCommand(toLowerCase(name), executor));
-    }
-
     @FunctionalInterface
     private interface Executor {
         boolean execute(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
@@ -61,6 +45,29 @@ public class ShowCommand extends SpecialCommand {
 
         Executor executor() {
             return this.executor;
+        }
+    }
+
+    private final List<SubCommand> subCommandList = new ArrayList<>();
+
+    /**
+     * Creates a new instance.
+     */
+    public ShowCommand() {
+        super("show"); //$NON-NLS-1$
+
+        add("table", ShowCommand::executeShowTable); //$NON-NLS-1$
+        add("transaction", ShowCommand::executeShowTransaction); //$NON-NLS-1$
+    }
+
+    private void add(String name, Executor executor) {
+        subCommandList.add(new SubCommand(toLowerCase(name), executor));
+    }
+
+    @Override
+    protected void collectCompleterCandidate(List<List<String>> result) {
+        for (var command : subCommandList) {
+            result.add(List.of("\\show", command.name())); //$NON-NLS-1$
         }
     }
 

@@ -1,8 +1,10 @@
 package com.tsurugidb.console.core.executor.engine.command;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,45 @@ public class HelpCommand extends SpecialCommand {
      */
     public HelpCommand() {
         super("help", "h", "?"); //$NON-NLS-1$
+    }
+
+    @Override
+    protected void collectCompleterCandidate(List<List<String>> result) {
+        var list = createCompleterCandidateList();
+        result.addAll(list);
+    }
+
+    private static List<List<String>> createCompleterCandidateList() {
+        var result = new ArrayList<List<String>>();
+
+        String helpCommand = "\\help"; //$NON-NLS-1$
+
+        var keyList = HELP_MESSAGE.getKeys();
+        for (String key : keyList) {
+            boolean command = key.startsWith(HelpMessage.KEY_PREFIX_COMMAND);
+            boolean special = key.startsWith(HelpMessage.KEY_PREFIX_SPECIAL_COMMAND);
+            if (command || special) {
+                List<String> keyWords = List.of(key.split(Pattern.quote("."))); //$NON-NLS-1$
+                assert keyWords.size() >= 2;
+
+                var candidate = new ArrayList<String>(keyWords.size());
+                candidate.add(helpCommand);
+                if (special) {
+                    candidate.add(SpecialCommand.COMMAND_PREFIX + keyWords.get(1));
+                    candidate.addAll(keyWords.subList(2, keyWords.size()));
+                } else {
+                    candidate.addAll(keyWords.subList(1, keyWords.size()));
+                }
+
+                result.add(candidate);
+            }
+        }
+
+        if (result.isEmpty()) {
+            result.add(List.of(helpCommand));
+        }
+
+        return result;
     }
 
     @Override

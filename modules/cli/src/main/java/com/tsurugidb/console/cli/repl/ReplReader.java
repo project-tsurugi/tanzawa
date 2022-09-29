@@ -19,8 +19,8 @@ import com.tsurugidb.console.core.exception.ScriptInterruptedException;
 public class ReplReader extends Reader {
     private static final Logger LOG = LoggerFactory.getLogger(ReplReader.class);
 
-    private static final String PROMPT1 = "tgsql> ";
-    private static final String PROMPT2 = "     | ";
+    private static final String PROMPT1 = "tgsql> "; //$NON-NLS-1$
+    private static final String PROMPT2 = "     | "; //$NON-NLS-1$
 
     private final LineReader lineReader;
     private String buffer = null;

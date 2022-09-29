@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -44,7 +45,7 @@ public class HelpMessage {
     /**
      * The key prefix of messages for individual special commands.
      */
-    private static final String KEY_PREFIX_SPECIAL_COMMAND = "special."; //$NON-NLS-1$
+    public static final String KEY_PREFIX_SPECIAL_COMMAND = "special."; //$NON-NLS-1$
 
     /**
      * The key of message for help command itself.
@@ -134,6 +135,14 @@ public class HelpMessage {
         LOG.debug("searching for message bundle: locale=<default>");  //$NON-NLS-1$
         var resource = HelpMessage.class.getResource(String.format("%s.properties", BUNDLE_PATH)); //$NON-NLS-1$
         return resource;
+    }
+
+    /**
+     * Returns help message keys.
+     * @return message keys
+     */
+    public Collection<String> getKeys() {
+        return messages.stringPropertyNames();
     }
 
     /**
