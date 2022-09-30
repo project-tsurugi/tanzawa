@@ -41,13 +41,13 @@ public class HelpCommand extends SpecialCommand {
     }
 
     @Override
-    protected void collectCompleterCandidate(List<List<String>> result) {
+    protected void collectCompleterCandidate(List<CompleterCandidateWords> result) {
         var list = createCompleterCandidateList();
         result.addAll(list);
     }
 
-    private static List<List<String>> createCompleterCandidateList() {
-        var result = new ArrayList<List<String>>();
+    private static List<CompleterCandidateWords> createCompleterCandidateList() {
+        var result = new ArrayList<CompleterCandidateWords>();
 
         String helpCommand = "\\help"; //$NON-NLS-1$
 
@@ -59,13 +59,13 @@ public class HelpCommand extends SpecialCommand {
                 List<String> keyWords = List.of(key.split(Pattern.quote("."))); //$NON-NLS-1$
                 assert keyWords.size() >= 2;
 
-                var candidate = new ArrayList<String>(keyWords.size());
+                var candidate = new CompleterCandidateWords(true);
                 candidate.add(helpCommand);
                 if (special) {
                     candidate.add(SpecialCommand.COMMAND_PREFIX + keyWords.get(1));
-                    candidate.addAll(keyWords.subList(2, keyWords.size()));
+                    candidate.addAll(keyWords, 2);
                 } else {
-                    candidate.addAll(keyWords.subList(1, keyWords.size()));
+                    candidate.addAll(keyWords, 1);
                 }
 
                 result.add(candidate);
@@ -73,7 +73,7 @@ public class HelpCommand extends SpecialCommand {
         }
 
         if (result.isEmpty()) {
-            result.add(List.of(helpCommand));
+            result.add(new CompleterCandidateWords(helpCommand, true));
         }
 
         return result;

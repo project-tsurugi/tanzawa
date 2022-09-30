@@ -2,9 +2,6 @@ package com.tsurugidb.console.cli.repl.jline;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-
-import javax.annotation.Nullable;
 
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
@@ -28,16 +25,21 @@ public class ReplJLineCompleter implements Completer {
         }
     }
 
-    private static List<List<String>> specialCommandCandidateList = null;
+    private static List<SimpleCompleterCandidate> specialCommandCandidateList = null;
 
     private void completeSpecialCommand(String line, List<Candidate> candidates) {
         if (specialCommandCandidateList == null) {
-            specialCommandCandidateList = SpecialCommand.getCompleterCandidateList();
+            var list = SpecialCommand.getCompleterCandidateList();
+            var temp = new ArrayList<SimpleCompleterCandidate>(list.size());
+            for (var candidate : list) {
+                temp.add(new SimpleCompleterCandidate(candidate.getWords(), candidate.getEnd()));
+            }
+            specialCommandCandidateList = temp;
         }
         collectCandidate(line, specialCommandCandidateList, candidates);
     }
 
-    private static List<List<String>> sqCandidateList = null;
+    private static List<SimpleCompleterCandidate> sqCandidateList = null;
 
     private void completeSqlCommand(String line, List<Candidate> candidates) {
         // FIXME use SQL parser
@@ -48,8 +50,8 @@ public class ReplJLineCompleter implements Completer {
         collectCandidate(line, sqCandidateList, candidates);
     }
 
-    private static List<List<String>> getSqCandidateList() {
-        var result = new ArrayList<List<String>>();
+    private static List<SimpleCompleterCandidate> getSqCandidateList() {
+        var result = new ArrayList<SimpleCompleterCandidate>();
 
         addTx(result, "start transaction");
         addTx(result, "start long transaction");
@@ -75,7 +77,7 @@ public class ReplJLineCompleter implements Completer {
         return result;
     }
 
-    private static void addTx(List<List<String>> result, String base) {
+    private static void addTx(List<SimpleCompleterCandidate> result, String base) {
         String[] optionList = { //
                 "read only deferrable", //
                 "read write", //
@@ -96,53 +98,22 @@ public class ReplJLineCompleter implements Completer {
         }
     }
 
-    private static void add(List<List<String>> result, String candidate) {
-        result.add(List.of(toWordList(candidate.trim().toLowerCase(Locale.ENGLISH))));
+    private static void add(List<SimpleCompleterCandidate> result, String candidateLine) {
+        String words = candidateLine.trim();
+        boolean end = candidateLine.endsWith(";");
+        var candidate = new SimpleCompleterCandidate(words, end);
+        result.add(candidate);
     }
 
-    private void collectCandidate(String line, List<List<String>> candidateList, List<Candidate> candidates) {
-        var inputWords = toWordList(line);
-        for (var candidateWords : candidateList) {
-            String word = getCandidateWord(inputWords, candidateWords);
-            if (word != null) {
-                boolean complete = word.endsWith(";");
-                candidates.add(new Candidate(word, word, null, null, null, null, !complete));
+    private void collectCandidate(String line, List<SimpleCompleterCandidate> candidateList, List<Candidate> candidates) {
+        var inputWords = SimpleCompleterCandidate.toWordList(line);
+        for (var candidate : candidateList) {
+            var result = candidate.findCandidateWord(inputWords);
+            if (result != null) {
+                String word = result.word();
+                boolean end = result.end();
+                candidates.add(new Candidate(word, word, null, null, null, null, !end));
             }
         }
-    }
-
-    /* private */ static String[] toWordList(String line) {
-        String[] words = line.split("[ \t]+", -1); //$NON-NLS-1$
-        return words;
-    }
-
-    @Nullable
-    /* private */ static String getCandidateWord(String[] inputWords, List<String> candidateWords) {
-        if (inputWords.length > candidateWords.size()) {
-            return null;
-        }
-        for (int i = 0; i < inputWords.length; i++) {
-            String inputWord = inputWords[i].toLowerCase(Locale.ENGLISH);
-            String candidate = candidateWords.get(i);
-            if (inputWord.equals(candidate)) {
-                if (i == inputWords.length - 1) {
-                    return candidate;
-                }
-                continue;
-            }
-
-            if (i == inputWords.length - 1) {
-                if (candidate.startsWith(inputWord)) {
-                    return candidate;
-                }
-            }
-            return null;
-        }
-
-        int i = inputWords.length;
-        if (i < candidateWords.size()) {
-            return candidateWords.get(i);
-        }
-        return null;
     }
 }

@@ -168,8 +168,8 @@ public abstract class SpecialCommand {
      * 
      * @return candidates
      */
-    public static List<List<String>> getCompleterCandidateList() {
-        var result = new ArrayList<List<String>>();
+    public static List<CompleterCandidateWords> getCompleterCandidateList() {
+        var result = new ArrayList<CompleterCandidateWords>();
         for (var command : COMMAND_LIST) {
             command.collectCompleterCandidate(result);
         }
@@ -181,10 +181,10 @@ public abstract class SpecialCommand {
      * 
      * @param result candidates
      */
-    protected void collectCompleterCandidate(List<List<String>> result) {
+    protected void collectCompleterCandidate(List<CompleterCandidateWords> result) {
         var list = getCommandNameList();
         for (String name : list) {
-            result.add(List.of(COMMAND_PREFIX + name));
+            result.add(new CompleterCandidateWords(COMMAND_PREFIX + name, true));
         }
     }
 

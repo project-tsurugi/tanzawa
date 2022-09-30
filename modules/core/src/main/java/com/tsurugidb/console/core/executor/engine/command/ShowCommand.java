@@ -32,15 +32,21 @@ public class ShowCommand extends SpecialCommand {
 
     private static class SubCommand {
         private final String name;
+        private final boolean hasParameter;
         private final Executor executor;
 
-        SubCommand(String name, Executor executor) {
+        SubCommand(String name, boolean hasParameter, Executor executor) {
             this.name = name;
+            this.hasParameter = hasParameter;
             this.executor = executor;
         }
 
         String name() {
             return this.name;
+        }
+
+        boolean hasParameter() {
+            return this.hasParameter;
         }
 
         Executor executor() {
@@ -56,18 +62,19 @@ public class ShowCommand extends SpecialCommand {
     public ShowCommand() {
         super("show"); //$NON-NLS-1$
 
-        add("table", ShowCommand::executeShowTable); //$NON-NLS-1$
-        add("transaction", ShowCommand::executeShowTransaction); //$NON-NLS-1$
+        add("table", true, ShowCommand::executeShowTable); //$NON-NLS-1$
+        add("transaction", false, ShowCommand::executeShowTransaction); //$NON-NLS-1$
     }
 
-    private void add(String name, Executor executor) {
-        subCommandList.add(new SubCommand(toLowerCase(name), executor));
+    private void add(String name, boolean hasParameter, Executor executor) {
+        subCommandList.add(new SubCommand(toLowerCase(name), hasParameter, executor));
     }
 
     @Override
-    protected void collectCompleterCandidate(List<List<String>> result) {
+    protected void collectCompleterCandidate(List<CompleterCandidateWords> result) {
+        String showCommand = "\\show"; //$NON-NLS-1$
         for (var command : subCommandList) {
-            result.add(List.of("\\show", command.name())); //$NON-NLS-1$
+            result.add(new CompleterCandidateWords(showCommand, command.name(), !command.hasParameter()));
         }
     }
 
