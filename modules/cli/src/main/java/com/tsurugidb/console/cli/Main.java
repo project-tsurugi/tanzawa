@@ -40,6 +40,13 @@ public final class Main {
      * @throws Exception if exception was occurred
      */
     public static void main(String... args) throws Exception {
+        int exitCode = execute(args);
+        if (exitCode != 0) {
+            System.exit(exitCode);
+        }
+    }
+
+    private static int execute(String[] args) throws Exception {
         var consoleArgument = new ConsoleArgument();
         var execArgument = new ExecArgument();
         var scriptArgument = new ScriptArgument();
@@ -49,13 +56,13 @@ public final class Main {
                 .addCommand(EXEC, execArgument) //
                 .addCommand(SCRIPT, scriptArgument) //
                 .build();
-        main: try (Closeable c0 = () -> ReplJLineTerminal.close()) {
+        try (Closeable c0 = () -> ReplJLineTerminal.close()) {
             commander.parse(args);
 
             String command = commander.getParsedCommand();
             if (command == null) {
                 commander.usage();
-                return; // exit(0)
+                return 0;
             }
             switch (command) {
             case CONSOLE:
@@ -70,7 +77,7 @@ public final class Main {
             default:
                 throw new AssertionError(command);
             }
-            return; // exit(0)
+            return 0;
         } catch (ParameterException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.error(e.getMessage(), e);
@@ -83,13 +90,13 @@ public final class Main {
                 var c = commander.getCommands().get(command);
                 if (c != null) {
                     c.usage();
-                    break main; // exit(1)
+                    return 1;
                 }
             }
 
             commander.usage();
+            return 1;
         }
-        System.exit(1);
     }
 
     private static void executeConsole(JCommander commander, ConsoleArgument argument) throws Exception {
