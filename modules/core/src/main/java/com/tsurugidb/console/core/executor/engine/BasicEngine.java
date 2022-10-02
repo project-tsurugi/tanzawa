@@ -20,6 +20,7 @@ import com.tsurugidb.console.core.executor.sql.SqlProcessor;
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement;
+import com.tsurugidb.console.core.model.ExplainStatement;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.StartTransactionStatement;
 import com.tsurugidb.console.core.model.Statement;
@@ -64,7 +65,7 @@ public class BasicEngine extends AbstractEngine {
 
     /**
      * get sql processor.
-     * 
+     *
      * @return sql processor
      */
     public SqlProcessor getSqlProcessor() {
@@ -135,6 +136,12 @@ public class BasicEngine extends AbstractEngine {
         return true;
     }
 
+    /**
+     * Executes {@code commit} operation implicitly.
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while executing the statement
+     * @throws InterruptedException if interrupted while executing the statement
+     */
     protected void executeCommitImplicitly() throws ServerException, IOException, InterruptedException {
         var status = SqlRequest.CommitStatus.COMMIT_STATUS_UNSPECIFIED;
         sqlProcessor.commitTransaction(status);
@@ -152,6 +159,12 @@ public class BasicEngine extends AbstractEngine {
         return true;
     }
 
+    /**
+     * Executes {@code rollback} operation implicitly.
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while executing the statement
+     * @throws InterruptedException if interrupted while executing the statement
+     */
     protected void executeRollbackImplicitly() throws ServerException, IOException, InterruptedException {
         sqlProcessor.rollbackTransaction();
         reporter.reportTransactionRollbackedImplicitly();
@@ -161,6 +174,14 @@ public class BasicEngine extends AbstractEngine {
     protected boolean executeCallStatement(@Nonnull CallStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         // fall-back
         return executeGenericStatement(statement);
+    }
+
+    @Override
+    protected boolean executeExplainStatement(@Nonnull ExplainStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+        Objects.requireNonNull(statement);
+        LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
+        // FIXME: impl
+        return true;
     }
 
     @Override
@@ -244,7 +265,7 @@ public class BasicEngine extends AbstractEngine {
 
     /**
      * Check transaction inactive.
-     * 
+     *
      * @param statement the target statement
      * @throws EngineException if transaction is active
      */

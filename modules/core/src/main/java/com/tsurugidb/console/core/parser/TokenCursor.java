@@ -34,11 +34,29 @@ class TokenCursor {
 
     Region region(int offset) {
         var token = checkOffset(offset);
+        return regionOf(token);
+    }
+
+    private Region regionOf(TokenInfo token) {
         return new Region(
                 segment.getOffset() + token.getOffset(),
                 token.getLength(),
                 token.getStartLine(),
                 token.getStartColumn());
+    }
+
+    Region lastRegion() {
+        var ts = segment.getTokens();
+        if (ts.isEmpty()) {
+            throw new IndexOutOfBoundsException();
+        }
+        for (int i = ts.size() - 1; i >= 0; --i) {
+            var t = ts.get(i);
+            if (t.getKind() != TokenKind.END_OF_STATEMENT) {
+                return regionOf(t);
+            }
+        }
+        return regionOf(ts.get(0));
     }
 
     String text(int offset) {

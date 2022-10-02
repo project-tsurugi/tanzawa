@@ -67,6 +67,12 @@ public class ErroneousStatement implements Statement {
         UNKNOWN_COMMIT_STATUS,
 
         /**
+         * explain statement does not contain an explain target body.
+         * @see ExplainStatement#getBody()
+         */
+        MISSING_EXPLAIN_BODY,
+
+        /**
          * invalid special command.
          * @see SpecialStatement#getCommandName()
          */
