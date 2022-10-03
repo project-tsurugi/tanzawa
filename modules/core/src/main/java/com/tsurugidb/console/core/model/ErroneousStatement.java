@@ -73,6 +73,12 @@ public class ErroneousStatement implements Statement {
         MISSING_EXPLAIN_BODY,
 
         /**
+         * unknown explain statement option was specified.
+         * @see ExplainStatement#getOptions()
+         */
+        UNKNOWN_EXPLAIN_OPTION,
+
+        /**
          * invalid special command.
          * @see SpecialStatement#getCommandName()
          */

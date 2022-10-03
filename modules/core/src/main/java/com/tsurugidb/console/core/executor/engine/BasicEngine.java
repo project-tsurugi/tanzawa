@@ -24,8 +24,12 @@ import com.tsurugidb.console.core.model.ExplainStatement;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.StartTransactionStatement;
 import com.tsurugidb.console.core.model.Statement;
+import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.exception.ServerException;
+import com.tsurugidb.tsubakuro.explain.PlanGraph;
+import com.tsurugidb.tsubakuro.explain.PlanGraphException;
+import com.tsurugidb.tsubakuro.explain.json.JsonPlanGraphLoader;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -180,7 +184,34 @@ public class BasicEngine extends AbstractEngine {
     protected boolean executeExplainStatement(@Nonnull ExplainStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
-        // FIXME: impl
+
+        for (var entry : statement.getOptions().entrySet()) {
+            return execute(new ErroneousStatement(
+                    statement.getText(),
+                    statement.getRegion(),
+                    ErrorKind.UNKNOWN_EXPLAIN_OPTION,
+                    entry.getKey().getRegion(),
+                    MessageFormat.format(
+                            "unrecognized explain option: \"{0}\"",
+                            entry.getKey().getValue())));
+        }
+        var metadata = sqlProcessor.explain(statement.getBody().getText(), statement.getBody().getRegion());
+        LOG.debug("explain format: id={}, version={}", metadata.getFormatId(), metadata.getFormatVersion()); //$NON-NLS-1$
+        LOG.trace("explain contents: {}", metadata.getContents()); //$NON-NLS-1$
+
+        // FIXME: extract configurations from explain options
+        var loader = JsonPlanGraphLoader.newBuilder()
+                .build();
+        PlanGraph graph;
+        try {
+            graph = loader.load(metadata.getFormatId(), metadata.getFormatVersion(), metadata.getContents());
+        } catch (PlanGraphException e) {
+            throw new EngineException(MessageFormat.format(
+                    "unrecognized explain result: format-id={0}, format-version={1}",
+                    metadata.getFormatId(),
+                    metadata.getFormatVersion()), e);
+        }
+        reporter.reportExecutionPlan(statement.getBody().getText(), graph);
         return true;
     }
 

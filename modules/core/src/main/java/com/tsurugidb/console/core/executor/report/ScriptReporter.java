@@ -2,14 +2,17 @@ package com.tsurugidb.console.core.executor.report;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 import com.tsurugidb.tsubakuro.exception.ServerException;
+import com.tsurugidb.tsubakuro.explain.PlanGraph;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 
 /**
@@ -198,7 +201,7 @@ public abstract class ScriptReporter {
 
     /**
      * output message for table metadata.
-     * 
+     *
      * @param specifiedTableName table name
      * @param data               metadata
      */
@@ -251,6 +254,19 @@ public abstract class ScriptReporter {
         default:
             return null;
         }
+    }
+
+    /**
+     * displays execution plan.
+     * @param source the source program
+     * @param plan the inspected plan
+     */
+    public void reportExecutionPlan(@Nonnull String source, @Nonnull PlanGraph plan) {
+        Objects.requireNonNull(source);
+        Objects.requireNonNull(plan);
+
+        // FIXME: display the execution plan
+        info(String.valueOf(plan));
     }
 
     /**

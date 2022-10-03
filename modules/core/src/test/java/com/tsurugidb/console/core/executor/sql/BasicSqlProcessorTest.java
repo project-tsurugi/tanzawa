@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.sql.proto.SqlRequest;
-import com.tsurugidb.sql.proto.SqlResponse;
 import com.tsurugidb.sql.proto.SqlRequest.Placeholder;
+import com.tsurugidb.sql.proto.SqlResponse;
 import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlClient;

@@ -23,4 +23,13 @@ public class EngineException extends Exception {
     public EngineException(@Nullable String message) {
         super(message);
     }
+
+    /**
+     * Creates a new instance.
+     * @param message the exception message
+     * @param cause the original cause
+     */
+    public EngineException(@Nullable String message, @Nullable Throwable cause) {
+        super(message, cause);
+    }
 }
