@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
+import com.tsurugidb.console.core.model.ExplainStatement;
 import com.tsurugidb.console.core.model.Regioned;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.StartTransactionStatement;
@@ -884,6 +885,41 @@ class SegmentAnalyzerTest {
     }
 
     @Test
+    void explain_simple() throws Exception {
+        Statement s = analyze("EXPLAIN SELECT 1");
+        assertEquals(Statement.Kind.EXPLAIN, s.getKind());
+        var t = (ExplainStatement) s;
+        assertEquals("SELECT 1", t.getBody().getText());
+    }
+
+    @Test
+    void explain_options() throws Exception {
+        Statement s = analyze("EXPLAIN (a=true) SELECT 1");
+        assertEquals(Statement.Kind.EXPLAIN, s.getKind());
+        var t = (ExplainStatement) s;
+        assertEquals("SELECT 1", t.getBody().getText());
+        assertEquals(Map.of("a", Value.of(true)), unwrapMap(t.getOptions()));
+    }
+
+    @Test
+    void explain_options_multiple() throws Exception {
+        Statement s = analyze("EXPLAIN (a=true, b=1, c=id) SELECT 1");
+        assertEquals(Statement.Kind.EXPLAIN, s.getKind());
+        var t = (ExplainStatement) s;
+        assertEquals("SELECT 1", t.getBody().getText());
+        assertEquals(Map.of(
+                "a", Value.of(true),
+                "b", Value.of(1),
+                "c", Value.of("id")), unwrapMap(t.getOptions()));
+    }
+
+    @Test
+    void explain_missing_body() throws Exception {
+        ParseException e = assertThrows(ParseException.class, () -> analyze("EXPLAIN"));
+        assertEquals(ErrorKind.MISSING_EXPLAIN_BODY, e.getErrorKind());
+    }
+
+    @Test
     void special() throws Exception {
         Statement s = analyze("\\EXIT");
         assertEquals(Statement.Kind.SPECIAL, s.getKind());
@@ -1106,12 +1142,13 @@ class SegmentAnalyzerTest {
         return unwrapList(Optional.of(wrapped));
     }
 
-    private static <K> Map<K, Value> unwrapMap(Optional<Map<Regioned<K>, Optional<Regioned<Value>>>> wrapped) {
-        if (wrapped.isEmpty()) {
-            return null;
-        }
-        return wrapped.get().entrySet().stream()
+    private static <K> Map<K, Value> unwrapMap(Map<Regioned<K>, Optional<Regioned<Value>>> wrapped) {
+        return wrapped.entrySet().stream()
                 .map(it -> Map.entry(it.getKey().getValue(), it.getValue().map(Regioned::getValue).orElse(Value.of())))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private static <K> Map<K, Value> unwrapMap(Optional<Map<Regioned<K>, Optional<Regioned<Value>>>> wrapped) {
+        return wrapped.map(it -> unwrapMap(it)).orElse(null);
     }
 }

@@ -20,6 +20,7 @@ import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.CommitStatement.CommitStatus;
 import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
+import com.tsurugidb.console.core.model.ExplainStatement;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.console.core.model.Regioned;
 import com.tsurugidb.console.core.model.SimpleStatement;
@@ -83,6 +84,8 @@ final class SegmentAnalyzer {
 
     private static final String K_CALL = "CALL";
 
+    private static final String K_EXPLAIN = "EXPLAIN";
+
     static Statement analyze(@Nonnull Segment segment) throws ParseException {
         LOG.debug("analyze segment: {}", segment.getText()); //$NON-NLS-1$
         try {
@@ -138,9 +141,14 @@ final class SegmentAnalyzer {
             return analyzeRollback();
         }
         if (testNext(K_CALL)) {
-            LOG.trace("found call -> (try) call statement"); //$NON-NLS-1$
+            LOG.trace("found call -> call statement"); //$NON-NLS-1$
             cursor.consume(1);
             return analyzeCall();
+        }
+        if (testNext(K_EXPLAIN)) {
+            LOG.trace("found explain -> explain statement"); //$NON-NLS-1$
+            cursor.consume(1);
+            return analyzeExplain();
         }
         if (testNext(TokenKind.SPECIAL_COMMAND)) {
             LOG.trace("found special command -> special statement"); //$NON-NLS-1$
@@ -458,6 +466,33 @@ final class SegmentAnalyzer {
         return new SpecialStatement(segment.getText(), getSegmentRegion(), command, arguments);
     }
 
+    private Statement analyzeExplain() throws ParseException {
+        Map<Regioned<String>, Optional<Regioned<Value>>> options = Map.of();
+        if (testNext(TokenKind.LEFT_PAREN)) {
+            cursor.consume(1);
+            options = consumeKeyValuePairListBody();
+            expectNext(TokenKind.RIGHT_PAREN, ")"); //$NON-NLS-1$
+            cursor.consume(1);
+        }
+        if (testNext(TokenKind.END_OF_STATEMENT)) {
+            throw new ParseException(
+                    ErrorKind.MISSING_EXPLAIN_BODY,
+                    cursor.region(0),
+                    "unexpected end of statement");
+        }
+        var bodyStart = cursor.region(0);
+        var bodyLast = cursor.lastRegion();
+        return new ExplainStatement(segment.getText(), getSegmentRegion(), bodyStart.union(bodyLast), options);
+    }
+
+    private Region offset(Region region, int offset, int length) {
+        return new Region(
+                region.getPosition() + offset,
+                length,
+                region.getStartLine(),
+                region.getStartColumn() + length);
+    }
+
     private Regioned<String> consumeNameOrString() throws ParseException {
         if (testNext(TokenKind.REGULAR_IDENTIFIER) || testNext(TokenKind.DELIMITED_IDENTIFIER)) {
             return consumeName();
@@ -465,11 +500,10 @@ final class SegmentAnalyzer {
         if (testNext(TokenKind.CHARACTER_STRING_LITERAL)) {
             return consumeCharacterStringLiteral();
         }
-        TokenInfo token = cursor.token(0);
         throw new ParseException(ErrorKind.UNEXPECTED_TOKEN, cursor.region(0), MessageFormat.format(
                 "unexpected token \"{0}\" ({1}): expected name or character string",
-                segment.getText(token),
-                token.getKind()));
+                cursor.text(0),
+                cursor.token(0).getKind()));
     }
 
     private Regioned<String> consumeIdentifierOrString() throws ParseException {
@@ -479,11 +513,10 @@ final class SegmentAnalyzer {
         if (testNext(TokenKind.CHARACTER_STRING_LITERAL)) {
             return consumeCharacterStringLiteral();
         }
-        TokenInfo token = cursor.token(0);
         throw new ParseException(ErrorKind.UNEXPECTED_TOKEN, cursor.region(0), MessageFormat.format(
                 "unexpected token \"{0}\" ({1}): expected identifier or character string",
-                segment.getText(token),
-                token.getKind()));
+                cursor.text(0),
+                cursor.token(0).getKind()));
     }
 
     private Regioned<Value> consumeNameOrLiteral() throws ParseException {
@@ -633,7 +666,7 @@ final class SegmentAnalyzer {
             TokenInfo token = cursor.token(0);
             throw new ParseException(ErrorKind.UNEXPECTED_TOKEN, cursor.region(0), MessageFormat.format(
                     "unexpected token \"{0}\" ({1}): expected token is \"{2}\" ({3})",
-                    segment.getText(token),
+                    cursor.text(0),
                     token.getKind(),
                     symbol,
                     kind));
@@ -645,7 +678,7 @@ final class SegmentAnalyzer {
             TokenInfo token = cursor.token(0);
             throw new ParseException(ErrorKind.UNEXPECTED_TOKEN, cursor.region(0), MessageFormat.format(
                     "unexpected token \"{0}\" ({1}): expected end of statement",
-                    segment.getText(token),
+                    cursor.text(0),
                     token.getKind()));
         }
     }

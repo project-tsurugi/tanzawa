@@ -47,6 +47,12 @@ public interface Statement {
         CALL,
 
         /**
+         * {@code EXPLAIN} statement.
+         * @see ExplainStatement
+         */
+        EXPLAIN,
+
+        /**
          * {@code SPECIAL} statement.
          * @see SpecialStatement
          */
