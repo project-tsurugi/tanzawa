@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,10 +18,13 @@ import org.junit.jupiter.api.Test;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlResponse;
+import com.tsurugidb.sql.proto.SqlRequest.Placeholder;
 import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
+import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.Transaction;
+import com.tsurugidb.tsubakuro.sql.impl.BasicStatementMetadata;
 import com.tsurugidb.tsubakuro.sql.impl.ResultSetMetadataAdapter;
 import com.tsurugidb.tsubakuro.sql.impl.testing.Relation;
 import com.tsurugidb.tsubakuro.util.FutureResponse;
@@ -224,6 +228,42 @@ class BasicSqlProcessorTest {
         };
         try (var sql = new BasicSqlProcessor(client)) {
             assertThrows(IllegalStateException.class, () -> sql.execute("", new Region(0, 0, 0, 0)));
+        }
+    }
+
+    @Test
+    void explain() throws Exception {
+        var client = new SqlClient() {
+            private final PreparedStatement preparedStatement = createPreparedStatement(true);
+            private String preparedSource;
+
+            @Override
+            public FutureResponse<StatementMetadata> explain(String source) throws IOException {
+                return FutureResponse.returns(new BasicStatementMetadata("FID", -1, source, List.of()));
+            }
+
+            @Override
+            public FutureResponse<PreparedStatement> prepare(
+                    String source,
+                    Collection<? extends Placeholder> placeholders) throws IOException {
+                assertNull(preparedSource);
+                preparedSource = source;
+                return FutureResponse.returns(preparedStatement);
+            }
+
+            @Override
+            public FutureResponse<StatementMetadata> explain(
+                    PreparedStatement statement,
+                    Collection<? extends SqlRequest.Parameter> parameters) throws IOException {
+                assertSame(preparedStatement, statement);;
+                return explain(preparedSource);
+            }
+        };
+        try (var sql = new BasicSqlProcessor(client)) {
+            var metadata = sql.explain("SELECT 1", new Region(0, 0, 0, 0));
+            assertEquals("FID", metadata.getFormatId());
+            assertEquals(-1, metadata.getFormatVersion());
+            assertEquals("SELECT 1", metadata.getContents());
         }
     }
 

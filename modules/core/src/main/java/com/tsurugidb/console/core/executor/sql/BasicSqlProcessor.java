@@ -1,6 +1,7 @@
 package com.tsurugidb.console.core.executor.sql;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
@@ -15,6 +16,7 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.SqlServiceCode;
+import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 
@@ -31,7 +33,7 @@ public class BasicSqlProcessor implements SqlProcessor {
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param client the SQL client: It will be closed after this object was closed
      */
     public BasicSqlProcessor(@Nonnull SqlClient client) {
@@ -105,13 +107,26 @@ public class BasicSqlProcessor implements SqlProcessor {
     }
 
     @Override
+    public StatementMetadata explain(@Nonnull String statement, @Nonnull Region region)
+            throws ServerException, IOException, InterruptedException {
+        Objects.requireNonNull(statement);
+        Objects.requireNonNull(region);
+        // FIXME: SqlClient.explain(String) is not work
+        // https://github.com/project-tsurugi/tsubakuro/issues/169
+        LOG.debug("start explain: '{}'", statement);
+        try (var prepared = client.prepare(statement).await()) {
+            return client.explain(prepared, List.of()).await();
+        }
+    }
+
+    @Override
     public boolean isTransactionActive() {
         return transaction != null;
     }
 
     /**
      * Returns the running transaction.
-     * 
+     *
      * @return the running transaction, or {@code null} if there is no active transactions
      */
     public @Nullable Transaction getTransaction() {
