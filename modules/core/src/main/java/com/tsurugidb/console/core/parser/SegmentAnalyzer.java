@@ -485,14 +485,6 @@ final class SegmentAnalyzer {
         return new ExplainStatement(segment.getText(), getSegmentRegion(), bodyStart.union(bodyLast), options);
     }
 
-    private Region offset(Region region, int offset, int length) {
-        return new Region(
-                region.getPosition() + offset,
-                length,
-                region.getStartLine(),
-                region.getStartColumn() + length);
-    }
-
     private Regioned<String> consumeNameOrString() throws ParseException {
         if (testNext(TokenKind.REGULAR_IDENTIFIER) || testNext(TokenKind.DELIMITED_IDENTIFIER)) {
             return consumeName();
