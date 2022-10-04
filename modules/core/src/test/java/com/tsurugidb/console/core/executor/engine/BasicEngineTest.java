@@ -6,9 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 
@@ -22,9 +28,14 @@ import com.tsurugidb.console.core.parser.SqlParser;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlResponse;
 import com.tsurugidb.tsubakuro.exception.ServerException;
+import com.tsurugidb.tsubakuro.explain.PlanGraph;
+import com.tsurugidb.tsubakuro.explain.PlanNode;
+import com.tsurugidb.tsubakuro.explain.json.JsonPlanGraphLoader;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
+import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.Types;
+import com.tsurugidb.tsubakuro.sql.impl.BasicStatementMetadata;
 import com.tsurugidb.tsubakuro.sql.impl.ResultSetMetadataAdapter;
 import com.tsurugidb.tsubakuro.sql.impl.testing.Relation;
 
@@ -69,6 +80,12 @@ class BasicEngineTest {
 
         @Override
         public void rollbackTransaction() throws ServerException, IOException, InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public StatementMetadata explain(String statement, Region region)
+                throws ServerException, IOException, InterruptedException {
             throw new UnsupportedOperationException();
         }
     }
@@ -366,6 +383,84 @@ class BasicEngineTest {
     }
 
     @Test
+    void explain_statement() throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(true) {
+            @Override
+            public StatementMetadata explain(String statement, Region region) throws IOException {
+                assertEquals("SELECT 1", statement);
+                return new BasicStatementMetadata(
+                        JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
+                        1, // captured version of the explain result
+                        read("explain-find-filter-write.json"),
+                        List.of());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var reached = new AtomicBoolean();
+        var reporter = new BasicReporter() {
+            @Override
+            public void reportExecutionPlan(String source, PlanGraph plan) {
+                reached.set(true);
+                assertEquals("SELECT 1", source);
+                assertTrue(plan.getNodes().stream()
+                        .map(PlanNode::getKind)
+                        .anyMatch(Predicate.isEqual("find")));
+                assertTrue(plan.getNodes().stream()
+                        .map(PlanNode::getKind)
+                        .anyMatch(Predicate.isEqual("write")));
+            }
+        };
+        var engine = new BasicEngine(
+                new ScriptConfig(),
+                sql,
+                rs,
+                reporter);
+        var cont = engine.execute(parse("EXPLAIN SELECT 1"));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @Test
+    void explain_statement_invalid_option() throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(true);
+        MockResultProcessor rs = new MockResultProcessor();
+        var reporter = new BasicReporter();
+        var engine = new BasicEngine(
+                new ScriptConfig(),
+                sql,
+                rs,
+                reporter);
+        assertThrows(
+                EngineException.class,
+                () -> engine.execute(parse("EXPLAIN (INVALID_OPTION=TRUE) SELECT 1")));
+    }
+
+    @Test
+    void explain_statement_unsupported_format() throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(true) {
+            @Override
+            public StatementMetadata explain(String statement, Region region) throws IOException {
+                assertEquals("SELECT 1", statement);
+                return new BasicStatementMetadata(
+                        "ERRONEOUS_FORMAT",
+                        0,
+                        "BROKEN",
+                        List.of());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var reporter = new BasicReporter();
+        var engine = new BasicEngine(
+                new ScriptConfig(),
+                sql,
+                rs,
+                reporter);
+        assertThrows(
+                EngineException.class,
+                () -> engine.execute(parse("EXPLAIN SELECT 1")));
+    }
+
+    @Test
     void special_statement_exit() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
@@ -479,6 +574,21 @@ class BasicEngineTest {
     private static Statement parse(String text) throws IOException {
         try (var parser = new SqlParser(new StringReader(text))) {
             return parser.next();
+        }
+    }
+
+    private static String read(String path) throws IOException {
+        var resource = BasicEngineTest.class.getResource(path);
+        if (resource == null) {
+            throw new FileNotFoundException(path);
+        }
+        try (
+            var input = resource.openStream();
+            var reader = new InputStreamReader(input, StandardCharsets.UTF_8);
+            var writer = new StringWriter();
+        ) {
+            reader.transferTo(writer);
+            return writer.toString();
         }
     }
 }

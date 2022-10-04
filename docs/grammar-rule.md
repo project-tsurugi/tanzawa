@@ -25,6 +25,7 @@
                   |  <commit-statement>
                   |  <rollback-statement>
                   |  <call-statement>
+                  |  <explain-statement>
                   |  /* empty statement */
 
 <SQL-statement> ::= (any text until <statement-delimiter>)
@@ -71,6 +72,9 @@
 <call-statement> ::= "CALL" <identifier> "(" <call-parameter-list>? ")"
 
 <call-parameter-list> :: <value> ( "," <value> )*
+
+<call-statement> ::= "EXPLAIN" <SQL-statement>
+                  |  "EXPLAIN" "(" <key-value-pair-list> ")" <SQL-statement>
 
 <value> ::= <literal>
          |  <name>

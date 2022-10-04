@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
+import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.util.ServerResource;
 import com.tsurugidb.console.core.model.Region;
@@ -79,6 +80,19 @@ public interface SqlProcessor extends ServerResource {
      * @throws InterruptedException if interrupted while committing the transaction
      */
     void rollbackTransaction() throws ServerException, IOException, InterruptedException;
+
+    /**
+     * Inspects a SQL statement.
+     * @param statement the target SQL statement text
+     * @param region the region of the statement in the document
+     * @return the inspected metadata of the statement
+     * @throws ServerException if server side error was occurred
+     * @throws IOException if I/O error was occurred while inspecting the statement
+     * @throws InterruptedException if interrupted while inspecting the statement
+     */
+    StatementMetadata explain(
+            @Nonnull String statement,
+            @Nullable Region region) throws ServerException, IOException, InterruptedException;
 
     @Override
     default void close() throws ServerException, IOException, InterruptedException {

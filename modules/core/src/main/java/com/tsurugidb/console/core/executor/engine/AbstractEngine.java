@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement;
+import com.tsurugidb.console.core.model.ExplainStatement;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.StartTransactionStatement;
 import com.tsurugidb.console.core.model.Statement;
@@ -34,6 +35,8 @@ public abstract class AbstractEngine implements Engine {
             return executeGenericStatement(statement);
         case CALL:
             return executeCallStatement((CallStatement) statement);
+        case EXPLAIN:
+            return executeExplainStatement((ExplainStatement) statement);
         case SPECIAL:
             return executeSpecialStatement((SpecialStatement) statement);
         case ERRONEOUS:
@@ -44,7 +47,7 @@ public abstract class AbstractEngine implements Engine {
 
     /**
      * Executes an erroneous statement.
-     * 
+     *
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested
      * @throws EngineException      if error occurred in engine itself
@@ -56,7 +59,7 @@ public abstract class AbstractEngine implements Engine {
 
     /**
      * Executes a special statement.
-     * 
+     *
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested
      * @throws EngineException      if error occurred in engine itself
@@ -68,7 +71,7 @@ public abstract class AbstractEngine implements Engine {
 
     /**
      * Executes a call statement.
-     * 
+     *
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested
      * @throws EngineException      if error occurred in engine itself
@@ -79,8 +82,20 @@ public abstract class AbstractEngine implements Engine {
     protected abstract boolean executeCallStatement(@Nonnull CallStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
 
     /**
+     * Executes an explain statement.
+     *
+     * @param statement the target statement
+     * @return {@code true} to continue execution, {@code false} if shutdown was requested
+     * @throws EngineException      if error occurred in engine itself
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while executing the statement
+     * @throws InterruptedException if interrupted while executing the statement
+     */
+    protected abstract boolean executeExplainStatement(@Nonnull ExplainStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
+
+    /**
      * Executes a rollback statement.
-     * 
+     *
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested
      * @throws EngineException      if error occurred in engine itself
@@ -92,7 +107,7 @@ public abstract class AbstractEngine implements Engine {
 
     /**
      * Executes a commit statement.
-     * 
+     *
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested
      * @throws EngineException      if error occurred in engine itself
@@ -104,7 +119,7 @@ public abstract class AbstractEngine implements Engine {
 
     /**
      * Executes a start transaction statement.
-     * 
+     *
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested
      * @throws EngineException      if error occurred in engine itself
@@ -116,7 +131,7 @@ public abstract class AbstractEngine implements Engine {
 
     /**
      * Executes a generic statement.
-     * 
+     *
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested
      * @throws EngineException      if error occurred in engine itself
@@ -128,7 +143,7 @@ public abstract class AbstractEngine implements Engine {
 
     /**
      * Executes an empty statement.
-     * 
+     *
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested
      * @throws EngineException      if error occurred in engine itself
