@@ -256,17 +256,22 @@ public abstract class ScriptReporter {
         }
     }
 
+    private PlanGraphReporter planGraphReporter;
+
     /**
      * displays execution plan.
+     *
      * @param source the source program
-     * @param plan the inspected plan
+     * @param plan   the inspected plan
      */
     public void reportExecutionPlan(@Nonnull String source, @Nonnull PlanGraph plan) {
         Objects.requireNonNull(source);
         Objects.requireNonNull(plan);
 
-        // FIXME: display the execution plan
-        info(String.valueOf(plan));
+        if (this.planGraphReporter == null) {
+            this.planGraphReporter = new PlanGraphReporter(message -> info(message));
+        }
+        planGraphReporter.report(source, plan);
     }
 
     /**

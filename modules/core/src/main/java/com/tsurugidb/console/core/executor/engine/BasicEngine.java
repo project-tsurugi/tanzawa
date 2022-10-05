@@ -20,11 +20,11 @@ import com.tsurugidb.console.core.executor.sql.SqlProcessor;
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement;
+import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.console.core.model.ExplainStatement;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.StartTransactionStatement;
 import com.tsurugidb.console.core.model.Statement;
-import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.explain.PlanGraph;
@@ -207,7 +207,8 @@ public class BasicEngine extends AbstractEngine {
             graph = loader.load(metadata.getFormatId(), metadata.getFormatVersion(), metadata.getContents());
         } catch (PlanGraphException e) {
             throw new EngineException(MessageFormat.format(
-                    "unrecognized explain result: format-id={0}, format-version={1}",
+                    "unrecognized explain result: {0}; format-id={1}, format-version={2}",
+                    e.getMessage(),
                     metadata.getFormatId(),
                     metadata.getFormatVersion()), e);
         }

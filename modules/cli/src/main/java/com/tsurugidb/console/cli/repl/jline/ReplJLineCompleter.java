@@ -69,10 +69,8 @@ public class ReplJLineCompleter implements Completer {
 
         add(result, "create table");
         add(result, "drop table");
-        add(result, "select");
-        add(result, "insert into");
-        add(result, "update");
-        add(result, "delete from");
+        addDml(result, "");
+        addDml(result, "explain ");
 
         return result;
     }
@@ -96,6 +94,13 @@ public class ReplJLineCompleter implements Completer {
                 add(result, base + " execute " + option1 + " " + option2);
             }
         }
+    }
+
+    private static void addDml(List<SimpleCompleterCandidate> result, String base) {
+        add(result, base + "select");
+        add(result, base + "insert into");
+        add(result, base + "update");
+        add(result, base + "delete from");
     }
 
     private static void add(List<SimpleCompleterCandidate> result, String candidateLine) {
