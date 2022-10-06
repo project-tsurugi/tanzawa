@@ -50,10 +50,10 @@ public class PlanGraphReporter {
 
     protected Map<PlanNode, ReportNode> createRefMap(PlanGraph plan) {
         var refMap = new IdentityHashMap<PlanNode, ReportNode>();
-        for (var node : plan.getNodes()) {
-            if (node.getUpstreams().size() >= 2) {
-                var wrap = new ReportNode(node);
-                refMap.put(node, wrap);
+        for (var planNode : plan.getNodes()) {
+            if (planNode.getUpstreams().size() >= 2) {
+                var node = new ReportNode(planNode);
+                refMap.put(planNode, node);
             }
         }
         return refMap;
@@ -62,9 +62,9 @@ public class PlanGraphReporter {
     protected List<ReportNode> createRootNode(PlanGraph plan, Map<PlanNode, ReportNode> refMap) {
         var rawList = plan.getSources();
         var rootList = new ArrayList<ReportNode>(rawList.size());
-        for (var rawNode : rawList) {
-            var wrap = new ReportNode(rawNode, refMap);
-            rootList.add(wrap);
+        for (var planNode : rawList) {
+            var node = new ReportNode(planNode, refMap);
+            rootList.add(node);
         }
         return rootList;
     }
@@ -88,7 +88,7 @@ public class PlanGraphReporter {
     }
 
     protected class ReportNode {
-        private final PlanNode rawNode;
+        private final PlanNode planNode;
         private final ReportNode reference;
         private final List<ReportNode> prevList; // use referenced-node only
         private List<ReportNode> nextList;
@@ -102,7 +102,7 @@ public class PlanGraphReporter {
          * @param node PlanNode
          */
         public ReportNode(PlanNode node) {
-            this.rawNode = node;
+            this.planNode = node;
             this.reference = null;
             this.prevList = new ArrayList<>();
         }
@@ -114,7 +114,7 @@ public class PlanGraphReporter {
          * @param refMap referenced-node map
          */
         public ReportNode(PlanNode node, Map<PlanNode, ReportNode> refMap) {
-            this.rawNode = node;
+            this.planNode = node;
             this.reference = refMap.get(node);
             this.prevList = null;
             initialize(refMap);
@@ -141,13 +141,22 @@ public class PlanGraphReporter {
                 this.nextList = List.of();
                 reference.initialize(refMap);
             } else {
-                var rawList = rawNode.getDownstreams();
+                var rawList = planNode.getDownstreams();
                 this.nextList = new ArrayList<>(rawList.size());
-                for (var rawChild : rawList) {
-                    var child = new ReportNode(rawChild, refMap);
-                    nextList.add(child);
+                for (var rawNext : rawList) {
+                    var next = new ReportNode(rawNext, refMap);
+                    nextList.add(next);
                 }
             }
+        }
+
+        /**
+         * get {@link PlanNode}.
+         *
+         * @return PlanNode
+         */
+        public PlanNode getPlanNode() {
+            return this.planNode;
         }
 
         /**
@@ -194,7 +203,9 @@ public class PlanGraphReporter {
                 this.nodeId = givenId;
 
                 if (reference.isLast(this)) {
-                    var nextId = new NodeId(0, null, seed.incrementAndGet());
+//                  int tab = reference.getPrevList().stream().mapToInt(node -> node.getNodeId().tab()).min().getAsInt();
+                    int tab = 0;
+                    var nextId = new NodeId(tab, null, seed.incrementAndGet());
                     reference.assignNodeId(nextId, seed);
                 }
                 return;
@@ -365,11 +376,11 @@ public class PlanGraphReporter {
     }
 
     protected void reportPlanNode(NodeId nodeId, ReportNode node, boolean reportPrevId) {
-        var rawNode = node.rawNode;
+        var planNode = node.getPlanNode();
         String tab = getTabText(nodeId.tab());
-        String title = rawNode.getTitle();
-        String kind = rawNode.getKind();
-        String attributes = getPlanNodeAttributesText(rawNode);
+        String title = planNode.getTitle();
+        String kind = planNode.getKind();
+        String attributes = getPlanNodeAttributesText(planNode);
         String fromText = getPrevIdText(node, reportPrevId);
         var message = MessageFormat.format("{0}{1}. {2} ({3}){4}{5}", tab, nodeId, title, kind, attributes, fromText);
         messageReporter.accept(message);
