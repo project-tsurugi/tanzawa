@@ -2,10 +2,10 @@ package com.tsurugidb.console.core.executor.report;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.tsurugidb.tsubakuro.explain.PlanGraph;
+import com.tsurugidb.tsubakuro.explain.PlanGraphUtil;
 import com.tsurugidb.tsubakuro.explain.PlanNode;
 
 /**
@@ -39,11 +40,17 @@ public class PlanGraphReporter {
      */
     public void report(@Nonnull String source, @Nonnull PlanGraph plan) {
         var refMap = createRefMap(plan);
-        var rootList = createRootNode(plan, refMap);
+        var comparator = createComparator(plan);
+        var rootList = createRootNode(plan, refMap, comparator);
 
-        assignNodeId(rootList, refMap);
+        var nodeList = new ArrayList<ReportNode>(rootList.size() + refMap.size());
+        nodeList.addAll(rootList);
+        nodeList.addAll(refMap.values());
+        nodeList.sort(comparator);
 
-        for (var node : rootList) {
+        assignNodeId(nodeList);
+
+        for (var node : nodeList) {
             node.report();
         }
     }
@@ -59,31 +66,50 @@ public class PlanGraphReporter {
         return refMap;
     }
 
-    protected List<ReportNode> createRootNode(PlanGraph plan, Map<PlanNode, ReportNode> refMap) {
+    protected Comparator<ReportNode> createComparator(PlanGraph plan) {
+        var sortedRawList = PlanGraphUtil.sort(plan.getNodes());
+
+        var orderMap = new IdentityHashMap<PlanNode, Integer>(sortedRawList.size());
+        int order = 0;
+        for (var planNode : sortedRawList) {
+            orderMap.put(planNode, order++);
+        }
+
+        return (node1, node2) -> {
+            int order1 = orderMap.get(node1.getPlanNode());
+            int order2 = orderMap.get(node2.getPlanNode());
+            return Integer.compare(order1, order2);
+        };
+    }
+
+    protected List<ReportNode> createRootNode(PlanGraph plan, Map<PlanNode, ReportNode> refMap, Comparator<ReportNode> comparator) {
         var rawList = plan.getSources();
         var rootList = new ArrayList<ReportNode>(rawList.size());
         for (var planNode : rawList) {
-            var node = new ReportNode(planNode, refMap);
+            var node = new ReportNode(planNode, refMap, comparator);
             rootList.add(node);
         }
         return rootList;
     }
 
-    protected void assignNodeId(List<ReportNode> rootList, Map<PlanNode, ReportNode> refMap) {
-        for (var node : rootList) {
+    protected void assignNodeId(List<ReportNode> nodeList) {
+        for (var node : nodeList) {
             node.normalizeChildList();
         }
 
-        var seed = new AtomicInteger(0);
-        if (rootList.size() == 1 && refMap.isEmpty()) {
-            var root = rootList.get(0);
-            var nodeId = new NodeId(-1, null, 0);
-            root.assignNodeId(nodeId, seed);
-        } else {
-            for (var node : rootList) {
-                var nodeId = new NodeId(0, null, seed.incrementAndGet());
-                node.assignNodeId(nodeId, seed);
+        if (nodeList.size() == 1) {
+            var root = nodeList.get(0);
+            if (root.hasChild()) {
+                var nodeId = new NodeId(-1, null, 0);
+                root.assignNodeId(nodeId);
+                return;
             }
+        }
+
+        int i = 0;
+        for (var node : nodeList) {
+            var nodeId = new NodeId(0, null, ++i);
+            node.assignNodeId(nodeId);
         }
     }
 
@@ -110,14 +136,19 @@ public class PlanGraphReporter {
         /**
          * Creates a new instance.
          *
-         * @param node   PlanNode
-         * @param refMap referenced-node map
+         * @param node       PlanNode
+         * @param refMap     referenced-node map
+         * @param comparator comparator of {@link ReportNode}
          */
-        public ReportNode(PlanNode node, Map<PlanNode, ReportNode> refMap) {
+        public ReportNode(PlanNode node, Map<PlanNode, ReportNode> refMap, Comparator<ReportNode> comparator) {
             this.planNode = node;
             this.reference = refMap.get(node);
             this.prevList = null;
-            initialize(refMap);
+
+            if (reference != null) {
+                reference.addPrev(this);
+            }
+            initialize(refMap, comparator);
         }
 
         private boolean initialized = false;
@@ -125,13 +156,10 @@ public class PlanGraphReporter {
         /**
          * initialize.
          *
-         * @param refMap referenced-node map
+         * @param refMap     referenced-node map
+         * @param comparator comparator of {@link ReportNode}
          */
-        public void initialize(Map<PlanNode, ReportNode> refMap) {
-            if (this.reference != null) {
-                reference.addPrev(this);
-            }
-
+        public void initialize(Map<PlanNode, ReportNode> refMap, Comparator<ReportNode> comparator) {
             if (this.initialized) {
                 return;
             }
@@ -139,14 +167,15 @@ public class PlanGraphReporter {
 
             if (this.reference != null) {
                 this.nextList = List.of();
-                reference.initialize(refMap);
+                reference.initialize(refMap, comparator);
             } else {
                 var rawList = planNode.getDownstreams();
                 this.nextList = new ArrayList<>(rawList.size());
                 for (var rawNext : rawList) {
-                    var next = new ReportNode(rawNext, refMap);
+                    var next = new ReportNode(rawNext, refMap, comparator);
                     nextList.add(next);
                 }
+                nextList.sort(comparator);
             }
         }
 
@@ -164,10 +193,6 @@ public class PlanGraphReporter {
          */
         public void normalizeChildList() {
             if (this.reference != null) {
-                if (reference.isLast(this)) {
-                    reference.normalizeChildList();
-                }
-                assert nextList.isEmpty();
                 return;
             }
 
@@ -196,18 +221,10 @@ public class PlanGraphReporter {
          * assign nodeId.
          *
          * @param givenId NodeId
-         * @param seed    assign number
          */
-        public void assignNodeId(NodeId givenId, AtomicInteger seed) {
+        public void assignNodeId(NodeId givenId) {
             if (this.reference != null) {
                 this.nodeId = givenId;
-
-                if (reference.isLast(this)) {
-//                  int tab = reference.getPrevList().stream().mapToInt(node -> node.getNodeId().tab()).min().getAsInt();
-                    int tab = 0;
-                    var nextId = new NodeId(tab, null, seed.incrementAndGet());
-                    reference.assignNodeId(nextId, seed);
-                }
                 return;
             }
 
@@ -218,7 +235,7 @@ public class PlanGraphReporter {
                 this.nodeId = givenId.child(++i);
                 for (var child : childList) {
                     var childId = givenId.child(++i);
-                    child.assignNodeId(childId, seed);
+                    child.assignNodeId(childId);
                 }
 
                 assert nextList.isEmpty();
@@ -230,7 +247,7 @@ public class PlanGraphReporter {
             int i = 0;
             for (var next : nextList) {
                 var nextId = givenId.child(++i);
-                next.assignNodeId(nextId, seed);
+                next.assignNodeId(nextId);
             }
         }
 
@@ -248,10 +265,6 @@ public class PlanGraphReporter {
 
             if (this.reference != null) {
                 reportRefPlanNode(nodeId, this, reference, reportPrevId);
-
-                if (reference.isLast(this)) {
-                    reference.report();
-                }
                 return;
             }
 
@@ -271,6 +284,15 @@ public class PlanGraphReporter {
         }
 
         /**
+         * whether childList is empty.
+         *
+         * @return {@code true} if childList exists
+         */
+        public boolean hasChild() {
+            return childList != null;
+        }
+
+        /**
          * get group NodeId.
          *
          * @return groupId
@@ -278,6 +300,16 @@ public class PlanGraphReporter {
         @Nullable
         public NodeId getGroupId() {
             return this.groupId;
+        }
+
+        /**
+         * get nodeId.
+         *
+         * @return nodeId
+         */
+        @Nullable
+        public NodeId getNodeId() {
+            return this.nodeId;
         }
 
         /**
@@ -295,13 +327,7 @@ public class PlanGraphReporter {
 
         private void addPrev(ReportNode prev) { // use referenced-node only
             assert this.prevList != null;
-            prevList.remove(prev);
             prevList.add(prev);
-        }
-
-        private boolean isLast(ReportNode node) { // use referenced-node only
-            int i = prevList.size() - 1;
-            return prevList.get(i) == node;
         }
 
         /**
@@ -312,9 +338,18 @@ public class PlanGraphReporter {
         public List<ReportNode> getPrevList() {
             return this.prevList;
         }
+
+        @Override
+        public String toString() {
+            if (this.prevList != null) {
+                return planNode + "(ref)";
+            }
+
+            return planNode.toString();
+        }
     }
 
-    protected class NodeId {
+    protected class NodeId implements Comparable<NodeId> {
         private final int tab;
         private final String nodeIdText;
 
@@ -352,6 +387,22 @@ public class PlanGraphReporter {
         @Override
         public String toString() {
             return this.nodeIdText;
+        }
+
+        @Override
+        public int compareTo(NodeId that) {
+            String[] ss1 = this.nodeIdText.split("-");
+            String[] ss2 = that.nodeIdText.split("-");
+            int size = Math.min(ss1.length, ss2.length);
+            for (int i = 0; i < size; i++) {
+                int n1 = Integer.parseInt(ss1[i]);
+                int n2 = Integer.parseInt(ss2[i]);
+                int c = Integer.compare(n1, n2);
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return Integer.compare(ss1.length, ss2.length);
         }
     }
 
@@ -395,6 +446,10 @@ public class PlanGraphReporter {
     }
 
     protected String getTabText(int tab) {
+        if (tab <= 0) {
+            return "";
+        }
+
         var tabString = "  ";
         var sb = new StringBuilder(tabString.length() * tab);
         for (int i = 0; i < tab; i++) {
@@ -426,7 +481,7 @@ public class PlanGraphReporter {
         if (prevList == null) {
             return "";
         }
-        var idList = prevList.stream().map(n -> n.nodeId.toString()).collect(Collectors.joining(", ", " from [", "]"));
-        return idList;
+        var idText = prevList.stream().map(ReportNode::getNodeId).sorted().map(NodeId::toString).collect(Collectors.joining(", ", " from [", "]"));
+        return idText;
     }
 }
