@@ -390,6 +390,20 @@ public class PlanGraphReporter {
         }
 
         @Override
+        public int hashCode() {
+            return nodeIdText.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof NodeId)) {
+                return false;
+            }
+            var that = (NodeId) obj;
+            return nodeIdText.equals(that.nodeIdText);
+        }
+
+        @Override
         public int compareTo(NodeId that) {
             String[] ss1 = this.nodeIdText.split("-");
             String[] ss2 = that.nodeIdText.split("-");
