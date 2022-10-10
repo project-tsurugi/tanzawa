@@ -79,6 +79,12 @@ public class ErroneousStatement implements Statement {
         UNKNOWN_EXPLAIN_OPTION,
 
         /**
+         * invalid explain statement option was specified.
+         * @see ExplainStatement#getOptions()
+         */
+        INVALID_EXPLAIN_OPTION,
+
+        /**
          * invalid special command.
          * @see SpecialStatement#getCommandName()
          */

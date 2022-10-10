@@ -2,6 +2,7 @@ package com.tsurugidb.console.core.executor.engine;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -14,6 +15,10 @@ import org.slf4j.LoggerFactory;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.executor.engine.command.SpecialCommand;
+import com.tsurugidb.console.core.executor.explain.DotOutputHandler;
+import com.tsurugidb.console.core.executor.explain.OptionHandler;
+import com.tsurugidb.console.core.executor.explain.PlanGraphOutputHandler;
+import com.tsurugidb.console.core.executor.explain.StatementMetadataHandler;
 import com.tsurugidb.console.core.executor.report.ScriptReporter;
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
 import com.tsurugidb.console.core.executor.sql.SqlProcessor;
@@ -27,9 +32,6 @@ import com.tsurugidb.console.core.model.StartTransactionStatement;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.exception.ServerException;
-import com.tsurugidb.tsubakuro.explain.PlanGraph;
-import com.tsurugidb.tsubakuro.explain.PlanGraphException;
-import com.tsurugidb.tsubakuro.explain.json.JsonPlanGraphLoader;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -185,7 +187,34 @@ public class BasicEngine extends AbstractEngine {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
+        // FIXME: enable to configure command path
+        var path = CommandPath.system();
+        StatementMetadataHandler metadataHandler;
+        var outputHandlers = new ArrayList<PlanGraphOutputHandler>();
+        try {
+            metadataHandler = StatementMetadataHandler.fromOptions(statement.getOptions());
+            outputHandlers.add((rep, graph) -> {
+                rep.reportExecutionPlan(statement.getBody().getText(), graph);
+            });
+            outputHandlers.add(DotOutputHandler.fromOptions(statement.getOptions(), path));
+        } catch (EngineConfigurationException e) {
+            LOG.debug("error occurred while handling explain options", e); //$NON-NLS-1$
+            return execute(new ErroneousStatement(
+                    statement.getText(),
+                    statement.getRegion(),
+                    e.getErrorKind(),
+                    e.getOccurrence(),
+                    e.getMessage()));
+        }
+        var handlers = new ArrayList<OptionHandler>();
+        handlers.add(metadataHandler);
+        handlers.addAll(outputHandlers);
+
         for (var entry : statement.getOptions().entrySet()) {
+            var key = entry.getKey().getValue();
+            if (handlers.stream().anyMatch(handler -> handler.isHandled(key))) {
+                continue;
+            }
             return execute(new ErroneousStatement(
                     statement.getText(),
                     statement.getRegion(),
@@ -193,26 +222,16 @@ public class BasicEngine extends AbstractEngine {
                     entry.getKey().getRegion(),
                     MessageFormat.format(
                             "unrecognized explain option: \"{0}\"",
-                            entry.getKey().getValue())));
+                            key)));
         }
         var metadata = sqlProcessor.explain(statement.getBody().getText(), statement.getBody().getRegion());
         LOG.debug("explain format: id={}, version={}", metadata.getFormatId(), metadata.getFormatVersion()); //$NON-NLS-1$
         LOG.trace("explain contents: {}", metadata.getContents()); //$NON-NLS-1$
 
-        // FIXME: extract configurations from explain options
-        var loader = JsonPlanGraphLoader.newBuilder()
-                .build();
-        PlanGraph graph;
-        try {
-            graph = loader.load(metadata.getFormatId(), metadata.getFormatVersion(), metadata.getContents());
-        } catch (PlanGraphException e) {
-            throw new EngineException(MessageFormat.format(
-                    "unrecognized explain result: {0}; format-id={1}, format-version={2}",
-                    e.getMessage(),
-                    metadata.getFormatId(),
-                    metadata.getFormatVersion()), e);
+        var graph = metadataHandler.handle(reporter, metadata);
+        for (var output : outputHandlers) {
+            output.handle(reporter, graph);
         }
-        reporter.reportExecutionPlan(statement.getBody().getText(), graph);
         return true;
     }
 

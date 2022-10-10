@@ -46,3 +46,12 @@ see [grammar-rule.md](../../docs/grammar-rule.md).
 * `com.tsurugidb.console.core.parser.SegmentAnalyzer`
   * `DEBUG` - print analyze target
   * `TRACE` - print analyze progress
+
+### Extra testing options
+
+```sh
+# cd /path/to/tanzawa
+./gradlew :tanzawa-core:test \
+    -Ptanzawa.dot=/path/to/dot \
+    -Ptest.logLevel=debug
+```
