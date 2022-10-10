@@ -33,3 +33,9 @@ tasks.sourcesJar {
     // sourcesJar will include generated files..
     dependsOn 'generateJflex'
 }
+
+test {
+    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', findProperty('test.logLevel') ?: 'warn'
+    systemProperty 'tanzawa.dot', findProperty('tanzawa.dot') ?: ''
+}
+

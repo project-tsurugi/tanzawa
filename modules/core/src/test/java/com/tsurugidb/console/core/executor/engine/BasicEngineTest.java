@@ -6,12 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
@@ -19,6 +15,7 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 import com.tsurugidb.console.core.config.ScriptConfig;
+import com.tsurugidb.console.core.executor.explain.StatementMetadataHandler;
 import com.tsurugidb.console.core.executor.report.BasicReporter;
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
 import com.tsurugidb.console.core.executor.sql.SqlProcessor;
@@ -391,7 +388,7 @@ class BasicEngineTest {
                 return new BasicStatementMetadata(
                         JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
                         1, // captured version of the explain result
-                        read("explain-find-filter-write.json"),
+                        TestUtil.read("explain-find-project-write.json"),
                         List.of());
             }
         };
@@ -405,6 +402,9 @@ class BasicEngineTest {
                 assertTrue(plan.getNodes().stream()
                         .map(PlanNode::getKind)
                         .anyMatch(Predicate.isEqual("find")));
+                assertFalse(plan.getNodes().stream()
+                        .map(PlanNode::getKind)
+                        .anyMatch(Predicate.isEqual("project")));
                 assertTrue(plan.getNodes().stream()
                         .map(PlanNode::getKind)
                         .anyMatch(Predicate.isEqual("write")));
@@ -421,7 +421,50 @@ class BasicEngineTest {
     }
 
     @Test
-    void explain_statement_invalid_option() throws Exception {
+    void explain_statement_option() throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(true) {
+            @Override
+            public StatementMetadata explain(String statement, Region region) throws IOException {
+                assertEquals("SELECT 1", statement);
+                return new BasicStatementMetadata(
+                        JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
+                        1, // captured version of the explain result
+                        TestUtil.read("explain-find-project-write.json"),
+                        List.of());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var reached = new AtomicBoolean();
+        var reporter = new BasicReporter() {
+            @Override
+            public void reportExecutionPlan(String source, PlanGraph plan) {
+                reached.set(true);
+                assertEquals("SELECT 1", source);
+                assertTrue(plan.getNodes().stream()
+                        .map(PlanNode::getKind)
+                        .anyMatch(Predicate.isEqual("find")));
+                assertTrue(plan.getNodes().stream()
+                        .map(PlanNode::getKind)
+                        .anyMatch(Predicate.isEqual("project")));
+                assertTrue(plan.getNodes().stream()
+                        .map(PlanNode::getKind)
+                        .anyMatch(Predicate.isEqual("write")));
+            }
+        };
+        var engine = new BasicEngine(
+                new ScriptConfig(),
+                sql,
+                rs,
+                reporter);
+        var cont = engine.execute(parse(String.format(
+                "EXPLAIN (%s) SELECT 1",
+                StatementMetadataHandler.KEY_VERBOSE)));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @Test
+    void explain_statement_option_unknown() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
         var reporter = new BasicReporter();
@@ -433,6 +476,23 @@ class BasicEngineTest {
         assertThrows(
                 EngineException.class,
                 () -> engine.execute(parse("EXPLAIN (INVALID_OPTION=TRUE) SELECT 1")));
+    }
+
+    @Test
+    void explain_statement_option_invalid() throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(true);
+        MockResultProcessor rs = new MockResultProcessor();
+        var reporter = new BasicReporter();
+        var engine = new BasicEngine(
+                new ScriptConfig(),
+                sql,
+                rs,
+                reporter);
+        assertThrows(
+                EngineException.class,
+                () -> engine.execute(parse(String.format(
+                        "EXPLAIN (%s=NULL) SELECT 1",
+                        StatementMetadataHandler.KEY_VERBOSE))));
     }
 
     @Test
@@ -574,21 +634,6 @@ class BasicEngineTest {
     private static Statement parse(String text) throws IOException {
         try (var parser = new SqlParser(new StringReader(text))) {
             return parser.next();
-        }
-    }
-
-    private static String read(String path) throws IOException {
-        var resource = BasicEngineTest.class.getResource(path);
-        if (resource == null) {
-            throw new FileNotFoundException(path);
-        }
-        try (
-            var input = resource.openStream();
-            var reader = new InputStreamReader(input, StandardCharsets.UTF_8);
-            var writer = new StringWriter();
-        ) {
-            reader.transferTo(writer);
-            return writer.toString();
         }
     }
 }
