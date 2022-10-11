@@ -1,6 +1,7 @@
 package com.tsurugidb.console.core.executor.explain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -239,6 +240,46 @@ class DotOutputHandlerTest {
         assertTrue(handler.isHandled(DotOutputHandler.KEY_VERBOSE));
         assertTrue(handler.isHandled(DotOutputHandler.KEY_EXECUTABLE));
         assertTrue(handler.isHandled(DotOutputHandler.KEY_OUTPUT.toUpperCase(Locale.ENGLISH)));
+    }
+
+    @Test
+    void createCommandLine_default() {
+        var options = DotOutputHandler.extendOptions(Map.of(), Map.of());
+        var commandLine = DotOutputHandler.createCommandLine("dot", "pdf", options);
+        var expected = List.of(
+                "dot",
+                "-Tpdf",
+                "-Grankdir=RL",
+                "-Nshape=rect");
+        assertLinesMatch(expected, commandLine);
+    }
+
+    @Test
+    void createCommandLine_option() {
+        var options = DotOutputHandler.extendOptions(
+                toOptions(Map.of(DotOutputHandler.KEY_GRAPH_PREFIX + "rankdir", Optional.of(Value.of("TB")))),
+                Map.of());
+        var commandLine = DotOutputHandler.createCommandLine("dot", "pdf", options);
+        var expected = List.of(
+                "dot",
+                "-Tpdf",
+                "-Grankdir=TB",
+                "-Nshape=rect");
+        assertLinesMatch(expected, commandLine);
+    }
+
+    @Test
+    void createCommandLine_config() {
+        var options = DotOutputHandler.extendOptions(
+                Map.of(),
+                Map.of(DotOutputHandler.KEY_GRAPH_PREFIX + "rankdir", "TB"));
+        var commandLine = DotOutputHandler.createCommandLine("dot", "pdf", options);
+        var expected = List.of(
+                "dot",
+                "-Tpdf",
+                "-Grankdir=TB",
+                "-Nshape=rect");
+        assertLinesMatch(expected, commandLine);
     }
 
     private static Map<Regioned<String>, Optional<Regioned<Value>>> toOptions(Map<String, Optional<Value>> map) {

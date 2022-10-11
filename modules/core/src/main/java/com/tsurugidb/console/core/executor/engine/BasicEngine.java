@@ -207,7 +207,8 @@ public class BasicEngine extends AbstractEngine {
             outputHandlers.add((rep, graph) -> {
                 rep.reportExecutionPlan(statement.getBody().getText(), graph);
             });
-            outputHandlers.add(DotOutputHandler.fromOptions(statement.getOptions(), path));
+            var options = DotOutputHandler.extendOptions(statement.getOptions(), config.getClientVariableMap());
+            outputHandlers.add(DotOutputHandler.fromOptions(options, path));
         } catch (EngineConfigurationException e) {
             LOG.debug("error occurred while handling explain options", e); //$NON-NLS-1$
             return execute(new ErroneousStatement(statement.getText(), statement.getRegion(), e.getErrorKind(), e.getOccurrence(), e.getMessage()));
