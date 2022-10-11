@@ -120,6 +120,8 @@ public class ReplReporter extends ScriptReporter {
     }
 
     private void println(String message) {
-        terminal.writer().println(message);
+        var writer = terminal.writer();
+        writer.println(message);
+        writer.flush();
     }
 }

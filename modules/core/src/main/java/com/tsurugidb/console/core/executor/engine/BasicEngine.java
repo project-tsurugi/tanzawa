@@ -70,6 +70,15 @@ public class BasicEngine extends AbstractEngine {
     }
 
     /**
+     * get script configuration.
+     *
+     * @return script configuration
+     */
+    public ScriptConfig getConfig() {
+        return this.config;
+    }
+
+    /**
      * get sql processor.
      *
      * @return sql processor
@@ -144,6 +153,7 @@ public class BasicEngine extends AbstractEngine {
 
     /**
      * Executes {@code commit} operation implicitly.
+     *
      * @throws ServerException      if server side error was occurred
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
@@ -167,6 +177,7 @@ public class BasicEngine extends AbstractEngine {
 
     /**
      * Executes {@code rollback} operation implicitly.
+     *
      * @throws ServerException      if server side error was occurred
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
@@ -199,12 +210,7 @@ public class BasicEngine extends AbstractEngine {
             outputHandlers.add(DotOutputHandler.fromOptions(statement.getOptions(), path));
         } catch (EngineConfigurationException e) {
             LOG.debug("error occurred while handling explain options", e); //$NON-NLS-1$
-            return execute(new ErroneousStatement(
-                    statement.getText(),
-                    statement.getRegion(),
-                    e.getErrorKind(),
-                    e.getOccurrence(),
-                    e.getMessage()));
+            return execute(new ErroneousStatement(statement.getText(), statement.getRegion(), e.getErrorKind(), e.getOccurrence(), e.getMessage()));
         }
         var handlers = new ArrayList<OptionHandler>();
         handlers.add(metadataHandler);
@@ -215,14 +221,8 @@ public class BasicEngine extends AbstractEngine {
             if (handlers.stream().anyMatch(handler -> handler.isHandled(key))) {
                 continue;
             }
-            return execute(new ErroneousStatement(
-                    statement.getText(),
-                    statement.getRegion(),
-                    ErrorKind.UNKNOWN_EXPLAIN_OPTION,
-                    entry.getKey().getRegion(),
-                    MessageFormat.format(
-                            "unrecognized explain option: \"{0}\"",
-                            key)));
+            return execute(new ErroneousStatement(statement.getText(), statement.getRegion(), ErrorKind.UNKNOWN_EXPLAIN_OPTION, entry.getKey().getRegion(),
+                    MessageFormat.format("unrecognized explain option: \"{0}\"", key)));
         }
         var metadata = sqlProcessor.explain(statement.getBody().getText(), statement.getBody().getRegion());
         LOG.debug("explain format: id={}, version={}", metadata.getFormatId(), metadata.getFormatVersion()); //$NON-NLS-1$

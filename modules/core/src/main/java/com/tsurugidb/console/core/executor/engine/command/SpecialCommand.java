@@ -34,6 +34,7 @@ public abstract class SpecialCommand {
             new ExitCommand(), //
             new HaltCommand(), //
             new HelpCommand(), //
+            new SetCommand(), //
             new ShowCommand(), //
             new StatusCommand(), //
     };
@@ -58,7 +59,7 @@ public abstract class SpecialCommand {
 
         /**
          * Creates a new instance.
-         * 
+         *
          * @param name    command name
          * @param command command
          */
@@ -69,7 +70,7 @@ public abstract class SpecialCommand {
 
         /**
          * get command name.
-         * 
+         *
          * @return command name
          */
         public String name() {
@@ -78,7 +79,7 @@ public abstract class SpecialCommand {
 
         /**
          * get command.
-         * 
+         *
          * @return command
          */
         public SpecialCommand command() {
@@ -88,7 +89,7 @@ public abstract class SpecialCommand {
 
     /**
      * get matched command list.
-     * 
+     *
      * @param statement the target statement
      * @return command list
      */
@@ -100,7 +101,7 @@ public abstract class SpecialCommand {
 
     /**
      * get matched command list.
-     * 
+     *
      * @param commandName command name
      * @return command list
      */
@@ -130,7 +131,7 @@ public abstract class SpecialCommand {
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param names command names
      */
     protected SpecialCommand(String... names) {
@@ -144,7 +145,7 @@ public abstract class SpecialCommand {
 
     /**
      * get representative command name
-     * 
+     *
      * @return command name
      */
     public String getCommandName() {
@@ -155,7 +156,7 @@ public abstract class SpecialCommand {
 
     /**
      * get command names.
-     * 
+     *
      * @return command name list
      */
     @Nonnull
@@ -165,7 +166,7 @@ public abstract class SpecialCommand {
 
     /**
      * get completer candidates.
-     * 
+     *
      * @return candidates
      */
     public static List<CompleterCandidateWords> getCompleterCandidateList() {
@@ -178,7 +179,7 @@ public abstract class SpecialCommand {
 
     /**
      * collect completer candidates.
-     * 
+     *
      * @param result candidates
      */
     protected void collectCompleterCandidate(List<CompleterCandidateWords> result) {
@@ -190,7 +191,7 @@ public abstract class SpecialCommand {
 
     /**
      * Executes a special statement.
-     * 
+     *
      * @param engine    BasicEngine
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested
@@ -203,7 +204,7 @@ public abstract class SpecialCommand {
 
     /**
      * Execute as unknown option erroneous.
-     * 
+     *
      * @param engine    BasicEngine
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested

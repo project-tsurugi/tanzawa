@@ -31,6 +31,9 @@ public class CommonArgument {
     @DynamicParameter(names = { "--property", "-P" }, description = "SQL setting. <key>=<value>")
     private Map<String, String> propertyMap = new LinkedHashMap<>();
 
+    @DynamicParameter(names = { "-D" }, description = "client variable. <key>=<value>")
+    private Map<String, String> clientVariableMap = new LinkedHashMap<>();
+
     /*
      * transaction
      */
@@ -93,9 +96,11 @@ public class CommonArgument {
     @Parameter(names = { "--no-auth" }, arity = 0, description = "no auth")
     private Boolean noAuth;
 
+    //
+
     /**
      * get --connection-uri.
-     * 
+     *
      * @return connection uri
      */
     @Nonnull // required = true
@@ -105,7 +110,7 @@ public class CommonArgument {
 
     /**
      * get --property.
-     * 
+     *
      * @return property
      */
     @Nonnull
@@ -114,8 +119,18 @@ public class CommonArgument {
     }
 
     /**
+     * get -D.
+     *
+     * @return client variable
+     */
+    @Nonnull
+    public Map<String, String> getClientVariable() {
+        return this.clientVariableMap;
+    }
+
+    /**
      * get --transaction.
-     * 
+     *
      * @return transaction
      */
     @Nonnull // has default value
@@ -125,7 +140,7 @@ public class CommonArgument {
 
     /**
      * get --write-preserve.
-     * 
+     *
      * @return write preserve
      */
     @Nonnull
@@ -138,7 +153,7 @@ public class CommonArgument {
 
     /**
      * get --read-area-include.
-     * 
+     *
      * @return read area include
      */
     @Nonnull
@@ -151,7 +166,7 @@ public class CommonArgument {
 
     /**
      * get --read-area-exclude.
-     * 
+     *
      * @return read area exclude
      */
     @Nonnull
@@ -164,7 +179,7 @@ public class CommonArgument {
 
     /**
      * get --execute.
-     * 
+     *
      * @return execute
      */
     @Nonnull
@@ -197,7 +212,7 @@ public class CommonArgument {
 
     /**
      * get --label.
-     * 
+     *
      * @return label
      */
     @Nonnull // has default value
@@ -207,7 +222,7 @@ public class CommonArgument {
 
     /**
      * get --with.
-     * 
+     *
      * @return with
      */
     @Nonnull
@@ -217,7 +232,7 @@ public class CommonArgument {
 
     /**
      * get credentials.
-     * 
+     *
      * @return credential list
      */
     @Nonnull

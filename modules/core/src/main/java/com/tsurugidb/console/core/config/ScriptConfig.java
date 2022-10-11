@@ -3,6 +3,7 @@ package com.tsurugidb.console.core.config;
 import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,9 +26,11 @@ public class ScriptConfig {
 
     private ScriptCommitMode commitMode;
 
+    private Map<String, String> clientVariableMap;
+
     /**
      * set endpoint.
-     * 
+     *
      * @param endpoint endpoint
      */
     public void setEndpoint(@Nonnull URI endpoint) {
@@ -37,7 +40,7 @@ public class ScriptConfig {
 
     /**
      * get endpoint.
-     * 
+     *
      * @return endpoint
      */
     @Nonnull
@@ -47,7 +50,7 @@ public class ScriptConfig {
 
     /**
      * set credential.
-     * 
+     *
      * @param credential credential
      */
     public void setCredential(@Nonnull Credential credential) {
@@ -57,7 +60,7 @@ public class ScriptConfig {
 
     /**
      * get credential.
-     * 
+     *
      * @return credential
      */
     @Nonnull
@@ -67,7 +70,7 @@ public class ScriptConfig {
 
     /**
      * set transaction option.
-     * 
+     *
      * @param option transaction option
      */
     public void setTransactionOption(@Nullable SqlRequest.TransactionOption option) {
@@ -76,7 +79,7 @@ public class ScriptConfig {
 
     /**
      * get transaction option.
-     * 
+     *
      * @return transaction option. if null means --transaction=manual
      */
     @Nullable
@@ -86,7 +89,7 @@ public class ScriptConfig {
 
     /**
      * set property.
-     * 
+     *
      * @param property property
      */
     public void setProperty(@Nonnull Map<String, String> property) {
@@ -96,7 +99,7 @@ public class ScriptConfig {
 
     /**
      * get property.
-     * 
+     *
      * @return property
      */
     @Nonnull
@@ -106,7 +109,7 @@ public class ScriptConfig {
 
     /**
      * set commit mode.
-     * 
+     *
      * @param commitMode commit mode
      */
     public void setCommitMode(@Nonnull ScriptCommitMode commitMode) {
@@ -116,11 +119,47 @@ public class ScriptConfig {
 
     /**
      * get commit mode.
-     * 
+     *
      * @return commit mode
      */
     @Nonnull
     public ScriptCommitMode getCommitMode() {
         return this.commitMode;
+    }
+
+    /**
+     * set client variable.
+     *
+     * @param map client variable
+     */
+    public void setClientVariable(@Nonnull Map<String, String> map) {
+        Objects.requireNonNull(map);
+        this.clientVariableMap = new TreeMap<>(map);
+    }
+
+    /**
+     * get client variable.
+     *
+     * @return client variable
+     */
+    @Nonnull
+    public Map<String, String> getClientVariableMap() {
+        if (this.clientVariableMap == null) {
+            return Map.of();
+        }
+        return this.clientVariableMap;
+    }
+
+    /**
+     * set client variable.
+     *
+     * @param key   key
+     * @param value value
+     */
+    public void setClientVariable(@Nonnull String key, @Nullable String value) {
+        if (this.clientVariableMap == null) {
+            this.clientVariableMap = new TreeMap<>();
+        }
+        clientVariableMap.put(key, value);
     }
 }

@@ -41,7 +41,7 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param argument argument
      */
     public ConfigBuilder(A argument) {
@@ -50,13 +50,14 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
 
     /**
      * create configuration.
-     * 
+     *
      * @return script configuration
      */
     public ScriptConfig build() {
         fillEndpoint();
         fillTransactionOption();
         fillProperty();
+        fillClientVariable();
 
         buildSub();
 
@@ -124,6 +125,12 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
         var property = argument.getProperty();
         log.debug("config.property={}", property);
         config.setProperty(property);
+    }
+
+    private void fillClientVariable() {
+        var variable = argument.getClientVariable();
+        log.debug("config.clientVariable={}", variable);
+        config.setClientVariable(variable);
     }
 
     protected abstract void buildSub();
@@ -220,7 +227,7 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
 
     /**
      * get user from console.
-     * 
+     *
      * @return user
      */
     @Nonnull
@@ -231,7 +238,7 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
 
     /**
      * get password from console.
-     * 
+     *
      * @return password
      */
     @Nonnull

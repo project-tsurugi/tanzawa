@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.executor.engine.BasicEngine;
 import com.tsurugidb.console.core.executor.engine.EngineException;
+import com.tsurugidb.console.core.executor.report.ScriptReporter;
 import com.tsurugidb.console.core.model.ErroneousStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.console.core.model.Regioned;
@@ -64,6 +65,7 @@ public class ShowCommand extends SpecialCommand {
 
         add("table", true, ShowCommand::executeShowTable); //$NON-NLS-1$
         add("transaction", false, ShowCommand::executeShowTransaction); //$NON-NLS-1$
+        add("client", true, ShowCommand::executeShowClient); //$NON-NLS-1$
     }
 
     private void add(String name, boolean hasParameter, Executor executor) {
@@ -121,13 +123,37 @@ public class ShowCommand extends SpecialCommand {
         String tableName = getOption(statement, 1);
         LOG.debug("show table. tableName={}", tableName); //$NON-NLS-1$
         if (tableName == null) {
-            return engine.execute(toSubUnknownError(statement, "tableName"));
+            return engine.execute(toSubUnknownError(statement, "tableName")); //$NON-NLS-1$
         }
         var sqlProcessor = engine.getSqlProcessor();
         var metadata = sqlProcessor.getTableMetadata(tableName);
         var reporter = engine.getReporter();
         reporter.reportTableMetadata(tableName, metadata);
         return true;
+    }
+
+    private static boolean executeShowClient(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+        String key = getOption(statement, 1);
+        LOG.debug("show client. key={}", key); //$NON-NLS-1$
+        if (key == null) {
+            key = "";
+        }
+
+        var map = engine.getConfig().getClientVariableMap();
+        var reporter = engine.getReporter();
+        for (var entry : map.entrySet()) {
+            String k = entry.getKey();
+            if (k.startsWith(key)) {
+                String v = entry.getValue();
+                showClientVariable(k, v, reporter);
+            }
+        }
+        return true;
+    }
+
+    public static void showClientVariable(String key, String value, ScriptReporter reporter) {
+        var message = MessageFormat.format("{0}={1}", key, value); //$NON-NLS-1$
+        reporter.info(message);
     }
 
     private static String getOption(SpecialStatement statement, int index) {
