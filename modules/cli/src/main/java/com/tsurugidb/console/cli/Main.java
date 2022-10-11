@@ -15,9 +15,9 @@ import com.tsurugidb.console.cli.argument.ScriptArgument;
 import com.tsurugidb.console.cli.config.ConsoleConfigBuilder;
 import com.tsurugidb.console.cli.config.ExecConfigBuilder;
 import com.tsurugidb.console.cli.config.ScriptConfigBuilder;
-import com.tsurugidb.console.cli.repl.ReplReader;
 import com.tsurugidb.console.cli.repl.ReplReporter;
 import com.tsurugidb.console.cli.repl.ReplResultProcessor;
+import com.tsurugidb.console.cli.repl.ReplScript;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineReader;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineTerminal;
 import com.tsurugidb.console.core.ScriptRunner;
@@ -35,7 +35,7 @@ public final class Main {
 
     /**
      * Execute script.
-     * 
+     *
      * @param args the program arguments
      * @throws Exception if exception was occurred
      */
@@ -104,10 +104,10 @@ public final class Main {
         var config = builder.build();
 
         var lineReader = ReplJLineReader.createReader();
+        var script = new ReplScript(lineReader);
         var reporter = new ReplReporter(lineReader.getTerminal());
-        try (var reader = new ReplReader(lineReader); //
-                var resultProcessor = new ReplResultProcessor(reporter)) {
-            ScriptRunner.repl(config, reader, resultProcessor, reporter);
+        try (var resultProcessor = new ReplResultProcessor(reporter)) {
+            ScriptRunner.repl(script, config, resultProcessor, reporter);
         }
     }
 

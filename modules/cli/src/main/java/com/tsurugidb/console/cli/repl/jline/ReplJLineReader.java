@@ -14,7 +14,7 @@ public final class ReplJLineReader {
 
     /**
      * create LineReader.
-     * 
+     *
      * @return LineReader
      */
     public static LineReader createReader() {
@@ -38,7 +38,7 @@ public final class ReplJLineReader {
 
     /**
      * create simple LineReader.
-     * 
+     *
      * @return LineReader
      */
     public static LineReader createSimpleReader() {

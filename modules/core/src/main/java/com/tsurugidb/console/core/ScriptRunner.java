@@ -52,7 +52,7 @@ public final class ScriptRunner {
      * <li>{@code args[0]} : path to the script file (UTF-8 encoded)</li>
      * <li>{@code args[1]} : connection URI</li>
      * </ul>
-     * 
+     *
      * @param args the program arguments
      * @throws Exception if exception was occurred
      */
@@ -75,7 +75,7 @@ public final class ScriptRunner {
 
     /**
      * Executes the script using basic implementation.
-     * 
+     *
      * @param script     the script file
      * @param endpoint   the connection target end-point URI
      * @param credential the connection credential information
@@ -101,7 +101,7 @@ public final class ScriptRunner {
 
     /**
      * Executes the script using basic implementation.
-     * 
+     *
      * @param script the script file
      * @param config script configuration
      * @return {@code true} if successfully completed, {@code false} otherwise
@@ -119,7 +119,7 @@ public final class ScriptRunner {
 
     /**
      * Executes the script using basic implementation.
-     * 
+     *
      * @param script the script file
      * @param config script configuration
      * @return {@code true} if successfully completed, {@code false} otherwise
@@ -145,7 +145,7 @@ public final class ScriptRunner {
 
     /**
      * Executes the script.
-     * 
+     *
      * @param script the script file
      * @param engine the statement executor
      * @return {@code true} if successfully completed, {@code false} otherwise
@@ -209,9 +209,9 @@ public final class ScriptRunner {
 
     /**
      * Executes REPL.
-     * 
+     *
+     * @param script          console reader
      * @param config          script configuration
-     * @param reader          console reader
      * @param resultProcessor result processer
      * @param reporter        reporter
      * @throws ServerException      if server side error was occurred
@@ -219,12 +219,12 @@ public final class ScriptRunner {
      * @throws InterruptedException if interrupted while establishing connection
      */
     public static void repl(//
+            @Nonnull IoSupplier<? extends Statement> script, //
             @Nonnull ScriptConfig config, //
-            @Nonnull Reader reader, //
             @Nonnull ResultProcessor resultProcessor, //
             @Nonnull ScriptReporter reporter) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(config);
-        Objects.requireNonNull(reader);
+        Objects.requireNonNull(script);
         Objects.requireNonNull(resultProcessor);
 
         var endpoint = config.getEndpoint();
@@ -232,51 +232,49 @@ public final class ScriptRunner {
         LOG.info("establishing connection: {}", endpoint);
         try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create(); //
                 var sqlProcessor = new BasicSqlProcessor(SqlClient.attach(session))) {
-            repl(reader, new BasicEngine(config, sqlProcessor, resultProcessor, reporter));
+            repl(script, new BasicEngine(config, sqlProcessor, resultProcessor, reporter));
         }
     }
 
     /**
      * Executes REPL.
-     * 
-     * @param reader console reader
+     *
+     * @param script console reader
      * @param engine the statement executor
      * @throws IOException if I/O error was occurred while establishing connection
      */
     public static void repl(//
-            @Nonnull Reader reader, //
+            @Nonnull IoSupplier<? extends Statement> script, //
             @Nonnull Engine engine) throws IOException {
         LOG.info("start repl");
-        try (var parser = new SqlParser(reader)) {
-            while (true) {
-                try {
-                    Statement statement = parser.next();
-                    if (statement == null) {
-                        LOG.trace("EOF");
-                        break;
-                    }
-                    boolean cont = engine.execute(statement);
-                    if (!cont) {
-                        LOG.trace("shutdown was requested");
-                        break;
-                    }
-                } catch (ScriptInterruptedException e) {
-                    LOG.trace("user interrupted", e);
-                } catch (ServerException e) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.warn("{}", e.getDiagnosticCode().name(), e);
-                    }
-                    engine.getReporter().warn(e);
-                } catch (Exception e) {
-                    String message = e.getMessage();
-                    if (message == null) {
-                        message = e.getClass().getName();
-                    }
-                    if (LOG.isDebugEnabled()) {
-                        LOG.warn("{}", message, e);
-                    }
-                    engine.getReporter().warn(message);
+        while (true) {
+            try {
+                Statement statement = script.get();
+                if (statement == null) {
+                    LOG.trace("EOF");
+                    break;
                 }
+                boolean cont = engine.execute(statement);
+                if (!cont) {
+                    LOG.trace("shutdown was requested");
+                    break;
+                }
+            } catch (ScriptInterruptedException e) {
+                LOG.trace("user interrupted", e);
+            } catch (ServerException e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.warn("{}", e.getDiagnosticCode().name(), e);
+                }
+                engine.getReporter().warn(e);
+            } catch (Exception e) {
+                String message = e.getMessage();
+                if (message == null) {
+                    message = e.getClass().getName();
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.warn("{}", message, e);
+                }
+                engine.getReporter().warn(message);
             }
         }
         engine.finish(true);
