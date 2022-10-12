@@ -189,6 +189,16 @@ public class PlanGraphReporter {
         }
 
         /**
+         * get reference node.
+         *
+         * @return reference node
+         */
+        @Nullable
+        public ReportNode getReferenceNode() {
+            return this.reference;
+        }
+
+        /**
          * initialize childList.
          */
         public void normalizeChildList() {
@@ -264,7 +274,7 @@ public class PlanGraphReporter {
             }
 
             if (this.reference != null) {
-                reportRefPlanNode(nodeId, this, reference, reportPrevId);
+                reportRefPlanNode(nodeId, this, reportPrevId);
                 return;
             }
 
@@ -337,6 +347,15 @@ public class PlanGraphReporter {
          */
         public List<ReportNode> getPrevList() {
             return this.prevList;
+        }
+
+        /**
+         * get next node list.
+         *
+         * @return node list
+         */
+        public List<ReportNode> getNextList() {
+            return nextList;
         }
 
         @Override
@@ -435,7 +454,8 @@ public class PlanGraphReporter {
 
         String tab = getTabText(groupId.tab());
         String fromText = getPrevIdText(node, true);
-        var message = MessageFormat.format("{0}{1}.{2}", tab, groupId, fromText);
+        String toText = getNextIdText(node);
+        var message = MessageFormat.format("{0}{1}.{2}{3}", tab, groupId, fromText, toText);
         messageReporter.accept(message);
         return true;
     }
@@ -447,15 +467,16 @@ public class PlanGraphReporter {
         String kind = planNode.getKind();
         String attributes = getPlanNodeAttributesText(planNode);
         String fromText = getPrevIdText(node, reportPrevId);
-        var message = MessageFormat.format("{0}{1}. {2} ({3}){4}{5}", tab, nodeId, title, kind, attributes, fromText);
+        String toText = getNextIdText(node);
+        var message = MessageFormat.format("{0}{1}. {2} ({3}){4}{5}{6}", tab, nodeId, title, kind, attributes, fromText, toText);
         messageReporter.accept(message);
     }
 
-    protected void reportRefPlanNode(NodeId nodeId, ReportNode node, ReportNode reference, boolean reportPrevId) {
+    protected void reportRefPlanNode(NodeId nodeId, ReportNode node, boolean reportPrevId) {
         String tab = getTabText(nodeId.tab());
-        var refId = reference.getGroupOrNodeId();
         String fromText = getPrevIdText(node, reportPrevId);
-        var message = MessageFormat.format("{0}{1}. goto {2}{3}", tab, nodeId, refId, fromText);
+        String toText = getNextIdText(node);
+        var message = MessageFormat.format("{0}{1}.{2}{3}", tab, nodeId, fromText, toText);
         messageReporter.accept(message);
     }
 
@@ -495,7 +516,22 @@ public class PlanGraphReporter {
         if (prevList == null) {
             return "";
         }
-        var idText = prevList.stream().map(ReportNode::getNodeId).sorted().map(NodeId::toString).collect(Collectors.joining(", ", " from [", "]"));
+        var idText = prevList.stream().map(ReportNode::getNodeId).sorted().map(NodeId::toString).collect(Collectors.joining(", ", " <[", "]"));
+        return idText;
+    }
+
+    protected String getNextIdText(ReportNode node) {
+        List<ReportNode> nextList;
+        if (node.getReferenceNode() != null) {
+            nextList = List.of(node.getReferenceNode());
+        } else {
+            nextList = node.getNextList();
+            if (nextList.size() <= 1) {
+                return "";
+            }
+        }
+
+        var idText = nextList.stream().map(ReportNode::getGroupOrNodeId).sorted().map(NodeId::toString).collect(Collectors.joining(", ", " >[", "]"));
         return idText;
     }
 }

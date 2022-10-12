@@ -71,7 +71,7 @@ class PlanGraphReporterTest {
         node1.addDownstream(node3);
 
         String[] expected = { //
-                "1. title1 (kind1)", //
+                "1. title1 (kind1) >[1-1, 1-2]", //
                 "  1-1. title2 (kind2)", //
                 "  1-2. title3 (kind3)", //
         };
@@ -91,7 +91,7 @@ class PlanGraphReporterTest {
 
         String[] expected = { //
                 "1. title1 (kind1)", //
-                "2. title2 (kind2)", //
+                "2. title2 (kind2) >[2-1, 2-2]", //
                 "  2-1. title3 (kind3)", //
                 "  2-2. title4 (kind4)", //
         };
@@ -111,14 +111,14 @@ class PlanGraphReporterTest {
         node3.addDownstream(node4);
 
         String[] expected = { //
-                "1. title1 (kind1)", //
+                "1. title1 (kind1) >[1-1, 1-2]", //
                 "  1-1.", //
                 "    1-1-1. title2 (kind2)", //
-                "    1-1-2. goto 2", //
+                "    1-1-2. >[2]", //
                 "  1-2.", //
                 "    1-2-1. title3 (kind3)", //
-                "    1-2-2. goto 2", //
-                "2. title4 (kind4) from [1-1-2, 1-2-2]", //
+                "    1-2-2. >[2]", //
+                "2. title4 (kind4) <[1-1-2, 1-2-2]", //
         };
         testReport(expected, plan);
     }
@@ -138,14 +138,14 @@ class PlanGraphReporterTest {
         node4.addDownstream(node5);
 
         String[] expected = { //
-                "1. title1 (kind1)", //
+                "1. title1 (kind1) >[1-1, 1-2]", //
                 "  1-1.", //
                 "    1-1-1. title2 (kind2)", //
-                "    1-1-2. goto 2", //
+                "    1-1-2. >[2]", //
                 "  1-2.", //
                 "    1-2-1. title3 (kind3)", //
-                "    1-2-2. goto 2", //
-                "2. from [1-1-2, 1-2-2]", //
+                "    1-2-2. >[2]", //
+                "2. <[1-1-2, 1-2-2]", //
                 "  2-1. title4 (kind4)", //
                 "  2-2. title5 (kind5)", //
         };
@@ -164,11 +164,11 @@ class PlanGraphReporterTest {
         String[] expected = { //
                 "1.", //
                 "  1-1. title1 (kind1)", //
-                "  1-2. goto 3", //
+                "  1-2. >[3]", //
                 "2.", //
                 "  2-1. title2 (kind2)", //
-                "  2-2. goto 3", //
-                "3. title3 (kind3) from [1-2, 2-2]", //
+                "  2-2. >[3]", //
+                "3. title3 (kind3) <[1-2, 2-2]", //
         };
         testReport(expected, plan);
     }
@@ -189,17 +189,17 @@ class PlanGraphReporterTest {
         String[] expected = { //
                 "1.", //
                 "  1-1. title1 (kind1)", //
-                "  1-2. goto 4", //
+                "  1-2. >[4]", //
                 "2.", //
                 "  2-1. title2 (kind2)", //
-                "  2-2. goto 4", //
+                "  2-2. >[4]", //
                 "3.", //
                 "  3-1. title3 (kind3)", //
-                "  3-2. goto 5", //
-                "4. from [1-2, 2-2]", //
+                "  3-2. >[5]", //
+                "4. <[1-2, 2-2]", //
                 "  4-1. title4 (kind4)", //
-                "  4-2. goto 5", //
-                "5. title5 (kind5) from [3-2, 4-2]", //
+                "  4-2. >[5]", //
+                "5. title5 (kind5) <[3-2, 4-2]", //
         };
         testReport(expected, plan);
     }
@@ -231,20 +231,20 @@ class PlanGraphReporterTest {
                 "1.", //
                 "  1-1. title1 (kind1)", //
                 "  1-2. title11 (kind11)", //
-                "  1-3. goto 4", //
+                "  1-3. >[4]", //
                 "2.", //
                 "  2-1. title2 (kind2)", //
                 "  2-2. title21 (kind21)", //
-                "  2-3. goto 4", //
+                "  2-3. >[4]", //
                 "3.", //
                 "  3-1. title3 (kind3)", //
                 "  3-2. title31 (kind31)", //
-                "  3-3. goto 5", //
-                "4. from [1-3, 2-3]", //
+                "  3-3. >[5]", //
+                "4. <[1-3, 2-3]", //
                 "  4-1. title4 (kind4)", //
                 "  4-2. title41 (kind41)", //
-                "  4-3. goto 5", //
-                "5. from [3-3, 4-3]", //
+                "  4-3. >[5]", //
+                "5. <[3-3, 4-3]", //
                 "  5-1. title5 (kind5)", //
                 "  5-2. title51 (kind51)", //
         };
