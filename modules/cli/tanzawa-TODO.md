@@ -24,7 +24,7 @@
   - （2022-09-22済）`\show table TBL` - テーブル定義（TableMetaData）を表示する
   - （2022-09-22済）`\show transaction` - `\status` がいまいちなので置き換え
   - `\exit force` - `\halt` 相当
-  - `\set client setting` - 設定するものがあれば？
+  - （2022-10-11済）`\set client setting` - 設定するものがあれば？
 - （2022-10-07済）EXPLAINの表示（by荒川さん2022-09-20）
 - データベース一覧・スキーマ一覧を表示するコマンドを追加（by川口さん2022-09-15）
   - 現在、データベース・スキーマ自体が未対応
