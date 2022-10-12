@@ -11,7 +11,10 @@ import org.slf4j.LoggerFactory;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineParser.ParsedStatement;
 import com.tsurugidb.console.core.exception.ScriptInterruptedException;
 import com.tsurugidb.console.core.executor.IoSupplier;
+import com.tsurugidb.console.core.model.Region;
+import com.tsurugidb.console.core.model.SimpleStatement;
 import com.tsurugidb.console.core.model.Statement;
+import com.tsurugidb.console.core.model.Statement.Kind;
 
 /**
  * Tsurugi SQL console repl script.
@@ -37,8 +40,9 @@ public class ReplScript implements IoSupplier<Statement> {
 
     @Override
     public Statement get() {
+        String text;
         try {
-            lineReader.readLine(PROMPT1);
+            text = lineReader.readLine(PROMPT1);
         } catch (UserInterruptException e) {
             throw new ScriptInterruptedException(e);
         } catch (EndOfFileException e) {
@@ -48,7 +52,11 @@ public class ReplScript implements IoSupplier<Statement> {
 
         var line = lineReader.getParsedLine();
         if (line instanceof ParsedStatement) {
-            return ((ParsedStatement) line).statement();
+            var statement = ((ParsedStatement) line).statement();
+            if (statement != null) {
+                return statement;
+            }
+            return new SimpleStatement(Kind.EMPTY, text, new Region(0, text.length(), 0, 0));
         }
         throw new AssertionError(line);
     }
