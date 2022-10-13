@@ -2,8 +2,6 @@
 
 ## 共通
 
-- 認証情報ファイル（--credentials）の処理を追加
-  - tsubakuroのFileCredential待ち
 - トランザクションオプション（--read-area-include等）の処理を追加
   - tsubakuroのTransactionOption対応待ち
 - 暗黙にコミットする際（--commitや--auto-commit）のCommiStatusを指定する

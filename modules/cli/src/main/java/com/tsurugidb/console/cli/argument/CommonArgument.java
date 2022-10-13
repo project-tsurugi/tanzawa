@@ -1,5 +1,8 @@
 package com.tsurugidb.console.cli.argument;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +18,7 @@ import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.tsurugidb.console.cli.config.ConfigBuilder;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
+import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredential;
@@ -249,9 +253,12 @@ public class CommonArgument {
         }
         if (this.credentials != null) {
             list.add(() -> {
-                // var path = Path.of(credentials);
-                // TODO return FileCredential.load(path);
-                throw new UnsupportedOperationException("not yet implemented --credentials");
+                var path = Path.of(credentials);
+                try {
+                    return FileCredential.load(path);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             });
         }
         if (this.noAuth != null && this.noAuth) {

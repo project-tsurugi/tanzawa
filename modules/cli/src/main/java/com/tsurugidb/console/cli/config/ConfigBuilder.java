@@ -1,5 +1,7 @@
 package com.tsurugidb.console.cli.config;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,6 +26,7 @@ import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
+import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredential;
@@ -207,9 +210,13 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
             var path = credentialPath.get();
             boolean exists = Files.exists(path);
             log.trace("default credential 2. path={}, exists={}", path, exists);
-//            if (exists) {
-            // TODO return FileCredential.load(path);
-//            }
+            if (exists) {
+                try {
+                    return FileCredential.load(path);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
         }
 
         // 3. ユーザー入力
