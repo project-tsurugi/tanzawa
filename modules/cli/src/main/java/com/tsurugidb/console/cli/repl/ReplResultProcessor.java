@@ -5,6 +5,9 @@ import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
 import com.tsurugidb.console.core.executor.result.ResultSetUtil;
 import com.tsurugidb.sql.proto.SqlCommon;
@@ -16,12 +19,13 @@ import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
  * Tsurugi SQL console repl ResultProcessor.
  */
 public class ReplResultProcessor implements ResultProcessor {
+    private static final Logger LOG = LoggerFactory.getLogger(ReplResultProcessor.class);
 
     private final ReplReporter reporter;
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param reporter ReplReporter
      */
     public ReplResultProcessor(@Nonnull ReplReporter reporter) {
@@ -31,15 +35,28 @@ public class ReplResultProcessor implements ResultProcessor {
     @Override
     public void process(ResultSet target) throws ServerException, IOException, InterruptedException {
         dumpMetadata(target.getMetadata());
+        if (Thread.interrupted()) {
+            LOG.trace("Thread.interrupted (1)");
+            throw new InterruptedException();
+        }
 
         var list = new ArrayList<Object>();
         int rowSize = 0;
         while (ResultSetUtil.fetchNextRow(target, target.getMetadata(), list::add)) {
+            if (Thread.interrupted()) {
+                LOG.trace("Thread.interrupted (2)");
+                throw new InterruptedException();
+            }
+
             reporter.reportResultSetRow(list.toString());
             rowSize++;
             list.clear();
         }
 
+        if (Thread.interrupted()) {
+            LOG.trace("Thread.interrupted (3)");
+            throw new InterruptedException();
+        }
         reporter.reportResultSetSize(rowSize);
     }
 

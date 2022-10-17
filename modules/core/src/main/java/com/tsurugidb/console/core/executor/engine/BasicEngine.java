@@ -93,7 +93,7 @@ public class BasicEngine extends AbstractEngine {
     }
 
     @Override
-    protected boolean executeEmptyStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException {
+    public boolean executeEmptyStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
         return true;
@@ -101,7 +101,7 @@ public class BasicEngine extends AbstractEngine {
 
     @SuppressFBWarnings(value = "RCN", justification = "misdetection: SqlProcessor.execute() may return null")
     @Override
-    protected boolean executeGenericStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException {
+    public boolean executeGenericStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
@@ -128,7 +128,7 @@ public class BasicEngine extends AbstractEngine {
     }
 
     @Override
-    protected boolean executeStartTransactionStatement(@Nonnull StartTransactionStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+    public boolean executeStartTransactionStatement(@Nonnull StartTransactionStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
@@ -140,7 +140,7 @@ public class BasicEngine extends AbstractEngine {
     }
 
     @Override
-    protected boolean executeCommitStatement(@Nonnull CommitStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+    public boolean executeCommitStatement(@Nonnull CommitStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
@@ -165,7 +165,7 @@ public class BasicEngine extends AbstractEngine {
     }
 
     @Override
-    protected boolean executeRollbackStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException {
+    public boolean executeRollbackStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
@@ -188,13 +188,13 @@ public class BasicEngine extends AbstractEngine {
     }
 
     @Override
-    protected boolean executeCallStatement(@Nonnull CallStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+    public boolean executeCallStatement(@Nonnull CallStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         // fall-back
         return executeGenericStatement(statement);
     }
 
     @Override
-    protected boolean executeExplainStatement(@Nonnull ExplainStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+    public boolean executeExplainStatement(@Nonnull ExplainStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
@@ -237,7 +237,7 @@ public class BasicEngine extends AbstractEngine {
     }
 
     @Override
-    protected boolean executeSpecialStatement(@Nonnull SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+    public boolean executeSpecialStatement(@Nonnull SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
@@ -260,7 +260,7 @@ public class BasicEngine extends AbstractEngine {
     }
 
     @Override
-    protected boolean executeErroneousStatement(@Nonnull ErroneousStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+    public boolean executeErroneousStatement(@Nonnull ErroneousStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 

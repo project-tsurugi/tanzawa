@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Objects;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
@@ -19,7 +20,9 @@ import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.exception.ScriptInterruptedException;
+import com.tsurugidb.console.core.exception.ScriptMessageException;
 import com.tsurugidb.console.core.executor.IoSupplier;
+import com.tsurugidb.console.core.executor.engine.AbstractEngine;
 import com.tsurugidb.console.core.executor.engine.BasicEngine;
 import com.tsurugidb.console.core.executor.engine.Engine;
 import com.tsurugidb.console.core.executor.report.BasicReporter;
@@ -221,6 +224,7 @@ public final class ScriptRunner {
     public static void repl(//
             @Nonnull IoSupplier<? extends Statement> script, //
             @Nonnull ScriptConfig config, //
+            @Nonnull Function<AbstractEngine, Engine> engineWrapper, //
             @Nonnull ResultProcessor resultProcessor, //
             @Nonnull ScriptReporter reporter) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(config);
@@ -232,7 +236,8 @@ public final class ScriptRunner {
         LOG.info("establishing connection: {}", endpoint);
         try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create(); //
                 var sqlProcessor = new BasicSqlProcessor(SqlClient.attach(session))) {
-            repl(script, new BasicEngine(config, sqlProcessor, resultProcessor, reporter));
+            var engine = new BasicEngine(config, sqlProcessor, resultProcessor, reporter);
+            repl(script, engineWrapper.apply(engine));
         }
     }
 
@@ -261,6 +266,9 @@ public final class ScriptRunner {
                 }
             } catch (ScriptInterruptedException e) {
                 LOG.trace("user interrupted", e);
+            } catch (ScriptMessageException e) {
+                LOG.trace("message exception", e);
+                engine.getReporter().warn(e.getMessage());
             } catch (ServerException e) {
                 if (LOG.isDebugEnabled()) {
                     LOG.warn("{}", e.getDiagnosticCode().name(), e);

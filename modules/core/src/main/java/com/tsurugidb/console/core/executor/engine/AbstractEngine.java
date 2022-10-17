@@ -55,7 +55,7 @@ public abstract class AbstractEngine implements Engine {
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    protected abstract boolean executeErroneousStatement(@Nonnull ErroneousStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
+    public abstract boolean executeErroneousStatement(@Nonnull ErroneousStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
 
     /**
      * Executes a special statement.
@@ -67,7 +67,7 @@ public abstract class AbstractEngine implements Engine {
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    protected abstract boolean executeSpecialStatement(@Nonnull SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
+    public abstract boolean executeSpecialStatement(@Nonnull SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
 
     /**
      * Executes a call statement.
@@ -79,7 +79,7 @@ public abstract class AbstractEngine implements Engine {
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    protected abstract boolean executeCallStatement(@Nonnull CallStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
+    public abstract boolean executeCallStatement(@Nonnull CallStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
 
     /**
      * Executes an explain statement.
@@ -91,7 +91,7 @@ public abstract class AbstractEngine implements Engine {
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    protected abstract boolean executeExplainStatement(@Nonnull ExplainStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
+    public abstract boolean executeExplainStatement(@Nonnull ExplainStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
 
     /**
      * Executes a rollback statement.
@@ -103,7 +103,7 @@ public abstract class AbstractEngine implements Engine {
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    protected abstract boolean executeRollbackStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException;
+    public abstract boolean executeRollbackStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException;
 
     /**
      * Executes a commit statement.
@@ -115,7 +115,7 @@ public abstract class AbstractEngine implements Engine {
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    protected abstract boolean executeCommitStatement(@Nonnull CommitStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
+    public abstract boolean executeCommitStatement(@Nonnull CommitStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
 
     /**
      * Executes a start transaction statement.
@@ -127,7 +127,7 @@ public abstract class AbstractEngine implements Engine {
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    protected abstract boolean executeStartTransactionStatement(@Nonnull StartTransactionStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
+    public abstract boolean executeStartTransactionStatement(@Nonnull StartTransactionStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
 
     /**
      * Executes a generic statement.
@@ -139,7 +139,7 @@ public abstract class AbstractEngine implements Engine {
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    protected abstract boolean executeGenericStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException;
+    public abstract boolean executeGenericStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException;
 
     /**
      * Executes an empty statement.
@@ -151,5 +151,5 @@ public abstract class AbstractEngine implements Engine {
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    protected abstract boolean executeEmptyStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException;
+    public abstract boolean executeEmptyStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException;
 }
