@@ -69,7 +69,7 @@ public class ReplResultProcessor implements ResultProcessor {
         reporter.reportResultSetHeader(list.toString());
     }
 
-    private static class Field {
+    private class Field {
         private int index;
         private SqlCommon.Column column;
 
@@ -83,26 +83,12 @@ public class ReplResultProcessor implements ResultProcessor {
         }
 
         public String getType() {
-            return getFieldType(column);
+            return reporter.getFieldTypeText(column);
         }
 
         @Override
         public String toString() {
             return getName() + ": " + getType();
-        }
-    }
-
-    private static String getFieldType(SqlCommon.Column column) {
-        switch (column.getTypeInfoCase()) {
-        case ATOM_TYPE:
-            return column.getAtomType().name();
-        case ROW_TYPE:
-            return column.getRowType().getColumnsList().toString();
-        case USER_TYPE:
-            return column.getUserType().getName();
-        case TYPEINFO_NOT_SET:
-        default:
-            return null;
         }
     }
 

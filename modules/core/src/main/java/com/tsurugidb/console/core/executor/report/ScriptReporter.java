@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -237,22 +238,28 @@ public abstract class ScriptReporter {
 
     protected void reportTableMetadata(SqlCommon.Column column, int index) {
         String name = column.getName();
-        String type = getFieldType(column);
+        String type = getFieldTypeText(column);
         String message = MessageFormat.format("({0}) {1}: {2}", index, name, type);
         info(message);
     }
 
-    protected String getFieldType(SqlCommon.Column column) {
+    /**
+     * get field type.
+     *
+     * @param column Column
+     * @return type text
+     */
+    public String getFieldTypeText(SqlCommon.Column column) {
         switch (column.getTypeInfoCase()) {
         case ATOM_TYPE:
             return column.getAtomType().name();
         case ROW_TYPE:
-            return column.getRowType().getColumnsList().toString();
+            return column.getRowType().getColumnsList().stream().map(this::getFieldTypeText).collect(Collectors.joining(", ", "[", "]"));
         case USER_TYPE:
             return column.getUserType().getName();
         case TYPEINFO_NOT_SET:
         default:
-            return null;
+            return "";
         }
     }
 
