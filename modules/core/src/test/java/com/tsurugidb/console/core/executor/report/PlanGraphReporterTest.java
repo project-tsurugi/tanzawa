@@ -72,8 +72,8 @@ class PlanGraphReporterTest {
 
         String[] expected = { //
                 "1. title1 (kind1) >[1-1, 1-2]", //
-                "  1-1. title2 (kind2)", //
-                "  1-2. title3 (kind3)", //
+                "  1-1. title2 (kind2) <[1]", //
+                "  1-2. title3 (kind3) <[1]", //
         };
         testReport(expected, plan);
     }
@@ -92,8 +92,8 @@ class PlanGraphReporterTest {
         String[] expected = { //
                 "1. title1 (kind1)", //
                 "2. title2 (kind2) >[2-1, 2-2]", //
-                "  2-1. title3 (kind3)", //
-                "  2-2. title4 (kind4)", //
+                "  2-1. title3 (kind3) <[2]", //
+                "  2-2. title4 (kind4) <[2]", //
         };
         testReport(expected, plan);
     }
@@ -112,10 +112,10 @@ class PlanGraphReporterTest {
 
         String[] expected = { //
                 "1. title1 (kind1) >[1-1, 1-2]", //
-                "  1-1.", //
+                "  1-1. <[1]", //
                 "    1-1-1. title2 (kind2)", //
                 "    1-1-2. >[2]", //
-                "  1-2.", //
+                "  1-2. <[1]", //
                 "    1-2-1. title3 (kind3)", //
                 "    1-2-2. >[2]", //
                 "2. title4 (kind4) <[1-1-2, 1-2-2]", //
@@ -139,10 +139,10 @@ class PlanGraphReporterTest {
 
         String[] expected = { //
                 "1. title1 (kind1) >[1-1, 1-2]", //
-                "  1-1.", //
+                "  1-1. <[1]", //
                 "    1-1-1. title2 (kind2)", //
                 "    1-1-2. >[2]", //
-                "  1-2.", //
+                "  1-2. <[1]", //
                 "    1-2-1. title3 (kind3)", //
                 "    1-2-2. >[2]", //
                 "2. <[1-1-2, 1-2-2]", //

@@ -39,13 +39,13 @@ public class PlanGraphReporter {
      * @param plan   the inspected plan
      */
     public void report(@Nonnull String source, @Nonnull PlanGraph plan) {
-        var refMap = createRefMap(plan);
-        var comparator = createComparator(plan);
-        var rootList = createRootNode(plan, refMap, comparator);
+        var refMap = new IdentityHashMap<PlanNode, ReportNode>();
+        var rootList = createRootNode(plan, refMap);
 
         var nodeList = new ArrayList<ReportNode>(rootList.size() + refMap.size());
         nodeList.addAll(rootList);
         nodeList.addAll(refMap.values());
+        var comparator = createComparator(plan);
         nodeList.sort(comparator);
 
         assignNodeId(nodeList);
@@ -55,15 +55,14 @@ public class PlanGraphReporter {
         }
     }
 
-    protected Map<PlanNode, ReportNode> createRefMap(PlanGraph plan) {
-        var refMap = new IdentityHashMap<PlanNode, ReportNode>();
-        for (var planNode : plan.getNodes()) {
-            if (planNode.getUpstreams().size() >= 2) {
-                var node = new ReportNode(planNode);
-                refMap.put(planNode, node);
-            }
+    protected List<ReportNode> createRootNode(PlanGraph plan, Map<PlanNode, ReportNode> refMap) {
+        var rawList = plan.getSources();
+        var rootList = new ArrayList<ReportNode>(rawList.size());
+        for (var planNode : rawList) {
+            var node = createReportNode(planNode, refMap);
+            rootList.add(node);
         }
-        return refMap;
+        return rootList;
     }
 
     protected Comparator<ReportNode> createComparator(PlanGraph plan) {
@@ -82,24 +81,10 @@ public class PlanGraphReporter {
         };
     }
 
-    protected List<ReportNode> createRootNode(PlanGraph plan, Map<PlanNode, ReportNode> refMap, Comparator<ReportNode> comparator) {
-        var rawList = plan.getSources();
-        var rootList = new ArrayList<ReportNode>(rawList.size());
-        for (var planNode : rawList) {
-            var node = new ReportNode(planNode, refMap, comparator);
-            rootList.add(node);
-        }
-        return rootList;
-    }
-
     protected void assignNodeId(List<ReportNode> nodeList) {
-        for (var node : nodeList) {
-            node.normalizeChildList();
-        }
-
         if (nodeList.size() == 1) {
             var root = nodeList.get(0);
-            if (root.hasChild()) {
+            if (root instanceof SeqReportNode) {
                 var nodeId = new NodeId(-1, null, 0);
                 root.assignNodeId(nodeId);
                 return;
@@ -113,70 +98,70 @@ public class PlanGraphReporter {
         }
     }
 
-    protected class ReportNode {
-        private final PlanNode planNode;
-        private final ReportNode reference;
-        private final List<ReportNode> prevList; // use referenced-node only
-        private List<ReportNode> nextList;
-        private List<ReportNode> childList;
-        private NodeId groupId;
-        private NodeId nodeId;
+    // ReportNode
 
-        /**
-         * Creates a new instance for referenced-node.
-         *
-         * @param node PlanNode
-         */
-        public ReportNode(PlanNode node) {
-            this.planNode = node;
-            this.reference = null;
-            this.prevList = new ArrayList<>();
+    protected ReportNode createReportNode(PlanNode planNode, Map<PlanNode, ReportNode> refMap) {
+        var reference = refMap.get(planNode);
+        if (reference == null) {
+            if (isReferenceNode(planNode)) {
+                reference = createReportNodeMain(planNode, refMap);
+                refMap.put(planNode, reference);
+            }
         }
+        if (reference != null) {
+            return new JumpReportNode(planNode, reference);
+        }
+
+        return createReportNodeMain(planNode, refMap);
+    }
+
+    private static boolean isReferenceNode(PlanNode planNode) {
+        var upList = planNode.getUpstreams();
+        return upList.size() >= 2;
+    }
+
+    protected ReportNode createReportNodeMain(PlanNode planNode, Map<PlanNode, ReportNode> refMap) {
+        var downList = planNode.getDownstreams();
+        switch (downList.size()) {
+        case 0:
+            return new LeafReportNode(planNode);
+        case 1:
+            break;
+        default:
+            var node = new ParReportNode(planNode);
+            for (var down : downList) {
+                var next = createReportNode(down, refMap);
+                node.addNext(next);
+            }
+            return node;
+        }
+
+        var node = new SeqReportNode(planNode);
+        node.addChild(new LeafReportNode(planNode));
+        var down = downList.iterator().next();
+        var child = createReportNode(down, refMap);
+        if (child instanceof SeqReportNode) {
+            for (var c : ((SeqReportNode) child).getChildList()) {
+                node.addChild(c);
+            }
+        } else {
+            node.addChild(child);
+        }
+        return node;
+    }
+
+    protected abstract static class ReportNode {
+        private final PlanNode planNode;
+        private NodeId nodeId;
+        private List<ReportNode> prevList;
 
         /**
          * Creates a new instance.
          *
-         * @param node       PlanNode
-         * @param refMap     referenced-node map
-         * @param comparator comparator of {@link ReportNode}
+         * @param planNode PlanNode
          */
-        public ReportNode(PlanNode node, Map<PlanNode, ReportNode> refMap, Comparator<ReportNode> comparator) {
-            this.planNode = node;
-            this.reference = refMap.get(node);
-            this.prevList = null;
-
-            if (reference != null) {
-                reference.addPrev(this);
-            }
-            initialize(refMap, comparator);
-        }
-
-        private boolean initialized = false;
-
-        /**
-         * initialize.
-         *
-         * @param refMap     referenced-node map
-         * @param comparator comparator of {@link ReportNode}
-         */
-        public void initialize(Map<PlanNode, ReportNode> refMap, Comparator<ReportNode> comparator) {
-            if (this.initialized) {
-                return;
-            }
-            this.initialized = true;
-
-            if (this.reference != null) {
-                this.nextList = List.of();
-                reference.initialize(refMap, comparator);
-            } else {
-                var rawList = planNode.getDownstreams();
-                this.nextList = new ArrayList<>(rawList.size());
-                for (var rawNext : rawList) {
-                    var next = new ReportNode(rawNext, refMap, comparator);
-                    nextList.add(next);
-                }
-                nextList.sort(comparator);
-            }
+        public ReportNode(PlanNode planNode) {
+            this.planNode = planNode;
         }
 
         /**
@@ -189,127 +174,14 @@ public class PlanGraphReporter {
         }
 
         /**
-         * get reference node.
+         * assign node id.
          *
-         * @return reference node
+         * @param givenId node id
          */
-        @Nullable
-        public ReportNode getReferenceNode() {
-            return this.reference;
-        }
+        public abstract void assignNodeId(NodeId givenId);
 
-        /**
-         * initialize childList.
-         */
-        public void normalizeChildList() {
-            if (this.reference != null) {
-                return;
-            }
-
-            if (nextList.size() == 1) {
-                var next = nextList.get(0);
-                this.nextList = List.of();
-
-                this.childList = new ArrayList<>();
-                childList.add(next);
-
-                next.normalizeChildList();
-                if (next.childList != null) {
-                    childList.addAll(next.childList);
-                    next.childList = null;
-                }
-
-                return;
-            }
-
-            for (var next : nextList) {
-                next.normalizeChildList();
-            }
-        }
-
-        /**
-         * assign nodeId.
-         *
-         * @param givenId NodeId
-         */
-        public void assignNodeId(NodeId givenId) {
-            if (this.reference != null) {
-                this.nodeId = givenId;
-                return;
-            }
-
-            if (this.childList != null) {
-                this.groupId = givenId;
-
-                int i = 0;
-                this.nodeId = givenId.child(++i);
-                for (var child : childList) {
-                    var childId = givenId.child(++i);
-                    child.assignNodeId(childId);
-                }
-
-                assert nextList.isEmpty();
-                return;
-            }
-
-            this.nodeId = givenId;
-
-            int i = 0;
-            for (var next : nextList) {
-                var nextId = givenId.child(++i);
-                next.assignNodeId(nextId);
-            }
-        }
-
-        /**
-         * displays this node.
-         */
-        public void report() {
-            boolean reportPrevId = true;
-            if (this.groupId != null) {
-                boolean reported = reportGroup(groupId, this);
-                if (reported) {
-                    reportPrevId = false;
-                }
-            }
-
-            if (this.reference != null) {
-                reportRefPlanNode(nodeId, this, reportPrevId);
-                return;
-            }
-
-            reportPlanNode(nodeId, this, reportPrevId);
-
-            if (this.childList != null) {
-                for (var child : childList) {
-                    child.report();
-                }
-                assert nextList.isEmpty();
-                return;
-            }
-
-            for (var next : nextList) {
-                next.report();
-            }
-        }
-
-        /**
-         * whether childList is empty.
-         *
-         * @return {@code true} if childList exists
-         */
-        public boolean hasChild() {
-            return childList != null;
-        }
-
-        /**
-         * get group NodeId.
-         *
-         * @return groupId
-         */
-        @Nullable
-        public NodeId getGroupId() {
-            return this.groupId;
+        protected void setNodeId(NodeId nodeId) {
+            this.nodeId = nodeId;
         }
 
         /**
@@ -317,26 +189,20 @@ public class PlanGraphReporter {
          *
          * @return nodeId
          */
-        @Nullable
+        @Nonnull
         public NodeId getNodeId() {
             return this.nodeId;
         }
 
         /**
-         * get group NodeId or nodeId.
+         * add previous node.
          *
-         * @return groupId or nodeId
+         * @param prev previous node
          */
-        @Nonnull
-        public NodeId getGroupOrNodeId() {
-            if (this.groupId != null) {
-                return this.groupId;
+        public void addPrev(ReportNode prev) {
+            if (this.prevList == null) {
+                this.prevList = new ArrayList<>();
             }
-            return this.nodeId;
-        }
-
-        private void addPrev(ReportNode prev) { // use referenced-node only
-            assert this.prevList != null;
             prevList.add(prev);
         }
 
@@ -345,6 +211,7 @@ public class PlanGraphReporter {
          *
          * @return node list
          */
+        @Nullable
         public List<ReportNode> getPrevList() {
             return this.prevList;
         }
@@ -354,9 +221,13 @@ public class PlanGraphReporter {
          *
          * @return node list
          */
-        public List<ReportNode> getNextList() {
-            return nextList;
-        }
+        @Nonnull
+        public abstract List<ReportNode> getNextList();
+
+        /**
+         * displays this node.
+         */
+        public abstract void report();
 
         @Override
         public String toString() {
@@ -368,6 +239,171 @@ public class PlanGraphReporter {
         }
     }
 
+    protected class ParReportNode extends ReportNode {
+        private final List<ReportNode> nextList = new ArrayList<>();
+
+        /**
+         * Creates a new instance.
+         *
+         * @param planNode PlanNode
+         */
+        public ParReportNode(PlanNode planNode) {
+            super(planNode);
+        }
+
+        /**
+         * add next node.
+         *
+         * @param next next node
+         */
+        public void addNext(ReportNode next) {
+            nextList.add(next);
+            next.addPrev(this);
+        }
+
+        @Override
+        public void assignNodeId(NodeId givenId) {
+            setNodeId(givenId);
+
+            int i = 0;
+            for (var next : nextList) {
+                var nextId = givenId.child(++i);
+                next.assignNodeId(nextId);
+            }
+        }
+
+        @Override
+        public List<ReportNode> getNextList() {
+            return this.nextList;
+        }
+
+        @Override
+        public void report() {
+            reportNodeDetail(this);
+
+            for (var next : nextList) {
+                next.report();
+            }
+        }
+    }
+
+    protected class SeqReportNode extends ReportNode {
+        private final List<ReportNode> childList = new ArrayList<>();
+
+        /**
+         * Creates a new instance.
+         *
+         * @param planNode PlanNode
+         */
+        public SeqReportNode(PlanNode planNode) {
+            super(planNode);
+        }
+
+        /**
+         * add child node.
+         *
+         * @param child child node
+         */
+        public void addChild(ReportNode child) {
+            childList.add(child);
+        }
+
+        /**
+         * get child node list.
+         *
+         * @return node list
+         */
+        public List<ReportNode> getChildList() {
+            return this.childList;
+        }
+
+        @Override
+        public void assignNodeId(NodeId givenId) {
+            setNodeId(givenId);
+
+            int i = 0;
+            for (var child : childList) {
+                var childId = givenId.child(++i);
+                child.assignNodeId(childId);
+            }
+        }
+
+        @Override
+        public List<ReportNode> getNextList() {
+            return List.of();
+        }
+
+        @Override
+        public void report() {
+            reportNodeId(this);
+
+            for (var child : childList) {
+                child.report();
+            }
+        }
+    }
+
+    protected class LeafReportNode extends ReportNode {
+
+        /**
+         * Creates a new instance.
+         *
+         * @param planNode PlanNode
+         */
+        public LeafReportNode(PlanNode planNode) {
+            super(planNode);
+        }
+
+        @Override
+        public void assignNodeId(NodeId givenId) {
+            setNodeId(givenId);
+        }
+
+        @Override
+        public List<ReportNode> getNextList() {
+            return List.of();
+        }
+
+        @Override
+        public void report() {
+            reportNodeDetail(this);
+        }
+    }
+
+    protected class JumpReportNode extends ReportNode {
+        private final ReportNode reference;
+
+        /**
+         * Creates a new instance.
+         *
+         * @param planNode  PlanNode
+         * @param reference reference node
+         */
+        public JumpReportNode(PlanNode planNode, ReportNode reference) {
+            super(planNode);
+            this.reference = reference;
+
+            reference.addPrev(this);
+        }
+
+        @Override
+        public void assignNodeId(NodeId givenId) {
+            setNodeId(givenId);
+        }
+
+        @Override
+        public List<ReportNode> getNextList() {
+            return List.of(reference);
+        }
+
+        @Override
+        public void report() {
+            reportNodeId(this);
+        }
+    }
+
+    // node id
+
     protected class NodeId implements Comparable<NodeId> {
         private final int tab;
         private final String nodeIdText;
@@ -375,13 +411,13 @@ public class PlanGraphReporter {
         /**
          * Creates a new instance.
          *
-         * @param tab    tab
-         * @param prevId previous NodeId
-         * @param number assign number
+         * @param tab      tab
+         * @param parentId parent NodeId
+         * @param number   assign number
          */
-        public NodeId(int tab, String prevId, int number) {
+        public NodeId(int tab, String parentId, int number) {
             this.tab = tab;
-            this.nodeIdText = getNodeId(prevId, number);
+            this.nodeIdText = createNodeId(parentId, number);
         }
 
         /**
@@ -439,7 +475,7 @@ public class PlanGraphReporter {
         }
     }
 
-    protected String getNodeId(String parentId, int number) {
+    protected String createNodeId(String parentId, int number) {
         if (parentId == null || parentId.equals("0")) {
             return Integer.toString(number);
         } else {
@@ -447,36 +483,31 @@ public class PlanGraphReporter {
         }
     }
 
-    protected boolean reportGroup(NodeId groupId, ReportNode node) {
-        if (groupId.tab() < 0) {
-            return false;
+    // report
+
+    protected void reportNodeId(ReportNode node) {
+        var nodeId = node.getNodeId();
+        if (nodeId.tab() < 0) {
+            return;
         }
 
-        String tab = getTabText(groupId.tab());
-        String fromText = getPrevIdText(node, true);
+        String tab = getTabText(nodeId.tab());
+        String fromText = getPrevIdText(node);
         String toText = getNextIdText(node);
-        var message = MessageFormat.format("{0}{1}.{2}{3}", tab, groupId, fromText, toText);
+        var message = MessageFormat.format("{0}{1}.{2}{3}", tab, nodeId, fromText, toText);
         messageReporter.accept(message);
-        return true;
     }
 
-    protected void reportPlanNode(NodeId nodeId, ReportNode node, boolean reportPrevId) {
+    protected void reportNodeDetail(ReportNode node) {
+        var nodeId = node.getNodeId();
         var planNode = node.getPlanNode();
         String tab = getTabText(nodeId.tab());
         String title = planNode.getTitle();
         String kind = planNode.getKind();
-        String attributes = getPlanNodeAttributesText(planNode);
-        String fromText = getPrevIdText(node, reportPrevId);
+        String attributes = getAttributesText(planNode);
+        String fromText = getPrevIdText(node);
         String toText = getNextIdText(node);
         var message = MessageFormat.format("{0}{1}. {2} ({3}){4}{5}{6}", tab, nodeId, title, kind, attributes, fromText, toText);
-        messageReporter.accept(message);
-    }
-
-    protected void reportRefPlanNode(NodeId nodeId, ReportNode node, boolean reportPrevId) {
-        String tab = getTabText(nodeId.tab());
-        String fromText = getPrevIdText(node, reportPrevId);
-        String toText = getNextIdText(node);
-        var message = MessageFormat.format("{0}{1}.{2}{3}", tab, nodeId, fromText, toText);
         messageReporter.accept(message);
     }
 
@@ -493,45 +524,35 @@ public class PlanGraphReporter {
         return sb.toString();
     }
 
-    protected String getPlanNodeAttributesText(PlanNode node) {
-        Map<String, String> attributes = node.getAttributes();
+    protected String getAttributesText(PlanNode planNode) {
+        Map<String, String> attributes = planNode.getAttributes();
         if (attributes.isEmpty()) {
             return "";
         }
 
-        var result = new ArrayList<String>(attributes.size());
-        attributes.forEach((key, value) -> {
-            var text = String.format("%s: %s", key, value);
-            result.add(text);
-        });
-        return " {" + String.join(", ", result) + "}";
+        var attrText = attributes.entrySet().stream() //
+                .map(entry -> String.format("%s: %s", entry.getKey(), entry.getValue())) //
+                .collect(Collectors.joining(", ", " {", "}"));
+        return attrText;
     }
 
-    protected String getPrevIdText(ReportNode node, boolean report) {
-        if (!report) {
-            return "";
-        }
-
-        var prevList = node.getPrevList();
-        if (prevList == null) {
-            return "";
-        }
-        var idText = prevList.stream().map(ReportNode::getNodeId).sorted().map(NodeId::toString).collect(Collectors.joining(", ", " <[", "]"));
-        return idText;
+    protected String getPrevIdText(ReportNode node) {
+        return getIdText(node.getPrevList(), "<");
     }
 
     protected String getNextIdText(ReportNode node) {
-        List<ReportNode> nextList;
-        if (node.getReferenceNode() != null) {
-            nextList = List.of(node.getReferenceNode());
-        } else {
-            nextList = node.getNextList();
-            if (nextList.size() <= 1) {
-                return "";
-            }
+        return getIdText(node.getNextList(), ">");
+    }
+
+    protected String getIdText(List<ReportNode> nodeList, String prefix) {
+        if (nodeList == null || nodeList.isEmpty()) {
+            return "";
         }
 
-        var idText = nextList.stream().map(ReportNode::getGroupOrNodeId).sorted().map(NodeId::toString).collect(Collectors.joining(", ", " >[", "]"));
+        var idText = nodeList.stream() //
+                .map(ReportNode::getNodeId).sorted() //
+                .map(NodeId::toString) //
+                .collect(Collectors.joining(", ", " " + prefix + "[", "]"));
         return idText;
     }
 }
