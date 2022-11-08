@@ -1,5 +1,7 @@
 package com.tsurugidb.console.cli.repl;
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
 
 import org.jline.reader.EndOfFileException;
@@ -19,7 +21,7 @@ import com.tsurugidb.console.core.model.Statement.Kind;
 /**
  * Tsurugi SQL console repl script.
  */
-public class ReplScript implements IoSupplier<Statement> {
+public class ReplScript implements IoSupplier<List<Statement>> {
     private static final Logger LOG = LoggerFactory.getLogger(ReplScript.class);
 
     private static final String PROMPT1 = "tgsql> "; //$NON-NLS-1$
@@ -39,24 +41,25 @@ public class ReplScript implements IoSupplier<Statement> {
     }
 
     @Override
-    public Statement get() {
+    public List<Statement> get() {
         String text;
         try {
             text = lineReader.readLine(PROMPT1);
         } catch (UserInterruptException e) {
             throw new ScriptInterruptedException(e);
         } catch (EndOfFileException e) {
-            LOG.trace("EndOfFileException", e);
+            LOG.trace("EndOfFileException", e); //$NON-NLS-1$
             return null;
         }
 
         var line = lineReader.getParsedLine();
         if (line instanceof ParsedStatement) {
-            var statement = ((ParsedStatement) line).statement();
-            if (statement != null) {
-                return statement;
+            var statementList = ((ParsedStatement) line).statements();
+            if (!statementList.isEmpty()) {
+                return statementList;
             }
-            return new SimpleStatement(Kind.EMPTY, text, new Region(0, text.length(), 0, 0));
+            var s = new SimpleStatement(Kind.EMPTY, text, new Region(0, text.length(), 0, 0));
+            return List.of(s);
         }
         throw new AssertionError(line);
     }

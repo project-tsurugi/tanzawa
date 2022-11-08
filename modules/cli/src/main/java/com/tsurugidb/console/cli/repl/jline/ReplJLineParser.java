@@ -3,7 +3,10 @@ package com.tsurugidb.console.cli.repl.jline;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nonnull;
 
 import org.jline.reader.EOFError;
 import org.jline.reader.ParsedLine;
@@ -42,17 +45,23 @@ public class ReplJLineParser extends DefaultParser {
             LOG.trace("input=[{}]", input); //$NON-NLS-1$
             try (var reader = new StringReader(input); //
                     var parser = new SqlParser(reader)) {
-                var statement = parser.next();
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("statement={}, sawEof={}", statement, parser.sawEof()); //$NON-NLS-1$
-                }
-                if (statement != null) {
+                var statementList = new ArrayList<Statement>();
+                while (true) {
+                    var statement = parser.next();
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("statement={}, sawEof={}", statement, parser.sawEof()); //$NON-NLS-1$
+                    }
+                    if (statement == null) {
+                        break;
+                    }
+
                     if (parser.sawEof()) {
                         throw new EOFError(-1, -1, "end of statement"); //$NON-NLS-1$
                     }
+                    statementList.add(statement);
                 }
                 var result = super.parse(line, cursor, context);
-                return new ParsedStatement(result, statement);
+                return new ParsedStatement(result, statementList);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -65,11 +74,11 @@ public class ReplJLineParser extends DefaultParser {
      */
     public static class ParsedStatement implements ParsedLine {
         private final ParsedLine delegate;
-        private final Statement statement;
+        private final List<Statement> statementList;
 
-        ParsedStatement(ParsedLine delegate, Statement statement) {
+        ParsedStatement(@Nonnull ParsedLine delegate, @Nonnull List<Statement> statementList) {
             this.delegate = delegate;
-            this.statement = statement;
+            this.statementList = statementList;
         }
 
         @Override
@@ -107,8 +116,9 @@ public class ReplJLineParser extends DefaultParser {
          *
          * @return statement
          */
-        public Statement statement() {
-            return this.statement;
+        @Nonnull
+        public List<Statement> statements() {
+            return this.statementList;
         }
     }
 }

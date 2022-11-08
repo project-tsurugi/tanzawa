@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -31,6 +32,7 @@ import com.tsurugidb.console.core.executor.result.BasicResultProcessor;
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
 import com.tsurugidb.console.core.executor.sql.BasicSqlProcessor;
 import com.tsurugidb.console.core.model.Statement;
+import com.tsurugidb.console.core.model.Statement.Kind;
 import com.tsurugidb.console.core.parser.SqlParser;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
@@ -222,7 +224,7 @@ public final class ScriptRunner {
      * @throws InterruptedException if interrupted while establishing connection
      */
     public static void repl(//
-            @Nonnull IoSupplier<? extends Statement> script, //
+            @Nonnull IoSupplier<? extends List<Statement>> script, //
             @Nonnull ScriptConfig config, //
             @Nonnull Function<AbstractEngine, Engine> engineWrapper, //
             @Nonnull ResultProcessor resultProcessor, //
@@ -249,20 +251,27 @@ public final class ScriptRunner {
      * @throws IOException if I/O error was occurred while establishing connection
      */
     public static void repl(//
-            @Nonnull IoSupplier<? extends Statement> script, //
+            @Nonnull IoSupplier<? extends List<Statement>> script, //
             @Nonnull Engine engine) throws IOException {
         LOG.info("start repl");
-        while (true) {
+        loop: while (true) {
             try {
-                Statement statement = script.get();
-                if (statement == null) {
+                List<Statement> statementList = script.get();
+                if (statementList == null) {
                     LOG.trace("EOF");
                     break;
                 }
-                boolean cont = engine.execute(statement);
-                if (!cont) {
-                    LOG.trace("shutdown was requested");
-                    break;
+                for (var statement : statementList) {
+                    if (statementList.size() >= 2 && statement.getKind() != Kind.EMPTY) {
+                        var reporter = engine.getReporter();
+                        reporter.implicit(statement.getText());
+                    }
+
+                    boolean cont = engine.execute(statement);
+                    if (!cont) {
+                        LOG.trace("shutdown was requested");
+                        break loop;
+                    }
                 }
             } catch (ScriptInterruptedException e) {
                 LOG.trace("user interrupted", e);
