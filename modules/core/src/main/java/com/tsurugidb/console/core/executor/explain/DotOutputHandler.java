@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.console.core.config.ScriptClientVariableMap;
 import com.tsurugidb.console.core.executor.engine.CommandPath;
 import com.tsurugidb.console.core.executor.engine.EngineConfigurationException;
 import com.tsurugidb.console.core.executor.engine.EngineException;
@@ -128,25 +129,35 @@ public class DotOutputHandler implements PlanGraphOutputHandler {
         this.options = options;
     }
 
+    static Map<Regioned<String>, Optional<Regioned<Value>>> extendOptions(//
+            @Nonnull Map<Regioned<String>, Optional<Regioned<Value>>> options, //
+            @Nonnull Map<String, String> map) {
+        var clientVariableMap = new ScriptClientVariableMap();
+        clientVariableMap.putAll(map);
+        return extendOptions(options, clientVariableMap);
+    }
+
     /**
      * Extends options.
      *
-     * @param options        the explain statement options
-     * @param clientVariable client variables
+     * @param options           the explain statement options
+     * @param clientVariableMap client variables
      * @return extended options
      */
     public static Map<Regioned<String>, Optional<Regioned<Value>>> extendOptions(//
             @Nonnull Map<Regioned<String>, Optional<Regioned<Value>>> options, //
-            @Nonnull Map<String, String> clientVariable) {
+            @Nonnull ScriptClientVariableMap clientVariableMap) {
         Objects.requireNonNull(options);
-        Objects.requireNonNull(clientVariable);
+        Objects.requireNonNull(clientVariableMap);
 
         var result = new LinkedHashMap<>(options);
-        clientVariable.forEach((key, value) -> {
+        for (var entry : clientVariableMap.entrySet()) {
+            String key = entry.getKey();
             if (key.startsWith(KEY_PREFIX)) {
-                addOption(result, key, value);
+                var value = entry.getValue();
+                addOption(result, key, (value != null) ? value.toString() : null);
             }
-        });
+        }
 
         // default value
         addOption(result, KEY_GRAPH_PREFIX + "rankdir", "RL"); //$NON-NLS-1$ //$NON-NLS-2$

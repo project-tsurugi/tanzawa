@@ -20,6 +20,7 @@ import com.beust.jcommander.ParameterException;
 import com.tsurugidb.console.cli.argument.CommonArgument;
 import com.tsurugidb.console.cli.argument.CommonArgument.TransactionEnum;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineReader;
+import com.tsurugidb.console.core.config.ScriptClientVariableMap;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.sql.proto.SqlRequest;
@@ -131,9 +132,16 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
     }
 
     private void fillClientVariable() {
+        var clientVariableMap = config.getClientVariableMap();
+        fillClientVariableDefault(clientVariableMap);
+
         var variable = argument.getClientVariable();
         log.debug("config.clientVariable={}", variable);
-        config.setClientVariable(variable);
+        clientVariableMap.putAll(variable);
+    }
+
+    protected void fillClientVariableDefault(ScriptClientVariableMap clientVariableMap) {
+        // do override
     }
 
     protected abstract void buildSub();

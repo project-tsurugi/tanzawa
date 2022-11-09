@@ -57,8 +57,8 @@ public class SetCommand extends SpecialCommand {
     }
 
     protected static boolean executeSet(BasicEngine engine, String key, String value) {
-        var config = engine.getConfig();
-        config.setClientVariable(key, value);
+        var clientVariableMap = engine.getConfig().getClientVariableMap();
+        clientVariableMap.put(key, value);
 
         showClientVariable(key, value, engine.getReporter());
         return true;
@@ -72,7 +72,7 @@ public class SetCommand extends SpecialCommand {
         for (var entry : map.entrySet()) {
             String k = entry.getKey();
             if (k.startsWith(keyPrefix)) {
-                String v = entry.getValue();
+                String v = String.valueOf(entry.getValue());
                 showClientVariable(k, v, reporter);
             }
         }

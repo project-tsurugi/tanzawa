@@ -3,7 +3,6 @@ package com.tsurugidb.console.core.config;
 import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,7 +25,7 @@ public class ScriptConfig {
 
     private ScriptCommitMode commitMode;
 
-    private Map<String, String> clientVariableMap;
+    private final ScriptClientVariableMap clientVariableMap = new ScriptClientVariableMap();
 
     /**
      * set endpoint.
@@ -128,38 +127,12 @@ public class ScriptConfig {
     }
 
     /**
-     * set client variable.
-     *
-     * @param map client variable
-     */
-    public void setClientVariable(@Nonnull Map<String, String> map) {
-        Objects.requireNonNull(map);
-        this.clientVariableMap = new TreeMap<>(map);
-    }
-
-    /**
      * get client variable.
      *
      * @return client variable
      */
     @Nonnull
-    public Map<String, String> getClientVariableMap() {
-        if (this.clientVariableMap == null) {
-            return Map.of();
-        }
+    public ScriptClientVariableMap getClientVariableMap() {
         return this.clientVariableMap;
-    }
-
-    /**
-     * set client variable.
-     *
-     * @param key   key
-     * @param value value
-     */
-    public void setClientVariable(@Nonnull String key, @Nullable String value) {
-        if (this.clientVariableMap == null) {
-            this.clientVariableMap = new TreeMap<>();
-        }
-        clientVariableMap.put(key, value);
     }
 }
