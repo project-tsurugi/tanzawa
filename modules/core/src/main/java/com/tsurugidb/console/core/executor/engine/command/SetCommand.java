@@ -1,12 +1,14 @@
 package com.tsurugidb.console.core.executor.engine.command;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.executor.engine.BasicEngine;
 import com.tsurugidb.console.core.executor.engine.EngineException;
+import com.tsurugidb.console.core.executor.report.ScriptReporter;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
@@ -44,18 +46,41 @@ public class SetCommand extends SpecialCommand {
             }
             sb.append(value);
         }
-        if (key == null) {
-            printHelp(engine);
-            return true;
+
+        if (sb != null) {
+            LOG.debug("set client variable. key={}, value=[{}]", key, sb); //$NON-NLS-1$
+            return executeSet(engine, key, sb.toString());
+        } else {
+            LOG.debug("show client variable. key={}", key); //$NON-NLS-1$
+            return executeShow(engine, key);
         }
-        String value = (sb != null) ? sb.toString() : null;
+    }
 
-        LOG.debug("set client variable"); //$NON-NLS-1$
-
+    protected static boolean executeSet(BasicEngine engine, String key, String value) {
         var config = engine.getConfig();
         config.setClientVariable(key, value);
 
-        ShowCommand.showClientVariable(key, value, engine.getReporter());
+        showClientVariable(key, value, engine.getReporter());
         return true;
+    }
+
+    protected static boolean executeShow(BasicEngine engine, String key) {
+        String keyPrefix = (key != null) ? key : "";
+
+        var map = engine.getConfig().getClientVariableMap();
+        var reporter = engine.getReporter();
+        for (var entry : map.entrySet()) {
+            String k = entry.getKey();
+            if (k.startsWith(keyPrefix)) {
+                String v = entry.getValue();
+                showClientVariable(k, v, reporter);
+            }
+        }
+        return true;
+    }
+
+    protected static void showClientVariable(String key, String value, ScriptReporter reporter) {
+        var message = MessageFormat.format("{0}={1}", key, value); //$NON-NLS-1$
+        reporter.info(message);
     }
 }
