@@ -110,7 +110,7 @@ public final class Main {
         var terminal = lineReader.getTerminal();
         var reporter = new ReplReporter(terminal);
         try (var executor = new ReplThreadExecutor("SQL engine", terminal); //
-                var resultProcessor = new ReplResultProcessor(reporter)) {
+                var resultProcessor = new ReplResultProcessor(config, reporter)) {
             ScriptRunner.repl(script, config, engine -> new ReplEngine(engine, executor), resultProcessor, reporter);
         }
     }

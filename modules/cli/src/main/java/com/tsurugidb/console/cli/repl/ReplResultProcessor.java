@@ -8,6 +8,8 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
+import com.tsurugidb.console.core.config.ScriptCvKey;
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
 import com.tsurugidb.console.core.executor.result.ResultSetUtil;
 import com.tsurugidb.sql.proto.SqlCommon;
@@ -21,14 +23,17 @@ import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 public class ReplResultProcessor implements ResultProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(ReplResultProcessor.class);
 
+    private final ScriptConfig config;
     private final ReplReporter reporter;
 
     /**
      * Creates a new instance.
      *
+     * @param config   script configuration
      * @param reporter ReplReporter
      */
-    public ReplResultProcessor(@Nonnull ReplReporter reporter) {
+    public ReplResultProcessor(@Nonnull ScriptConfig config, @Nonnull ReplReporter reporter) {
+        this.config = config;
         this.reporter = reporter;
     }
 
@@ -40,24 +45,32 @@ public class ReplResultProcessor implements ResultProcessor {
             throw new InterruptedException();
         }
 
-        var list = new ArrayList<Object>();
+        var clientVariableMap = config.getClientVariableMap();
+        int maxLines = clientVariableMap.get(ScriptCvKey.SELECT_MAX_LINES, -1);
+        boolean over = false;
+
+        var columnList = new ArrayList<Object>();
         int rowSize = 0;
-        while (ResultSetUtil.fetchNextRow(target, target.getMetadata(), list::add)) {
+        while (ResultSetUtil.fetchNextRow(target, target.getMetadata(), columnList::add)) {
+            if (maxLines >= 0) {
+                if (rowSize >= maxLines) {
+                    reporter.reportResultSetRow("...");
+                    over = true;
+                    break;
+                }
+            }
+
+            reporter.reportResultSetRow(columnList.toString());
+            rowSize++;
+            columnList.clear();
+
             if (Thread.interrupted()) {
                 LOG.trace("Thread.interrupted (2)");
                 throw new InterruptedException();
             }
-
-            reporter.reportResultSetRow(list.toString());
-            rowSize++;
-            list.clear();
         }
 
-        if (Thread.interrupted()) {
-            LOG.trace("Thread.interrupted (3)");
-            throw new InterruptedException();
-        }
-        reporter.reportResultSetSize(rowSize);
+        reporter.reportResultSetSize(rowSize, over);
     }
 
     private void dumpMetadata(ResultSetMetadata metadata) throws IOException {

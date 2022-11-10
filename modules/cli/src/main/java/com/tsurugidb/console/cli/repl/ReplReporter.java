@@ -87,9 +87,15 @@ public class ReplReporter extends ScriptReporter {
      * output ResultSet size.
      *
      * @param size row size
+     * @param over {@code true} if over max lines
      */
-    public void reportResultSetSize(int size) {
-        String message = MessageFormat.format("({0} rows)", size);
+    public void reportResultSetSize(int size, boolean over) {
+        String message;
+        if (over) {
+            message = MessageFormat.format("({0} rows over)", size);
+        } else {
+            message = MessageFormat.format("({0} rows)", size);
+        }
         reportResultSetSize(message);
     }
 

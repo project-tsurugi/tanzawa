@@ -83,6 +83,20 @@ public class ScriptClientVariableMap {
     }
 
     /**
+     * Returns the value to which the specified key is mapped,or null if this map contains no mapping for the key.
+     *
+     * @param <T>          variable type
+     * @param key          the key whose associated value is to be returned
+     * @param defaultValue default value
+     * @return the value to which the specified key is mapped, or null if this map contains no mapping for the key
+     */
+    @Nullable
+    public <T> T get(@Nonnull ScriptCvKey<T> key, T defaultValue) {
+        var value = get(key);
+        return (value != null) ? value : defaultValue;
+    }
+
+    /**
      * Returns the number of key-value mappings in this map.
      *
      * @return the number of key-value mappings in this map
