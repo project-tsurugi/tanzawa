@@ -56,6 +56,8 @@ public class ShowCommand extends SpecialCommand {
 
     private final List<SubCommand> subCommandList = new ArrayList<>();
 
+    private static final String CLIENT = "client"; //$NON-NLS-1$
+
     /**
      * Creates a new instance.
      */
@@ -64,7 +66,7 @@ public class ShowCommand extends SpecialCommand {
 
         add("table", true, ShowCommand::executeShowTable); //$NON-NLS-1$
         add("transaction", false, ShowCommand::executeShowTransaction); //$NON-NLS-1$
-        add("client", true, ShowCommand::executeShowClient); //$NON-NLS-1$
+        add(CLIENT, true, ShowCommand::executeShowClient); // $NON-NLS-1$
     }
 
     private void add(String name, boolean hasParameter, Executor executor) {
@@ -75,7 +77,11 @@ public class ShowCommand extends SpecialCommand {
     protected void collectCompleterCandidate(List<CompleterCandidateWords> result) {
         String showCommand = "\\show"; //$NON-NLS-1$
         for (var command : subCommandList) {
-            result.add(new CompleterCandidateWords(showCommand, command.name(), !command.hasParameter()));
+            if (command.name().equals(CLIENT)) {
+                SetCommand.collectCompleterCandidate(result, List.of(showCommand, CLIENT));
+            } else {
+                result.add(new CompleterCandidateWords(showCommand, command.name(), !command.hasParameter()));
+            }
         }
     }
 

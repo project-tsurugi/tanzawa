@@ -2,10 +2,12 @@ package com.tsurugidb.console.core.executor.engine.command;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.console.core.config.ScriptCvKey;
 import com.tsurugidb.console.core.executor.engine.BasicEngine;
 import com.tsurugidb.console.core.executor.engine.EngineException;
 import com.tsurugidb.console.core.executor.report.ScriptReporter;
@@ -23,6 +25,25 @@ public class SetCommand extends SpecialCommand {
      */
     public SetCommand() {
         super("set"); //$NON-NLS-1$
+    }
+
+    @Override
+    protected void collectCompleterCandidate(List<CompleterCandidateWords> result) {
+        String showCommand = "\\set"; //$NON-NLS-1$
+        collectCompleterCandidate(result, List.of(showCommand));
+    }
+
+    protected static void collectCompleterCandidate(List<CompleterCandidateWords> result, List<String> prefixList) {
+        var keys = ScriptCvKey.getKeyNames();
+        for (String name : keys) {
+            var candidate = new CompleterCandidateWords(name.endsWith("."));
+            for (var word : prefixList) {
+                candidate.add(word);
+            }
+            candidate.add(name);
+
+            result.add(candidate);
+        }
     }
 
     @Override
@@ -58,9 +79,9 @@ public class SetCommand extends SpecialCommand {
 
     protected static boolean executeSet(BasicEngine engine, String key, String value) {
         var clientVariableMap = engine.getConfig().getClientVariableMap();
-        clientVariableMap.put(key, value);
+        var convertedValue = clientVariableMap.put(key, value);
 
-        showClientVariable(key, value, engine.getReporter());
+        showClientVariable(key, convertedValue, engine.getReporter());
         return true;
     }
 
@@ -72,15 +93,15 @@ public class SetCommand extends SpecialCommand {
         for (var entry : map.entrySet()) {
             String k = entry.getKey();
             if (k.startsWith(keyPrefix)) {
-                String v = String.valueOf(entry.getValue());
-                showClientVariable(k, v, reporter);
+                showClientVariable(k, entry.getValue(), reporter);
             }
         }
         return true;
     }
 
-    protected static void showClientVariable(String key, String value, ScriptReporter reporter) {
-        var message = MessageFormat.format("{0}={1}", key, value); //$NON-NLS-1$
+    protected static void showClientVariable(String key, Object value, ScriptReporter reporter) {
+        String v = String.valueOf(value);
+        var message = MessageFormat.format("{0}={1}", key, v); //$NON-NLS-1$
         reporter.info(message);
     }
 }

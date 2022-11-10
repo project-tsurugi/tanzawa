@@ -13,7 +13,7 @@ public class CompleterCandidateWords {
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param end whether to terminate
      */
     public CompleterCandidateWords(boolean end) {
@@ -22,7 +22,7 @@ public class CompleterCandidateWords {
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param word candidate word
      * @param end  whether to terminate
      */
@@ -33,7 +33,7 @@ public class CompleterCandidateWords {
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param word1 candidate word
      * @param word2 candidate word
      * @param end   whether to terminate
@@ -46,7 +46,7 @@ public class CompleterCandidateWords {
 
     /**
      * add candidate word.
-     * 
+     *
      * @param word candidate word
      */
     public void add(String word) {
@@ -55,7 +55,7 @@ public class CompleterCandidateWords {
 
     /**
      * add candidate words
-     * 
+     *
      * @param words      candidate words
      * @param startIndex index to start adding
      */
@@ -68,7 +68,7 @@ public class CompleterCandidateWords {
 
     /**
      * get candidate words.
-     * 
+     *
      * @return candidate words
      */
     public List<String> getWords() {
@@ -77,7 +77,7 @@ public class CompleterCandidateWords {
 
     /**
      * get whether to terminate.
-     * 
+     *
      * @return whether to terminate
      */
     public boolean getEnd() {

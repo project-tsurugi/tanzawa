@@ -3,12 +3,15 @@ package com.tsurugidb.console.core.config;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.tsurugidb.console.core.exception.ScriptMessageException;
+import com.tsurugidb.console.core.executor.explain.DotOutputHandler;
 
 /**
  * client variable key.
@@ -20,6 +23,19 @@ public abstract class ScriptCvKey<T> {
 
     /** select.maxlines */
     public static final ScriptCvKeyInt SELECT_MAX_LINES = new ScriptCvKeyInt("select.maxlines"); //$NON-NLS-1$
+
+    /** dot.verbose */
+    public static final ScriptCvKeyBoolean DOT_VERBOSE = new ScriptCvKeyBoolean(DotOutputHandler.KEY_VERBOSE);
+    /** dot.output */
+    public static final ScriptCvKeyString DOT_OUTPUT = new ScriptCvKeyString(DotOutputHandler.KEY_OUTPUT);
+    /** dot.executable */
+    public static final ScriptCvKeyString DOT_EXECUTABLE = new ScriptCvKeyString(DotOutputHandler.KEY_EXECUTABLE);
+    /** dot.graph. */
+    public static final ScriptCvKeyString DOT_GRAPH_PREFIX = new ScriptCvKeyString(DotOutputHandler.KEY_GRAPH_PREFIX);
+    /** dot.node. */
+    public static final ScriptCvKeyString DOT_NODE_PREFIX = new ScriptCvKeyString(DotOutputHandler.KEY_NODE_PREFIX);
+    /** dot.edge. */
+    public static final ScriptCvKeyString DOT_EDGE_PREFIX = new ScriptCvKeyString(DotOutputHandler.KEY_EDGE_PREFIX);
 
     //
 
@@ -58,12 +74,44 @@ public abstract class ScriptCvKey<T> {
         }
 
         @Override
-        public Integer convertValue(String s) {
+        public Integer convertValue(@Nonnull String s) {
             try {
                 return Integer.valueOf(s.trim());
             } catch (NumberFormatException e) {
-                throw new ScriptMessageException(MessageFormat.format("not integer. value={0}", s), e);
+                throw new ScriptMessageException(MessageFormat.format("not integer. key={0}, value={1}", name, s), e);
             }
+        }
+    }
+
+    /**
+     * client variable key for Boolean.
+     */
+    public static class ScriptCvKeyBoolean extends ScriptCvKey<Boolean> {
+
+        /**
+         * Creates a new instance.
+         *
+         * @param name variable name
+         */
+        public ScriptCvKeyBoolean(String name) {
+            super(name);
+        }
+
+        @Override
+        public Boolean convertValue(@Nonnull String s) {
+            String t = s.trim().toLowerCase(Locale.ENGLISH);
+            if (t.isEmpty()) {
+                return Boolean.FALSE;
+            }
+            if ("true".startsWith(t)) { //$NON-NLS-1$
+                return Boolean.TRUE;
+            }
+            try {
+                return Double.parseDouble(t) != 0;
+            } catch (Exception ignore) {
+                // ignore
+            }
+            return false;
         }
     }
 
@@ -82,6 +130,15 @@ public abstract class ScriptCvKey<T> {
     }
 
     /**
+     * get key names.
+     *
+     * @return key names
+     */
+    public static Set<String> getKeyNames() {
+        return KEY_MAP.keySet();
+    }
+
+    /**
      * find key.
      *
      * @param name variable name
@@ -94,7 +151,7 @@ public abstract class ScriptCvKey<T> {
 
     //
 
-    private final String name;
+    protected final String name;
 
     protected ScriptCvKey(String name) {
         this.name = name;

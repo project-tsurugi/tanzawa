@@ -31,13 +31,15 @@ public class ScriptClientVariableMap {
      *
      * @param key   key with which the specified value is to be associated
      * @param value value to be associated with the specified key
+     * @return converted value
      */
-    public void put(@Nonnull String key, @Nullable String value) {
+    public Object put(@Nonnull String key, @Nullable String value) {
         var cvKey = ScriptCvKey.find(key);
         if (cvKey != null) {
-            put(cvKey, value);
+            return put(cvKey, value);
         } else {
             variableMap.put(key, value);
+            return value;
         }
     }
 
@@ -47,10 +49,11 @@ public class ScriptClientVariableMap {
      * @param <T>   variable type
      * @param key   key with which the specified value is to be associated
      * @param value value to be associated with the specified key
+     * @return converted value
      */
-    public <T> void put(@Nonnull ScriptCvKey<T> key, @Nullable String value) {
+    public <T> T put(@Nonnull ScriptCvKey<T> key, @Nullable String value) {
         T converted = (value != null) ? key.convertValue(value) : null;
-        put(key, converted);
+        return put(key, converted);
     }
 
     /**
@@ -59,9 +62,11 @@ public class ScriptClientVariableMap {
      * @param <T>   variable type
      * @param key   key with which the specified value is to be associated
      * @param value value to be associated with the specified key
+     * @return value
      */
-    public <T> void put(@Nonnull ScriptCvKey<T> key, @Nullable T value) {
+    public <T> T put(@Nonnull ScriptCvKey<T> key, @Nullable T value) {
         variableMap.put(key.toString(), value);
+        return value;
     }
 
     /**
