@@ -105,7 +105,7 @@ public final class Main {
         var builder = new ConsoleConfigBuilder(argument);
         var config = builder.build();
 
-        var lineReader = ReplJLineReader.createReader();
+        var lineReader = ReplJLineReader.createReader(config);
         var script = new ReplScript(lineReader);
         var terminal = lineReader.getTerminal();
         var reporter = new ReplReporter(terminal);

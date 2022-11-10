@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.executor.engine.BasicEngine;
 import com.tsurugidb.console.core.executor.engine.EngineException;
 import com.tsurugidb.console.core.model.ErroneousStatement;
@@ -24,6 +25,10 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
  */
 public class ShowCommand extends SpecialCommand {
     private static final Logger LOG = LoggerFactory.getLogger(ShowCommand.class);
+
+    private static final String COMMAND_NAME = "show"; //$NON-NLS-1$
+    private static final String COMMAND = COMMAND_PREFIX + COMMAND_NAME;
+    private static final String CLIENT = "client"; //$NON-NLS-1$
 
     @FunctionalInterface
     private interface Executor {
@@ -56,13 +61,11 @@ public class ShowCommand extends SpecialCommand {
 
     private final List<SubCommand> subCommandList = new ArrayList<>();
 
-    private static final String CLIENT = "client"; //$NON-NLS-1$
-
     /**
      * Creates a new instance.
      */
     public ShowCommand() {
-        super("show"); //$NON-NLS-1$
+        super(COMMAND_NAME);
 
         add("table", true, ShowCommand::executeShowTable); //$NON-NLS-1$
         add("transaction", false, ShowCommand::executeShowTransaction); //$NON-NLS-1$
@@ -75,14 +78,25 @@ public class ShowCommand extends SpecialCommand {
 
     @Override
     protected void collectCompleterCandidate(List<CompleterCandidateWords> result) {
-        String showCommand = "\\show"; //$NON-NLS-1$
         for (var command : subCommandList) {
             if (command.name().equals(CLIENT)) {
-                SetCommand.collectCompleterCandidate(result, List.of(showCommand, CLIENT));
+                SetCommand.collectCompleterCandidate(result, List.of(COMMAND, CLIENT));
             } else {
-                result.add(new CompleterCandidateWords(showCommand, command.name(), !command.hasParameter()));
+                result.add(new CompleterCandidateWords(COMMAND, command.name(), !command.hasParameter()));
             }
         }
+    }
+
+    @Override
+    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(ScriptConfig config, String[] inputWords) {
+        if (inputWords.length != 3) {
+            return List.of();
+        }
+        if (!inputWords[1].equals(CLIENT)) {
+            return List.of();
+        }
+
+        return SetCommand.getDynamicCompleterCandidateList(config, List.of(COMMAND, CLIENT));
     }
 
     @Override

@@ -47,6 +47,15 @@ public class CompleterCandidateWords {
     /**
      * add candidate word.
      *
+     * @param words candidate word
+     */
+    public void add(List<String> words) {
+        wordList.addAll(words);
+    }
+
+    /**
+     * add candidate word.
+     *
      * @param word candidate word
      */
     public void add(String word) {

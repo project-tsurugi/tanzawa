@@ -83,6 +83,15 @@ public class ScriptClientVariableMap {
     }
 
     /**
+     * Returns the number of key-value mappings in this map.
+     *
+     * @return the number of key-value mappings in this map
+     */
+    public int size() {
+        return variableMap.size();
+    }
+
+    /**
      * Returns a Set view of the mappings contained in this map.
      *
      * @return a set view of the mappings contained in this map

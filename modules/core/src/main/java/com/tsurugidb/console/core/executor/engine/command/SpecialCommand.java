@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.executor.engine.BasicEngine;
 import com.tsurugidb.console.core.executor.engine.EngineException;
 import com.tsurugidb.console.core.model.ErroneousStatement;
@@ -187,6 +188,17 @@ public abstract class SpecialCommand {
         for (String name : list) {
             result.add(new CompleterCandidateWords(COMMAND_PREFIX + name, true));
         }
+    }
+
+    /**
+     * get completer candidates.
+     *
+     * @param config     script configuration
+     * @param inputWords input words
+     * @return candidates
+     */
+    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(ScriptConfig config, String[] inputWords) {
+        return List.of();
     }
 
     /**

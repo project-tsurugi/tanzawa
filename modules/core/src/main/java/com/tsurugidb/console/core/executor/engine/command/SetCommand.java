@@ -2,11 +2,13 @@ package com.tsurugidb.console.core.executor.engine.command;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.config.ScriptCvKey;
 import com.tsurugidb.console.core.executor.engine.BasicEngine;
 import com.tsurugidb.console.core.executor.engine.EngineException;
@@ -20,30 +22,53 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 public class SetCommand extends SpecialCommand {
     private static final Logger LOG = LoggerFactory.getLogger(SetCommand.class);
 
+    private static final String COMMAND_NAME = "set"; //$NON-NLS-1$
+    private static final String COMMAND = COMMAND_PREFIX + COMMAND_NAME;
+
     /**
      * Creates a new instance.
      */
     public SetCommand() {
-        super("set"); //$NON-NLS-1$
+        super(COMMAND_NAME);
     }
 
     @Override
     protected void collectCompleterCandidate(List<CompleterCandidateWords> result) {
-        String showCommand = "\\set"; //$NON-NLS-1$
-        collectCompleterCandidate(result, List.of(showCommand));
+        collectCompleterCandidate(result, List.of(COMMAND));
     }
 
     protected static void collectCompleterCandidate(List<CompleterCandidateWords> result, List<String> prefixList) {
         var keys = ScriptCvKey.getKeyNames();
         for (String name : keys) {
             var candidate = new CompleterCandidateWords(name.endsWith("."));
-            for (var word : prefixList) {
-                candidate.add(word);
-            }
+            candidate.add(prefixList);
             candidate.add(name);
 
             result.add(candidate);
         }
+    }
+
+    @Override
+    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(ScriptConfig config, String[] inputWords) {
+        if (inputWords.length != 2) {
+            return List.of();
+        }
+
+        return getDynamicCompleterCandidateList(config, List.of(COMMAND));
+    }
+
+    protected static List<CompleterCandidateWords> getDynamicCompleterCandidateList(ScriptConfig config, List<String> prefixList) {
+        var clientVariableMap = config.getClientVariableMap();
+        var result = new ArrayList<CompleterCandidateWords>(clientVariableMap.size());
+        for (var entry : clientVariableMap.entrySet()) {
+            String name = entry.getKey();
+            var candidate = new CompleterCandidateWords(name.endsWith("."));
+            candidate.add(prefixList);
+            candidate.add(name);
+
+            result.add(candidate);
+        }
+        return result;
     }
 
     @Override

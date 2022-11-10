@@ -8,12 +8,24 @@ import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.executor.engine.command.SpecialCommand;
 
 /**
  * Tsurugi SQL console JLine Completer.
  */
 public class ReplJLineCompleter implements Completer {
+
+    private final ScriptConfig config;
+
+    /**
+     * Creates a new instance.
+     *
+     * @param config script configuration
+     */
+    public ReplJLineCompleter(ScriptConfig config) {
+        this.config = config;
+    }
 
     @Override
     public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
@@ -110,15 +122,34 @@ public class ReplJLineCompleter implements Completer {
         result.add(candidate);
     }
 
-    private void collectCandidate(String line, List<SimpleCompleterCandidate> candidateList, List<Candidate> candidates) {
+    private void collectCandidate(String line, List<SimpleCompleterCandidate> candidateList, List<Candidate> result) {
         var inputWords = SimpleCompleterCandidate.toWordList(line);
         for (var candidate : candidateList) {
-            var result = candidate.findCandidateWord(inputWords);
-            if (result != null) {
-                String word = result.word();
-                boolean end = result.end();
-                candidates.add(new Candidate(word, word, null, null, null, null, !end));
+            collectCandidate(inputWords, candidate, result);
+        }
+
+        if (inputWords.length >= 2) {
+            String word0 = inputWords[0];
+            if (word0.startsWith(SpecialCommand.COMMAND_PREFIX)) {
+                var commandList = SpecialCommand.findCommand(word0.substring(1));
+                if (commandList.size() == 1) {
+                    var command = commandList.get(0).command();
+                    var list = command.getDynamicCompleterCandidateList(config, inputWords);
+                    for (var c : list) {
+                        var candidate = new SimpleCompleterCandidate(c.getWords(), c.getEnd());
+                        collectCandidate(inputWords, candidate, result);
+                    }
+                }
             }
+        }
+    }
+
+    private void collectCandidate(String[] inputWords, SimpleCompleterCandidate candidate, List<Candidate> result) {
+        var found = candidate.findCandidateWord(inputWords);
+        if (found != null) {
+            String word = found.word();
+            boolean end = found.end();
+            result.add(new Candidate(word, word, null, null, null, null, !end));
         }
     }
 }
