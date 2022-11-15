@@ -3,6 +3,7 @@ package com.tsurugidb.console.core.executor.explain;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.ProcessBuilder.Redirect;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -154,23 +155,41 @@ public class DotOutputHandler implements PlanGraphOutputHandler {
         for (var entry : clientVariableMap.entrySet()) {
             String key = entry.getKey();
             if (key.startsWith(KEY_PREFIX)) {
-                var value = entry.getValue();
-                addOption(result, key, (value != null) ? value.toString() : null);
+                var value = toValue(entry.getValue());
+                addOption(result, key, value);
             }
         }
 
         // default value
-        addOption(result, KEY_GRAPH_PREFIX + "rankdir", "RL"); //$NON-NLS-1$ //$NON-NLS-2$
-        addOption(result, KEY_NODE_PREFIX + "shape", "rect"); //$NON-NLS-1$ //$NON-NLS-2$
+        addOption(result, KEY_GRAPH_PREFIX + "rankdir", Value.of("RL")); //$NON-NLS-1$ //$NON-NLS-2$
+        addOption(result, KEY_NODE_PREFIX + "shape", Value.of("rect")); //$NON-NLS-1$ //$NON-NLS-2$
 
         return result;
     }
 
-    private static void addOption(Map<Regioned<String>, Optional<Regioned<Value>>> options, String key, String value) {
+    private static Value toValue(Object obj) {
+        if (obj == null) {
+            return Value.of();
+        }
+        if (obj instanceof String) {
+            return Value.of((String) obj);
+        }
+        if (obj instanceof BigDecimal) {
+            return Value.of((BigDecimal) obj);
+        }
+        if (obj instanceof Boolean) {
+            return Value.of((boolean) obj);
+        }
+        if (obj instanceof Number) {
+            return Value.of(((Number) obj).longValue());
+        }
+        throw new UnsupportedOperationException(MessageFormat.format("unsupported value={0}, class={1}", obj, obj.getClass())); //$NON-NLS-1$
+    }
+
+    private static void addOption(Map<Regioned<String>, Optional<Regioned<Value>>> options, String key, Value value) {
         var emptyRegion = new Region(0, 0, 0, 0);
         var regionKey = emptyRegion.wrap(key);
-        var v = (value != null) ? Value.of(value) : Value.of();
-        options.computeIfAbsent(regionKey, k -> Optional.of(emptyRegion.wrap(v)));
+        options.computeIfAbsent(regionKey, k -> Optional.of(emptyRegion.wrap(value)));
     }
 
     /**
