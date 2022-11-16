@@ -157,14 +157,6 @@ public class ShowCommand extends SpecialCommand {
         return SetCommand.executeShow(engine, key);
     }
 
-    private static String getOption(SpecialStatement statement, int index) {
-        var options = statement.getCommandOptions();
-        if (index < options.size()) {
-            return options.get(index).getValue();
-        }
-        return null;
-    }
-
     private static ErroneousStatement toSubUnknownError(SpecialStatement statement) {
         Regioned<String> option = statement.getCommandOptions().get(0);
         return new ErroneousStatement(//

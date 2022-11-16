@@ -35,6 +35,7 @@ public abstract class SpecialCommand {
             new ExitCommand(), //
             new HaltCommand(), //
             new HelpCommand(), //
+            new HistoryCommand(), //
             new SetCommand(), //
             new ShowCommand(), //
             new StatusCommand(), //
@@ -213,6 +214,14 @@ public abstract class SpecialCommand {
      * @throws InterruptedException if interrupted while executing the statement
      */
     public abstract boolean execute(@Nonnull BasicEngine engine, @Nonnull SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
+
+    protected static String getOption(SpecialStatement statement, int index) {
+        var options = statement.getCommandOptions();
+        if (index < options.size()) {
+            return options.get(index).getValue();
+        }
+        return null;
+    }
 
     /**
      * Execute as unknown option erroneous.

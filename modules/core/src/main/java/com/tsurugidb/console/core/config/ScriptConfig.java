@@ -1,12 +1,16 @@
 package com.tsurugidb.console.core.config;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.IntFunction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.tsurugidb.console.core.executor.report.HistoryEntry;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 
@@ -26,6 +30,8 @@ public class ScriptConfig {
     private ScriptCommitMode commitMode;
 
     private final ScriptClientVariableMap clientVariableMap = new ScriptClientVariableMap();
+
+    private IntFunction<Iterator<HistoryEntry>> historySupplier;
 
     /**
      * set endpoint.
@@ -134,5 +140,27 @@ public class ScriptConfig {
     @Nonnull
     public ScriptClientVariableMap getClientVariableMap() {
         return this.clientVariableMap;
+    }
+
+    /**
+     * set history supplier.
+     *
+     * @param supplier history supplier
+     */
+    public void setHistorySupplier(IntFunction<Iterator<HistoryEntry>> supplier) {
+        this.historySupplier = supplier;
+    }
+
+    /**
+     * get history supplier.
+     *
+     * @param size history size
+     * @return command history
+     */
+    public Iterator<HistoryEntry> getHistory(int size) {
+        if (this.historySupplier == null) {
+            return Collections.emptyIterator();
+        }
+        return historySupplier.apply(size);
     }
 }

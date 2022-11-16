@@ -1,6 +1,7 @@
 package com.tsurugidb.console.core.executor.report;
 
 import java.text.MessageFormat;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -279,6 +280,19 @@ public abstract class ScriptReporter {
             this.planGraphReporter = new PlanGraphReporter(message -> info(message));
         }
         planGraphReporter.report(source, plan);
+    }
+
+    /**
+     * output message for command history.
+     *
+     * @param iterator command history
+     */
+    public void reportHistory(Iterator<HistoryEntry> iterator) {
+        while (iterator.hasNext()) {
+            var entry = iterator.next();
+            String message = MessageFormat.format("{0} {1}", entry.index(), entry.text());
+            info(message);
+        }
     }
 
     /**

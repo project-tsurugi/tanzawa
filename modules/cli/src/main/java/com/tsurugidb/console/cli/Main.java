@@ -20,6 +20,7 @@ import com.tsurugidb.console.cli.repl.ReplReporter;
 import com.tsurugidb.console.cli.repl.ReplResultProcessor;
 import com.tsurugidb.console.cli.repl.ReplScript;
 import com.tsurugidb.console.cli.repl.ReplThreadExecutor;
+import com.tsurugidb.console.cli.repl.jline.ReplJLineHistory;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineReader;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineTerminal;
 import com.tsurugidb.console.core.ScriptRunner;
@@ -106,6 +107,7 @@ public final class Main {
         var config = builder.build();
 
         var lineReader = ReplJLineReader.createReader(config);
+        config.setHistorySupplier(ReplJLineHistory.createHistorySupplier(lineReader.getHistory()));
         var script = new ReplScript(lineReader);
         var terminal = lineReader.getTerminal();
         var reporter = new ReplReporter(terminal);
