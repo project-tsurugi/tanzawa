@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.sql.proto.SqlRequest;
+import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
@@ -24,9 +25,9 @@ import com.tsurugidb.tsubakuro.sql.Transaction;
  * A basic implementation of {@link SqlProcessor}.
  */
 public class BasicSqlProcessor implements SqlProcessor {
-
     static final Logger LOG = LoggerFactory.getLogger(BasicSqlProcessor.class);
 
+    private final Session session;
     private final SqlClient client;
 
     private Transaction transaction;
@@ -34,10 +35,22 @@ public class BasicSqlProcessor implements SqlProcessor {
     /**
      * Creates a new instance.
      *
+     * @param session the current session
+     */
+    public BasicSqlProcessor(@Nonnull Session session) {
+        Objects.requireNonNull(session);
+        this.session = session;
+        this.client = SqlClient.attach(session);
+    }
+
+    /**
+     * Creates a new instance.
+     *
      * @param client the SQL client: It will be closed after this object was closed
      */
-    public BasicSqlProcessor(@Nonnull SqlClient client) {
+    BasicSqlProcessor(@Nonnull SqlClient client) {
         Objects.requireNonNull(client);
+        this.session = null;
         this.client = client;
     }
 
@@ -107,8 +120,7 @@ public class BasicSqlProcessor implements SqlProcessor {
     }
 
     @Override
-    public StatementMetadata explain(@Nonnull String statement, @Nonnull Region region)
-            throws ServerException, IOException, InterruptedException {
+    public StatementMetadata explain(@Nonnull String statement, @Nonnull Region region) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         Objects.requireNonNull(region);
         // FIXME: SqlClient.explain(String) is not work
@@ -117,6 +129,11 @@ public class BasicSqlProcessor implements SqlProcessor {
         try (var prepared = client.prepare(statement).await()) {
             return client.explain(prepared, List.of()).await();
         }
+    }
+
+    @Override
+    public boolean isSessionActive() {
+        return session.isAlive();
     }
 
     @Override

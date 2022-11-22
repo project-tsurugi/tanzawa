@@ -67,8 +67,9 @@ public class ShowCommand extends SpecialCommand {
     public ShowCommand() {
         super(COMMAND_NAME);
 
-        add("table", true, ShowCommand::executeShowTable); //$NON-NLS-1$
+        add("session", false, ShowCommand::executeShowSession); //$NON-NLS-1$
         add("transaction", false, ShowCommand::executeShowTransaction); //$NON-NLS-1$
+        add("table", true, ShowCommand::executeShowTable); //$NON-NLS-1$
         add(CLIENT, true, ShowCommand::executeShowClient); // $NON-NLS-1$
     }
 
@@ -127,6 +128,15 @@ public class ShowCommand extends SpecialCommand {
 
         String subName = toLowerCase(option);
         return subCommandList.stream().filter(command -> command.name().startsWith(subName)).collect(Collectors.toList());
+    }
+
+    private static boolean executeShowSession(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+        LOG.debug("show session status"); //$NON-NLS-1$
+        var sqlProcessor = engine.getSqlProcessor();
+        boolean active = sqlProcessor.isSessionActive();
+        var reporter = engine.getReporter();
+        reporter.reportSessionStatus(active);
+        return true;
     }
 
     private static boolean executeShowTransaction(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {

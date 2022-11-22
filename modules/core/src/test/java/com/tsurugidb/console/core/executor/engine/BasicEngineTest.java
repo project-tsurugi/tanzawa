@@ -56,6 +56,11 @@ class BasicEngineTest {
         }
 
         @Override
+        public boolean isSessionActive() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public boolean isTransactionActive() {
             return active;
         }

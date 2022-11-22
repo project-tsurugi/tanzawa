@@ -181,6 +181,27 @@ public abstract class ScriptReporter {
     }
 
     /**
+     * output message for session status.
+     *
+     * @param active {@code true} if session is active
+     */
+    public void reportSessionStatus(boolean active) {
+        String message = MessageFormat.format("session is {0}", //
+                active ? "active" : "inactive");
+        reportSessionStatus(message, active);
+    }
+
+    /**
+     * output message for session status.
+     *
+     * @param message message
+     * @param active  {@code true} if session is active
+     */
+    protected void reportSessionStatus(String message, boolean active) {
+        info(message);
+    }
+
+    /**
      * output message for transaction status.
      *
      * @param active {@code true} if transaction is active

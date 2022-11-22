@@ -38,7 +38,6 @@ import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.common.SessionBuilder;
 import com.tsurugidb.tsubakuro.exception.ServerException;
-import com.tsurugidb.tsubakuro.sql.SqlClient;
 
 /**
  * Executes SQL scripts.
@@ -140,8 +139,8 @@ public final class ScriptRunner {
         var endpoint = config.getEndpoint();
         var credential = config.getCredential();
         LOG.info("establishing connection: {}", endpoint);
-        try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create();
-                var sqlProcessor = new BasicSqlProcessor(SqlClient.attach(session));
+        try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create(); //
+                var sqlProcessor = new BasicSqlProcessor(session); //
                 var resultProcessor = new BasicResultProcessor()) {
             var reporter = new BasicReporter();
             return execute(script, new BasicEngine(config, sqlProcessor, resultProcessor, reporter));
@@ -237,7 +236,7 @@ public final class ScriptRunner {
         var credential = config.getCredential();
         LOG.info("establishing connection: {}", endpoint);
         try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create(); //
-                var sqlProcessor = new BasicSqlProcessor(SqlClient.attach(session))) {
+                var sqlProcessor = new BasicSqlProcessor(session)) {
             var engine = new BasicEngine(config, sqlProcessor, resultProcessor, reporter);
             repl(script, engineWrapper.apply(engine));
         }
