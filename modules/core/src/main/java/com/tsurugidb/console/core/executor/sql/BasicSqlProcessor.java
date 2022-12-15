@@ -141,6 +141,14 @@ public class BasicSqlProcessor implements SqlProcessor {
         return transaction != null;
     }
 
+    @Override
+    public String getTransactionId() {
+        if (!isTransactionActive()) {
+            return null;
+        }
+        return transaction.getTransactionId();
+    }
+
     /**
      * Returns the running transaction.
      *

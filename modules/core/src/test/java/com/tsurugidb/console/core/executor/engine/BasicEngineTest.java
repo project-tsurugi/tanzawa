@@ -41,6 +41,7 @@ class BasicEngineTest {
     static class MockSqlProcessor implements SqlProcessor {
 
         private boolean active = false;
+        private String transactionId = null;
 
         MockSqlProcessor() {
             this(false);
@@ -48,6 +49,7 @@ class BasicEngineTest {
 
         MockSqlProcessor(boolean active) {
             this.active = active;
+            this.transactionId = active ? "MockTx" : null;
         }
 
         @Override
@@ -63,6 +65,11 @@ class BasicEngineTest {
         @Override
         public boolean isTransactionActive() {
             return active;
+        }
+
+        @Override
+        public String getTransactionId() {
+            return transactionId;
         }
 
         @Override
@@ -86,8 +93,7 @@ class BasicEngineTest {
         }
 
         @Override
-        public StatementMetadata explain(String statement, Region region)
-                throws ServerException, IOException, InterruptedException {
+        public StatementMetadata explain(String statement, Region region) throws ServerException, IOException, InterruptedException {
             throw new UnsupportedOperationException();
         }
     }
@@ -390,11 +396,8 @@ class BasicEngineTest {
             @Override
             public StatementMetadata explain(String statement, Region region) throws IOException {
                 assertEquals("SELECT 1", statement);
-                return new BasicStatementMetadata(
-                        JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
-                        1, // captured version of the explain result
-                        TestUtil.read("explain-find-project-write.json"),
-                        List.of());
+                return new BasicStatementMetadata(JsonPlanGraphLoader.SUPPORTED_FORMAT_ID, 1, // captured version of the explain result
+                        TestUtil.read("explain-find-project-write.json"), List.of());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -404,22 +407,12 @@ class BasicEngineTest {
             public void reportExecutionPlan(String source, PlanGraph plan) {
                 reached.set(true);
                 assertEquals("SELECT 1", source);
-                assertTrue(plan.getNodes().stream()
-                        .map(PlanNode::getKind)
-                        .anyMatch(Predicate.isEqual("find")));
-                assertFalse(plan.getNodes().stream()
-                        .map(PlanNode::getKind)
-                        .anyMatch(Predicate.isEqual("project")));
-                assertTrue(plan.getNodes().stream()
-                        .map(PlanNode::getKind)
-                        .anyMatch(Predicate.isEqual("write")));
+                assertTrue(plan.getNodes().stream().map(PlanNode::getKind).anyMatch(Predicate.isEqual("find")));
+                assertFalse(plan.getNodes().stream().map(PlanNode::getKind).anyMatch(Predicate.isEqual("project")));
+                assertTrue(plan.getNodes().stream().map(PlanNode::getKind).anyMatch(Predicate.isEqual("write")));
             }
         };
-        var engine = new BasicEngine(
-                new ScriptConfig(),
-                sql,
-                rs,
-                reporter);
+        var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
         var cont = engine.execute(parse("EXPLAIN SELECT 1"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -431,11 +424,8 @@ class BasicEngineTest {
             @Override
             public StatementMetadata explain(String statement, Region region) throws IOException {
                 assertEquals("SELECT 1", statement);
-                return new BasicStatementMetadata(
-                        JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
-                        1, // captured version of the explain result
-                        TestUtil.read("explain-find-project-write.json"),
-                        List.of());
+                return new BasicStatementMetadata(JsonPlanGraphLoader.SUPPORTED_FORMAT_ID, 1, // captured version of the explain result
+                        TestUtil.read("explain-find-project-write.json"), List.of());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -445,25 +435,13 @@ class BasicEngineTest {
             public void reportExecutionPlan(String source, PlanGraph plan) {
                 reached.set(true);
                 assertEquals("SELECT 1", source);
-                assertTrue(plan.getNodes().stream()
-                        .map(PlanNode::getKind)
-                        .anyMatch(Predicate.isEqual("find")));
-                assertTrue(plan.getNodes().stream()
-                        .map(PlanNode::getKind)
-                        .anyMatch(Predicate.isEqual("project")));
-                assertTrue(plan.getNodes().stream()
-                        .map(PlanNode::getKind)
-                        .anyMatch(Predicate.isEqual("write")));
+                assertTrue(plan.getNodes().stream().map(PlanNode::getKind).anyMatch(Predicate.isEqual("find")));
+                assertTrue(plan.getNodes().stream().map(PlanNode::getKind).anyMatch(Predicate.isEqual("project")));
+                assertTrue(plan.getNodes().stream().map(PlanNode::getKind).anyMatch(Predicate.isEqual("write")));
             }
         };
-        var engine = new BasicEngine(
-                new ScriptConfig(),
-                sql,
-                rs,
-                reporter);
-        var cont = engine.execute(parse(String.format(
-                "EXPLAIN (%s) SELECT 1",
-                StatementMetadataHandler.KEY_VERBOSE)));
+        var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
+        var cont = engine.execute(parse(String.format("EXPLAIN (%s) SELECT 1", StatementMetadataHandler.KEY_VERBOSE)));
         assertTrue(cont);
         assertTrue(reached.get());
     }
@@ -473,14 +451,8 @@ class BasicEngineTest {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
         var reporter = new BasicReporter();
-        var engine = new BasicEngine(
-                new ScriptConfig(),
-                sql,
-                rs,
-                reporter);
-        assertThrows(
-                EngineException.class,
-                () -> engine.execute(parse("EXPLAIN (INVALID_OPTION=TRUE) SELECT 1")));
+        var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
+        assertThrows(EngineException.class, () -> engine.execute(parse("EXPLAIN (INVALID_OPTION=TRUE) SELECT 1")));
     }
 
     @Test
@@ -488,16 +460,8 @@ class BasicEngineTest {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
         var reporter = new BasicReporter();
-        var engine = new BasicEngine(
-                new ScriptConfig(),
-                sql,
-                rs,
-                reporter);
-        assertThrows(
-                EngineException.class,
-                () -> engine.execute(parse(String.format(
-                        "EXPLAIN (%s=NULL) SELECT 1",
-                        StatementMetadataHandler.KEY_VERBOSE))));
+        var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
+        assertThrows(EngineException.class, () -> engine.execute(parse(String.format("EXPLAIN (%s=NULL) SELECT 1", StatementMetadataHandler.KEY_VERBOSE))));
     }
 
     @Test
@@ -506,23 +470,13 @@ class BasicEngineTest {
             @Override
             public StatementMetadata explain(String statement, Region region) throws IOException {
                 assertEquals("SELECT 1", statement);
-                return new BasicStatementMetadata(
-                        "ERRONEOUS_FORMAT",
-                        0,
-                        "BROKEN",
-                        List.of());
+                return new BasicStatementMetadata("ERRONEOUS_FORMAT", 0, "BROKEN", List.of());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
         var reporter = new BasicReporter();
-        var engine = new BasicEngine(
-                new ScriptConfig(),
-                sql,
-                rs,
-                reporter);
-        assertThrows(
-                EngineException.class,
-                () -> engine.execute(parse("EXPLAIN SELECT 1")));
+        var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
+        assertThrows(EngineException.class, () -> engine.execute(parse("EXPLAIN SELECT 1")));
     }
 
     @Test

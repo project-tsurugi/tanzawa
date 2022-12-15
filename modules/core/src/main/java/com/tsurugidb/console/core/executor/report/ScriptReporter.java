@@ -204,11 +204,17 @@ public abstract class ScriptReporter {
     /**
      * output message for transaction status.
      *
-     * @param active {@code true} if transaction is active
+     * @param active        {@code true} if transaction is active
+     * @param transactionId transaction id
      */
-    public void reportTransactionStatus(boolean active) {
-        String message = MessageFormat.format("transaction is {0}", //
-                active ? "active" : "inactive");
+    public void reportTransactionStatus(boolean active, String transactionId) {
+        String message;
+        if (active) {
+            message = MessageFormat.format("transaction is active. transactionId={0}", //
+                    transactionId);
+        } else {
+            message = "transaction is inactive";
+        }
         reportTransactionStatus(message, active);
     }
 

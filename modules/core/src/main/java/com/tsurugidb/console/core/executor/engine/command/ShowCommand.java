@@ -143,8 +143,9 @@ public class ShowCommand extends SpecialCommand {
         LOG.debug("show transaction status"); //$NON-NLS-1$
         var sqlProcessor = engine.getSqlProcessor();
         boolean active = sqlProcessor.isTransactionActive();
+        String transactionId = sqlProcessor.getTransactionId();
         var reporter = engine.getReporter();
-        reporter.reportTransactionStatus(active);
+        reporter.reportTransactionStatus(active, transactionId);
         return true;
     }
 
