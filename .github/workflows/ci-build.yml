@@ -1,6 +1,6 @@
 name: Tanzawa-CI
 
-on: 
+on:
   push:
   pull_request:
   workflow_dispatch:
@@ -71,6 +71,28 @@ jobs:
         if: contains(github.ref, '/heads/master')
         run: |
           ./gradlew -i publish
+
+      - id: Delete_Old_Snapshot_Release
+        name: Delete_Old_Snapshot_Release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        if: contains(github.ref, '/heads/master')
+        with:
+          delete_release: true
+          tag_name: SNAPSHOT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: Create_Snapshot_Release
+        name: Create_Snapshot_Release
+        uses: softprops/action-gh-release@v1
+        if: contains(github.ref, '/heads/master')
+        with:
+          prerelease: true
+          draft: false
+          name: snapshot_release
+          tag_name: SNAPSHOT
+          files: |
+            modules/cli/build/distributions/tgsql-*.zip
 
       - id: Generate_Annotations
         name: Generate_Annotations
