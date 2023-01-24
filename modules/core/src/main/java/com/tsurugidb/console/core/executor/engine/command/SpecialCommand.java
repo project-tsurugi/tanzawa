@@ -39,6 +39,7 @@ public abstract class SpecialCommand {
             new SetCommand(), //
             new ShowCommand(), //
             new StatusCommand(), //
+            new TimingCommand(), //
     };
     static { // assertion
         var set = new HashSet<String>();

@@ -12,11 +12,11 @@ import javax.annotation.Nonnull;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
+import com.tsurugidb.console.core.executor.IoSupplier;
+import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
-import com.tsurugidb.console.core.executor.IoSupplier;
-import com.tsurugidb.sql.proto.SqlCommon;
 
 /**
  * A basic implementation of {@link ResultProcessor}.
@@ -49,7 +49,7 @@ public class BasicResultProcessor implements ResultProcessor {
     }
 
     @Override
-    public void process(@Nonnull ResultSet target) throws ServerException, IOException, InterruptedException {
+    public long process(@Nonnull ResultSet target) throws ServerException, IOException, InterruptedException {
         List<Object> buffer = new ArrayList<>();
         try (
             var output = outputs.get();
@@ -63,6 +63,7 @@ public class BasicResultProcessor implements ResultProcessor {
             }
             generator.writeRaw(System.lineSeparator());
         }
+        return System.nanoTime();
     }
 
     private void dumpMetadata(JsonGenerator generator, ResultSetMetadata metadata) throws IOException {

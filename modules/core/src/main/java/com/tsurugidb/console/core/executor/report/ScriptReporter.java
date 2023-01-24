@@ -1,5 +1,7 @@
 package com.tsurugidb.console.core.executor.report;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
@@ -331,5 +333,16 @@ public abstract class ScriptReporter {
         for (var s : list) {
             info(s);
         }
+    }
+
+    /**
+     * output message for timing.
+     *
+     * @param nanoTime time
+     */
+    public void reportTiming(long nanoTime) {
+        var time = BigDecimal.valueOf(nanoTime).divide(BigDecimal.valueOf(1000_000), 3, RoundingMode.DOWN);
+        String message = MessageFormat.format("Time: {0} ms", time);
+        implicit(message);
     }
 }

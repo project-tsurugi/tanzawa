@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptConfig;
+import com.tsurugidb.console.core.config.ScriptCvKey;
 import com.tsurugidb.console.core.executor.engine.command.SpecialCommand;
 import com.tsurugidb.console.core.executor.explain.DotOutputHandler;
 import com.tsurugidb.console.core.executor.explain.OptionHandler;
@@ -106,9 +107,17 @@ public class BasicEngine extends AbstractEngine {
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
         checkTransactionActive(statement, true);
-        try (var rs = sqlProcessor.execute(statement.getText(), statement.getRegion())) {
-            if (rs != null) {
-                resultSetProcessor.process(rs);
+        try {
+            long timingStart = System.nanoTime();
+            long timingEnd = timingStart;
+            try (var rs = sqlProcessor.execute(statement.getText(), statement.getRegion())) {
+                if (rs != null) {
+                    timingEnd = resultSetProcessor.process(rs);
+                } else {
+                    timingEnd = System.nanoTime();
+                }
+            } finally {
+                reportTiming(timingStart, timingEnd);
             }
         } catch (Exception e) {
             if (config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
@@ -127,6 +136,18 @@ public class BasicEngine extends AbstractEngine {
         return true;
     }
 
+    protected void reportTiming(long timingStart, long timingEnd) {
+        if (timingEnd == timingStart) {
+            timingEnd = System.nanoTime();
+        }
+
+        var clientVariableMap = config.getClientVariableMap();
+        boolean timing = clientVariableMap.get(ScriptCvKey.TIMING, false);
+        if (timing) {
+            reporter.reportTiming(timingEnd - timingStart);
+        }
+    }
+
     @Override
     public boolean executeStartTransactionStatement(@Nonnull StartTransactionStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
@@ -134,8 +155,15 @@ public class BasicEngine extends AbstractEngine {
 
         checkTransactionInactive(statement);
         var option = ExecutorUtil.toTransactionOption(statement, config);
-        sqlProcessor.startTransaction(option);
-        reporter.reportTransactionStarted(option);
+        long timingStart = System.nanoTime();
+        long timingEnd = timingStart;
+        try {
+            sqlProcessor.startTransaction(option);
+            timingEnd = System.nanoTime();
+            reporter.reportTransactionStarted(option);
+        } finally {
+            reportTiming(timingStart, timingEnd);
+        }
         return true;
     }
 
@@ -146,8 +174,15 @@ public class BasicEngine extends AbstractEngine {
 
         checkTransactionActive(statement, false);
         var status = ExecutorUtil.toCommitStatus(statement);
-        sqlProcessor.commitTransaction(status.orElse(null));
-        reporter.reportTransactionCommitted(status);
+        long timingStart = System.nanoTime();
+        long timingEnd = timingStart;
+        try {
+            sqlProcessor.commitTransaction(status.orElse(null));
+            timingEnd = System.nanoTime();
+            reporter.reportTransactionCommitted(status);
+        } finally {
+            reportTiming(timingStart, timingEnd);
+        }
         return true;
     }
 
@@ -160,8 +195,15 @@ public class BasicEngine extends AbstractEngine {
      */
     protected void executeCommitImplicitly() throws ServerException, IOException, InterruptedException {
         var status = SqlRequest.CommitStatus.COMMIT_STATUS_UNSPECIFIED;
-        sqlProcessor.commitTransaction(status);
-        reporter.reportTransactionCommittedImplicitly(status);
+        long timingStart = System.nanoTime();
+        long timingEnd = timingStart;
+        try {
+            sqlProcessor.commitTransaction(status);
+            timingEnd = System.nanoTime();
+            reporter.reportTransactionCommittedImplicitly(status);
+        } finally {
+            reportTiming(timingStart, timingEnd);
+        }
     }
 
     @Override
@@ -170,8 +212,15 @@ public class BasicEngine extends AbstractEngine {
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
         checkTransactionActive(statement, false);
-        sqlProcessor.rollbackTransaction();
-        reporter.reportTransactionRollbacked();
+        long timingStart = System.nanoTime();
+        long timingEnd = timingStart;
+        try {
+            sqlProcessor.rollbackTransaction();
+            timingEnd = System.nanoTime();
+            reporter.reportTransactionRollbacked();
+        } finally {
+            reportTiming(timingStart, timingEnd);
+        }
         return true;
     }
 
@@ -183,8 +232,15 @@ public class BasicEngine extends AbstractEngine {
      * @throws InterruptedException if interrupted while executing the statement
      */
     protected void executeRollbackImplicitly() throws ServerException, IOException, InterruptedException {
-        sqlProcessor.rollbackTransaction();
-        reporter.reportTransactionRollbackedImplicitly();
+        long timingStart = System.nanoTime();
+        long timingEnd = timingStart;
+        try {
+            sqlProcessor.rollbackTransaction();
+            timingEnd = System.nanoTime();
+            reporter.reportTransactionRollbackedImplicitly();
+        } finally {
+            reportTiming(timingStart, timingEnd);
+        }
     }
 
     @Override
@@ -225,13 +281,21 @@ public class BasicEngine extends AbstractEngine {
             return execute(new ErroneousStatement(statement.getText(), statement.getRegion(), ErrorKind.UNKNOWN_EXPLAIN_OPTION, entry.getKey().getRegion(),
                     MessageFormat.format("unrecognized explain option: \"{0}\"", key)));
         }
-        var metadata = sqlProcessor.explain(statement.getBody().getText(), statement.getBody().getRegion());
-        LOG.debug("explain format: id={}, version={}", metadata.getFormatId(), metadata.getFormatVersion()); //$NON-NLS-1$
-        LOG.trace("explain contents: {}", metadata.getContents()); //$NON-NLS-1$
 
-        var graph = metadataHandler.handle(reporter, metadata);
-        for (var output : outputHandlers) {
-            output.handle(reporter, graph);
+        long timingStart = System.nanoTime();
+        long timingEnd = timingStart;
+        try {
+            var metadata = sqlProcessor.explain(statement.getBody().getText(), statement.getBody().getRegion());
+            LOG.debug("explain format: id={}, version={}", metadata.getFormatId(), metadata.getFormatVersion()); //$NON-NLS-1$
+            LOG.trace("explain contents: {}", metadata.getContents()); //$NON-NLS-1$
+
+            var graph = metadataHandler.handle(reporter, metadata);
+            for (var output : outputHandlers) {
+                output.handle(reporter, graph);
+            }
+            timingEnd = System.nanoTime();
+        } finally {
+            reportTiming(timingStart, timingEnd);
         }
         return true;
     }
@@ -306,7 +370,14 @@ public class BasicEngine extends AbstractEngine {
             var option = config.getTransactionOption();
             if (option != null) {
                 reporter.reportStartTransactionImplicitly(option);
-                sqlProcessor.startTransaction(option);
+                long timingStart = System.nanoTime();
+                long timingEnd = timingStart;
+                try {
+                    sqlProcessor.startTransaction(option);
+                    timingEnd = System.nanoTime();
+                } finally {
+                    reportTiming(timingStart, timingEnd);
+                }
                 return;
             }
         }

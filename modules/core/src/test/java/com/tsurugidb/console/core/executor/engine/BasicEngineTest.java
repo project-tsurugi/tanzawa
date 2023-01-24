@@ -101,7 +101,7 @@ class BasicEngineTest {
     static class MockResultProcessor implements ResultProcessor {
 
         @Override
-        public void process(ResultSet target) throws ServerException, IOException, InterruptedException {
+        public long process(ResultSet target) throws ServerException, IOException, InterruptedException {
             throw new UnsupportedOperationException();
         }
     }
@@ -151,7 +151,7 @@ class BasicEngineTest {
         var reachedRs = new AtomicBoolean();
         MockResultProcessor rs = new MockResultProcessor() {
             @Override
-            public void process(ResultSet target) throws ServerException, IOException, InterruptedException {
+            public long process(ResultSet target) throws ServerException, IOException, InterruptedException {
                 if (!reachedRs.compareAndSet(false, true)) {
                     fail();
                 }
@@ -160,6 +160,7 @@ class BasicEngineTest {
                 assertEquals(1, target.fetchInt4Value());
                 assertFalse(target.nextColumn());
                 assertFalse(target.nextRow());
+                return System.nanoTime();
             }
         };
         var engine = newBasicEngine(sql, rs);

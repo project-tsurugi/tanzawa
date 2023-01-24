@@ -34,9 +34,12 @@ java -jar build/libs/sql-console-*-all.jar console -Dkey1=value1 -D key2=value2
 ## 主なクライアント変数
 
 - `select.maxlines`
-  - SQLコンソールでselect文を実行した結果を表示する件数。
+  - consoleモードでselect文を実行した結果を表示する件数。
     - 負の値の場合、無制限。
-  - デフォルトは、consoleモードの場合は1000件。それ以外の場合は無制限。
+  - デフォルトは1000件。
+- `timing`
+  - SQL文の実行時間の表示の有無。
+  - `\timing` コマンドで切り替え可能。
 - `dot.executable`
   - explain文で使用する、Graphvizのdotコマンドの場所（絶対パス）。
 

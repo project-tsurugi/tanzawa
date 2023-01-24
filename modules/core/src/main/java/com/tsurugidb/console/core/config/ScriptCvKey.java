@@ -23,6 +23,8 @@ public abstract class ScriptCvKey<T> {
 
     /** select.maxlines */
     public static final ScriptCvKeyInt SELECT_MAX_LINES = new ScriptCvKeyInt("select.maxlines"); //$NON-NLS-1$
+    /** timing */
+    public static final ScriptCvKeyBoolean TIMING = new ScriptCvKeyBoolean("timing"); //$NON-NLS-1$
 
     /** dot.verbose */
     public static final ScriptCvKeyBoolean DOT_VERBOSE = new ScriptCvKeyBoolean(DotOutputHandler.KEY_VERBOSE);
@@ -105,6 +107,14 @@ public abstract class ScriptCvKey<T> {
             }
             if ("true".startsWith(t)) { //$NON-NLS-1$
                 return Boolean.TRUE;
+            }
+            switch (t) {
+            case "on":
+                return true;
+            case "off":
+                return false;
+            default:
+                break;
             }
             try {
                 return Double.parseDouble(t) != 0;

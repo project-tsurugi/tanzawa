@@ -24,6 +24,7 @@ public class ConsoleConfigBuilder extends ConfigBuilder<ConsoleArgument> {
     @Override
     protected void fillClientVariableDefault(ScriptClientVariableMap clientVariableMap) {
         clientVariableMap.put(ScriptCvKey.SELECT_MAX_LINES, 1000);
+        clientVariableMap.put(ScriptCvKey.TIMING, true);
     }
 
     @Override

@@ -38,7 +38,7 @@ public class ReplResultProcessor implements ResultProcessor {
     }
 
     @Override
-    public void process(ResultSet target) throws ServerException, IOException, InterruptedException {
+    public long process(ResultSet target) throws ServerException, IOException, InterruptedException {
         dumpMetadata(target.getMetadata());
         if (Thread.interrupted()) {
             LOG.trace("Thread.interrupted (1)");
@@ -54,7 +54,6 @@ public class ReplResultProcessor implements ResultProcessor {
         while (ResultSetUtil.fetchNextRow(target, target.getMetadata(), columnList::add)) {
             if (maxLines >= 0) {
                 if (rowSize >= maxLines) {
-                    reporter.reportResultSetRow("...");
                     over = true;
                     break;
                 }
@@ -69,8 +68,14 @@ public class ReplResultProcessor implements ResultProcessor {
                 throw new InterruptedException();
             }
         }
+        long timingEnd = System.nanoTime();
 
+        if (over) {
+            reporter.reportResultSetRow("...");
+        }
         reporter.reportResultSetSize(rowSize, over);
+
+        return timingEnd;
     }
 
     private void dumpMetadata(ResultSetMetadata metadata) throws IOException {
