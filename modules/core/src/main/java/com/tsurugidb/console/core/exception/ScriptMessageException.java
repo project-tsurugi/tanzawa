@@ -6,6 +6,8 @@ package com.tsurugidb.console.core.exception;
 @SuppressWarnings("serial")
 public class ScriptMessageException extends RuntimeException {
 
+    private long timingTime;
+
     /**
      * Creates a new instance.
      *
@@ -23,5 +25,26 @@ public class ScriptMessageException extends RuntimeException {
      */
     public ScriptMessageException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    /**
+     * Creates a new instance.
+     *
+     * @param message the detail message
+     * @param cause   the cause
+     * @param time    time
+     */
+    public ScriptMessageException(String message, Throwable cause, long time) {
+        super(message, cause);
+        this.timingTime = time;
+    }
+
+    /**
+     * get time.
+     *
+     * @return time
+     */
+    public long getTimingTime() {
+        return this.timingTime;
     }
 }

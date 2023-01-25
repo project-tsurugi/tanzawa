@@ -2,6 +2,7 @@ package com.tsurugidb.console.cli.repl;
 
 import java.io.IOException;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.executor.engine.AbstractEngine;
 import com.tsurugidb.console.core.executor.engine.Engine;
 import com.tsurugidb.console.core.executor.engine.EngineException;
@@ -32,6 +33,11 @@ public class ReplEngine extends AbstractEngine {
     public ReplEngine(AbstractEngine delegate, ReplThreadExecutor executor) {
         this.delegate = delegate;
         this.threadExecutor = executor;
+    }
+
+    @Override
+    public ScriptConfig getConfig() {
+        return delegate.getConfig();
     }
 
     @Override

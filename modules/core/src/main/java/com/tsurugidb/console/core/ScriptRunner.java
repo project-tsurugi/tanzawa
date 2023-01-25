@@ -20,8 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.core.config.ScriptConfig;
+import com.tsurugidb.console.core.config.ScriptCvKey;
 import com.tsurugidb.console.core.exception.ScriptInterruptedException;
 import com.tsurugidb.console.core.exception.ScriptMessageException;
+import com.tsurugidb.console.core.exception.ScriptNoMessageException;
 import com.tsurugidb.console.core.executor.IoSupplier;
 import com.tsurugidb.console.core.executor.engine.AbstractEngine;
 import com.tsurugidb.console.core.executor.engine.BasicEngine;
@@ -276,7 +278,18 @@ public final class ScriptRunner {
                 LOG.trace("user interrupted", e);
             } catch (ScriptMessageException e) {
                 LOG.trace("message exception", e);
-                engine.getReporter().warn(e.getMessage());
+                var reporter = engine.getReporter();
+                reporter.warn(e.getMessage());
+                long time = e.getTimingTime();
+                if (time != 0) {
+                    var clientVariableMap = engine.getConfig().getClientVariableMap();
+                    boolean timing = clientVariableMap.get(ScriptCvKey.TIMING, false);
+                    if (timing) {
+                        reporter.reportTiming(time);
+                    }
+                }
+            } catch (ScriptNoMessageException e) {
+                LOG.trace("no message exception", e);
             } catch (ServerException e) {
                 if (LOG.isDebugEnabled()) {
                     LOG.warn("{}", e.getDiagnosticCode().name(), e);

@@ -26,7 +26,7 @@ public class ReplThreadExecutor implements Closeable {
 
     private final String name;
     private final Terminal terminal;
-    private final ExecutorService service = Executors.newFixedThreadPool(4);
+    private final ExecutorService service = Executors.newCachedThreadPool();
 
     /**
      * Creates a new instance.
@@ -94,6 +94,7 @@ public class ReplThreadExecutor implements Closeable {
      * @throws InterruptedException
      */
     public <R> R invoke(EngineTask<R> task) throws EngineException, ServerException, IOException, InterruptedException {
+        long timingStart = System.nanoTime();
         var future = service.submit(task);
         var prevHandler = terminal.handle(Signal.INT, signal -> { // Ctrl+C
             LOG.trace("{} catch Signal.{}", name, signal);
@@ -102,8 +103,10 @@ public class ReplThreadExecutor implements Closeable {
         try {
             return future.get();
         } catch (CancellationException e) {
+            long timingEnd = System.nanoTime();
             LOG.trace("{} user cancelled", name, e);
-            throw new ScriptMessageException(MessageFormat.format("{0} cancelled", name), e);
+            long time = timingEnd - timingStart;
+            throw new ScriptMessageException(MessageFormat.format("{0} cancelled", name), e, time);
         } catch (ExecutionException e) {
             LOG.debug("{} invoke catch ExecutionException", name, e);
             var c = e.getCause();

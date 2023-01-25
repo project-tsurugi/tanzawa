@@ -5,6 +5,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.LongConsumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.config.ScriptCvKey;
+import com.tsurugidb.console.core.exception.ScriptNoMessageException;
 import com.tsurugidb.console.core.executor.engine.command.SpecialCommand;
 import com.tsurugidb.console.core.executor.explain.DotOutputHandler;
 import com.tsurugidb.console.core.executor.explain.OptionHandler;
@@ -70,11 +72,7 @@ public class BasicEngine extends AbstractEngine {
         this.reporter = reporter;
     }
 
-    /**
-     * get script configuration.
-     *
-     * @return script configuration
-     */
+    @Override
     public ScriptConfig getConfig() {
         return this.config;
     }
@@ -108,17 +106,15 @@ public class BasicEngine extends AbstractEngine {
 
         checkTransactionActive(statement, true);
         try {
-            long timingStart = System.nanoTime();
-            long timingEnd = timingStart;
-            try (var rs = sqlProcessor.execute(statement.getText(), statement.getRegion())) {
-                if (rs != null) {
-                    timingEnd = resultSetProcessor.process(rs);
-                } else {
-                    timingEnd = System.nanoTime();
+            executeTiming(timingEnd -> {
+                try (var rs = sqlProcessor.execute(statement.getText(), statement.getRegion())) {
+                    if (rs != null) {
+                        timingEnd.accept(resultSetProcessor.process(rs));
+                    } else {
+                        timingEnd.accept(System.nanoTime());
+                    }
                 }
-            } finally {
-                reportTiming(timingStart, timingEnd);
-            }
+            });
         } catch (Exception e) {
             if (config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
                 try {
@@ -136,18 +132,6 @@ public class BasicEngine extends AbstractEngine {
         return true;
     }
 
-    protected void reportTiming(long timingStart, long timingEnd) {
-        if (timingEnd == timingStart) {
-            timingEnd = System.nanoTime();
-        }
-
-        var clientVariableMap = config.getClientVariableMap();
-        boolean timing = clientVariableMap.get(ScriptCvKey.TIMING, false);
-        if (timing) {
-            reporter.reportTiming(timingEnd - timingStart);
-        }
-    }
-
     @Override
     public boolean executeStartTransactionStatement(@Nonnull StartTransactionStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
@@ -155,15 +139,11 @@ public class BasicEngine extends AbstractEngine {
 
         checkTransactionInactive(statement);
         var option = ExecutorUtil.toTransactionOption(statement, config);
-        long timingStart = System.nanoTime();
-        long timingEnd = timingStart;
-        try {
+        executeTiming(timingEnd -> {
             sqlProcessor.startTransaction(option);
-            timingEnd = System.nanoTime();
+            timingEnd.accept(System.nanoTime());
             reporter.reportTransactionStarted(option);
-        } finally {
-            reportTiming(timingStart, timingEnd);
-        }
+        });
         return true;
     }
 
@@ -174,15 +154,11 @@ public class BasicEngine extends AbstractEngine {
 
         checkTransactionActive(statement, false);
         var status = ExecutorUtil.toCommitStatus(statement);
-        long timingStart = System.nanoTime();
-        long timingEnd = timingStart;
-        try {
+        executeTiming(timingEnd -> {
             sqlProcessor.commitTransaction(status.orElse(null));
-            timingEnd = System.nanoTime();
+            timingEnd.accept(System.nanoTime());
             reporter.reportTransactionCommitted(status);
-        } finally {
-            reportTiming(timingStart, timingEnd);
-        }
+        });
         return true;
     }
 
@@ -195,15 +171,11 @@ public class BasicEngine extends AbstractEngine {
      */
     protected void executeCommitImplicitly() throws ServerException, IOException, InterruptedException {
         var status = SqlRequest.CommitStatus.COMMIT_STATUS_UNSPECIFIED;
-        long timingStart = System.nanoTime();
-        long timingEnd = timingStart;
-        try {
+        executeTiming(timingEnd -> {
             sqlProcessor.commitTransaction(status);
-            timingEnd = System.nanoTime();
+            timingEnd.accept(System.nanoTime());
             reporter.reportTransactionCommittedImplicitly(status);
-        } finally {
-            reportTiming(timingStart, timingEnd);
-        }
+        });
     }
 
     @Override
@@ -212,15 +184,11 @@ public class BasicEngine extends AbstractEngine {
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
         checkTransactionActive(statement, false);
-        long timingStart = System.nanoTime();
-        long timingEnd = timingStart;
-        try {
+        executeTiming(timingEnd -> {
             sqlProcessor.rollbackTransaction();
-            timingEnd = System.nanoTime();
+            timingEnd.accept(System.nanoTime());
             reporter.reportTransactionRollbacked();
-        } finally {
-            reportTiming(timingStart, timingEnd);
-        }
+        });
         return true;
     }
 
@@ -232,15 +200,11 @@ public class BasicEngine extends AbstractEngine {
      * @throws InterruptedException if interrupted while executing the statement
      */
     protected void executeRollbackImplicitly() throws ServerException, IOException, InterruptedException {
-        long timingStart = System.nanoTime();
-        long timingEnd = timingStart;
-        try {
+        executeTiming(timingEnd -> {
             sqlProcessor.rollbackTransaction();
-            timingEnd = System.nanoTime();
+            timingEnd.accept(System.nanoTime());
             reporter.reportTransactionRollbackedImplicitly();
-        } finally {
-            reportTiming(timingStart, timingEnd);
-        }
+        });
     }
 
     @Override
@@ -282,9 +246,7 @@ public class BasicEngine extends AbstractEngine {
                     MessageFormat.format("unrecognized explain option: \"{0}\"", key)));
         }
 
-        long timingStart = System.nanoTime();
-        long timingEnd = timingStart;
-        try {
+        executeTiming(timingEnd -> {
             var metadata = sqlProcessor.explain(statement.getBody().getText(), statement.getBody().getRegion());
             LOG.debug("explain format: id={}, version={}", metadata.getFormatId(), metadata.getFormatVersion()); //$NON-NLS-1$
             LOG.trace("explain contents: {}", metadata.getContents()); //$NON-NLS-1$
@@ -293,10 +255,8 @@ public class BasicEngine extends AbstractEngine {
             for (var output : outputHandlers) {
                 output.handle(reporter, graph);
             }
-            timingEnd = System.nanoTime();
-        } finally {
-            reportTiming(timingStart, timingEnd);
-        }
+            timingEnd.accept(System.nanoTime());
+        });
         return true;
     }
 
@@ -370,14 +330,10 @@ public class BasicEngine extends AbstractEngine {
             var option = config.getTransactionOption();
             if (option != null) {
                 reporter.reportStartTransactionImplicitly(option);
-                long timingStart = System.nanoTime();
-                long timingEnd = timingStart;
-                try {
+                executeTiming(timingEnd -> {
                     sqlProcessor.startTransaction(option);
-                    timingEnd = System.nanoTime();
-                } finally {
-                    reportTiming(timingStart, timingEnd);
-                }
+                    timingEnd.accept(System.nanoTime());
+                });
                 return;
             }
         }
@@ -397,6 +353,60 @@ public class BasicEngine extends AbstractEngine {
         if (sqlProcessor.isTransactionActive()) {
             throw new EngineException(MessageFormat.format("transaction is running (line={0}, column={1})", //
                     statement.getRegion().getStartLine() + 1, statement.getRegion().getStartColumn() + 1));
+        }
+    }
+
+    private interface TimingTask {
+        void run(LongConsumer timingEnd) throws Exception;
+    }
+
+    private void executeTiming(TimingTask task) {
+        long timingStart = System.nanoTime();
+        class TimingEnd implements LongConsumer {
+            long time = timingStart;
+
+            @Override
+            public void accept(long t) {
+                this.time = t;
+            }
+        }
+        var timingEnd = new TimingEnd();
+        try {
+            task.run(timingEnd);
+        } catch (InterruptedException e) {
+            // thread interrupted
+            return;
+        } catch (ServerException e) {
+            reporter.warn(e);
+            reportTiming(timingStart, timingEnd.time);
+            throw new ScriptNoMessageException(e);
+        } catch (Exception e) {
+            for (var c = e.getCause(); c != null; c = c.getCause()) {
+                if (c instanceof InterruptedException) {
+                    // thread interrupted
+                    return;
+                }
+            }
+            String message = e.getMessage();
+            if (message == null) {
+                message = e.getClass().getName();
+            }
+            reporter.warn(message);
+            reportTiming(timingStart, timingEnd.time);
+            throw new ScriptNoMessageException(e);
+        }
+        reportTiming(timingStart, timingEnd.time);
+    }
+
+    private void reportTiming(long timingStart, long timingEnd) {
+        if (timingEnd == timingStart) {
+            timingEnd = System.nanoTime();
+        }
+
+        var clientVariableMap = config.getClientVariableMap();
+        boolean timing = clientVariableMap.get(ScriptCvKey.TIMING, false);
+        if (timing) {
+            reporter.reportTiming(timingEnd - timingStart);
         }
     }
 }

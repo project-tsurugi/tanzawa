@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.executor.report.ScriptReporter;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.tsubakuro.exception.ServerException;
@@ -15,8 +16,17 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 public interface Engine {
 
     /**
+     * get script configuration.
+     *
+     * @return script configuration
+     */
+    default ScriptConfig getConfig() {
+        throw new UnsupportedOperationException("do override");
+    }
+
+    /**
      * get reporter.
-     * 
+     *
      * @return script reporter
      */
     default ScriptReporter getReporter() {
@@ -25,7 +35,7 @@ public interface Engine {
 
     /**
      * Executes a statement.
-     * 
+     *
      * @param statement the target statement
      * @return {@code true} to continue execution, {@code false} if shutdown was requested
      * @throws EngineException      if error occurred in engine itself
@@ -37,7 +47,7 @@ public interface Engine {
 
     /**
      * finish Engine.
-     * 
+     *
      * @param succeed {@code true} to successful end
      * @throws IOException if I/O error was occurred while executing the statement
      */

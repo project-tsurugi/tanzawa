@@ -2,6 +2,7 @@ package com.tsurugidb.console.core.executor.engine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -15,6 +16,7 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 import com.tsurugidb.console.core.config.ScriptConfig;
+import com.tsurugidb.console.core.exception.ScriptNoMessageException;
 import com.tsurugidb.console.core.executor.explain.StatementMetadataHandler;
 import com.tsurugidb.console.core.executor.report.BasicReporter;
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
@@ -477,7 +479,8 @@ class BasicEngineTest {
         MockResultProcessor rs = new MockResultProcessor();
         var reporter = new BasicReporter();
         var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
-        assertThrows(EngineException.class, () -> engine.execute(parse("EXPLAIN SELECT 1")));
+        var e = assertThrows(ScriptNoMessageException.class, () -> engine.execute(parse("EXPLAIN SELECT 1")));
+        assertInstanceOf(EngineException.class, e.getCause());
     }
 
     @Test
