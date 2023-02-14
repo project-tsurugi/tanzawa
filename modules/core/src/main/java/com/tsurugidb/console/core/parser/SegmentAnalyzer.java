@@ -173,6 +173,14 @@ final class SegmentAnalyzer {
                 candidate.readWriteMode = region.wrap(ReadWriteMode.READ_ONLY_DEFERRABLE);
                 continue;
             }
+            if (testNext(K_READ, K_ONLY, K_IMMEDIATE)) {
+                LOG.trace("found read only immediate"); //$NON-NLS-1$
+                var region = cursor.region(0, 2);
+                cursor.consume(3);
+                checkReadWriteModeOption(candidate, region);
+                candidate.readWriteMode = region.wrap(ReadWriteMode.READ_ONLY);
+                continue;
+            }
             if (testNext(K_READ, K_ONLY)) {
                 LOG.trace("found read only"); //$NON-NLS-1$
                 var region = cursor.region(0, 1);
@@ -182,7 +190,7 @@ final class SegmentAnalyzer {
                 continue;
             }
             if (testNext(K_READ, K_WRITE)) {
-                LOG.trace("found read only"); //$NON-NLS-1$
+                LOG.trace("found read write"); //$NON-NLS-1$
                 var region = cursor.region(0, 1);
                 cursor.consume(2);
                 checkReadWriteModeOption(candidate, region);

@@ -314,6 +314,72 @@ class BasicEngineTest {
     }
 
     @Test
+    void start_transaction_statement_read_only() throws Exception {
+        var reached = new AtomicBoolean();
+        MockSqlProcessor sql = new MockSqlProcessor(false) {
+            @Override
+            public void startTransaction(SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+                if (!reached.compareAndSet(false, true)) {
+                    fail();
+                }
+                assertEquals(SqlRequest.TransactionType.LONG, option.getType());
+                assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
+                assertEquals("", option.getLabel());
+                assertEquals(0, option.getWritePreservesCount());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("START TRANSACTION READ ONLY"));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @Test
+    void start_transaction_statement_read_only_immediate() throws Exception {
+        var reached = new AtomicBoolean();
+        MockSqlProcessor sql = new MockSqlProcessor(false) {
+            @Override
+            public void startTransaction(SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+                if (!reached.compareAndSet(false, true)) {
+                    fail();
+                }
+                assertEquals(SqlRequest.TransactionType.LONG, option.getType());
+                assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
+                assertEquals("", option.getLabel());
+                assertEquals(0, option.getWritePreservesCount());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("START TRANSACTION READ ONLY IMMEDIATE"));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @Test
+    void start_transaction_statement_read_only_deferrable() throws Exception {
+        var reached = new AtomicBoolean();
+        MockSqlProcessor sql = new MockSqlProcessor(false) {
+            @Override
+            public void startTransaction(SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+                if (!reached.compareAndSet(false, true)) {
+                    fail();
+                }
+                assertEquals(SqlRequest.TransactionType.READ_ONLY, option.getType());
+                assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
+                assertEquals("", option.getLabel());
+                assertEquals(0, option.getWritePreservesCount());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("START TRANSACTION READ ONLY DEFERRABLE"));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @Test
     void start_transaction_statement_tx_active() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();

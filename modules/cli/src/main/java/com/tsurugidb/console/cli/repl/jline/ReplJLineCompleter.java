@@ -89,6 +89,7 @@ public class ReplJLineCompleter implements Completer {
 
     private static void addTx(List<SimpleCompleterCandidate> result, String base) {
         String[] optionList = { //
+                "read only immediate", //
                 "read only deferrable", //
                 "read write", //
                 "write preserve", //
