@@ -11,10 +11,12 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.tsurugidb.console.cli.argument.ConsoleArgument;
 import com.tsurugidb.console.cli.argument.ExecArgument;
+import com.tsurugidb.console.cli.argument.ExplainArgument;
 import com.tsurugidb.console.cli.argument.ScriptArgument;
 import com.tsurugidb.console.cli.config.ConsoleConfigBuilder;
 import com.tsurugidb.console.cli.config.ExecConfigBuilder;
 import com.tsurugidb.console.cli.config.ScriptConfigBuilder;
+import com.tsurugidb.console.cli.explain.ExplainConvertRunner;
 import com.tsurugidb.console.cli.repl.ReplEngine;
 import com.tsurugidb.console.cli.repl.ReplReporter;
 import com.tsurugidb.console.cli.repl.ReplResultProcessor;
@@ -35,6 +37,7 @@ public final class Main {
     private static final String CONSOLE = "console"; //$NON-NLS-1$
     private static final String EXEC = "exec"; //$NON-NLS-1$
     private static final String SCRIPT = "script"; //$NON-NLS-1$
+    private static final String EXPLAIN = "explain"; //$NON-NLS-1$
 
     /**
      * Execute script.
@@ -53,11 +56,13 @@ public final class Main {
         var consoleArgument = new ConsoleArgument();
         var execArgument = new ExecArgument();
         var scriptArgument = new ScriptArgument();
+        var explainArgument = new ExplainArgument();
         var commander = JCommander.newBuilder() //
                 .programName(Main.class.getName()) //
                 .addCommand(CONSOLE, consoleArgument) //
                 .addCommand(EXEC, execArgument) //
                 .addCommand(SCRIPT, scriptArgument) //
+                .addCommand(EXPLAIN, explainArgument) //
                 .build();
         try (Closeable c0 = () -> ReplJLineTerminal.close()) {
             commander.parse(args);
@@ -76,6 +81,9 @@ public final class Main {
                 break;
             case SCRIPT:
                 executeScript(commander, scriptArgument);
+                break;
+            case EXPLAIN:
+                ExplainConvertRunner.execute(explainArgument);
                 break;
             default:
                 throw new AssertionError(command);
