@@ -32,9 +32,9 @@ public class StartTransactionStatement implements Statement {
     public enum ReadWriteMode {
 
         /**
-         * Read only.
+         * Read only immediate.
          */
-        READ_ONLY,
+        READ_ONLY_IMMEDIATE,
 
         /**
          * Read only and can read older snapshot.

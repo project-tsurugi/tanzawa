@@ -322,7 +322,7 @@ class BasicEngineTest {
                 if (!reached.compareAndSet(false, true)) {
                     fail();
                 }
-                assertEquals(SqlRequest.TransactionType.LONG, option.getType());
+                assertEquals(SqlRequest.TransactionType.READ_ONLY, option.getType());
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
@@ -377,6 +377,22 @@ class BasicEngineTest {
         var cont = engine.execute(parse("START TRANSACTION READ ONLY DEFERRABLE"));
         assertTrue(cont);
         assertTrue(reached.get());
+    }
+
+    @Test
+    void start_transaction_statement_read_only_write_preserve() throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(false);
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        assertThrows(EngineException.class, () -> engine.execute(parse("START TRANSACTION READ ONLY WRITE PRESERVE t1")));
+    }
+
+    @Test
+    void start_transaction_statement_long_read_only() throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(false);
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        assertThrows(EngineException.class, () -> engine.execute(parse("START LONG TRANSACTION READ ONLY")));
     }
 
     @Test

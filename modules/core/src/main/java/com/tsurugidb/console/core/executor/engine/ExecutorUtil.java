@@ -31,8 +31,9 @@ public final class ExecutorUtil {
      * @param statement the extraction target statement
      * @param config    script configuration
      * @return the extracted option
+     * @throws EngineException if error occurred in engine itself
      */
-    public static SqlRequest.TransactionOption toTransactionOption(@Nonnull StartTransactionStatement statement, ScriptConfig config) {
+    public static SqlRequest.TransactionOption toTransactionOption(@Nonnull StartTransactionStatement statement, ScriptConfig config) throws EngineException {
         Objects.requireNonNull(statement);
         var options = SqlRequest.TransactionOption.newBuilder();
         computeTransactionType(statement).ifPresent(options::setType);
@@ -44,19 +45,34 @@ public final class ExecutorUtil {
         return options.build();
     }
 
-    private static Optional<SqlRequest.TransactionType> computeTransactionType(StartTransactionStatement statement) {
-        boolean ltx = unwrap(statement.getTransactionMode()) == TransactionMode.LONG //
-                || unwrap(statement.getReadWriteMode()) == ReadWriteMode.READ_ONLY //
+    private static Optional<SqlRequest.TransactionType> computeTransactionType(StartTransactionStatement statement) throws EngineException {
+        TransactionMode transactionMode = unwrap(statement.getTransactionMode());
+        ReadWriteMode readWriteMode = unwrap(statement.getReadWriteMode());
+
+        if (transactionMode == TransactionMode.LONG) {
+            if (readWriteMode == ReadWriteMode.READ_ONLY_DEFERRABLE) {
+                LOG.debug("transaction type is conflicted between LTX and RO (line={}, column={})", //
+                        statement.getRegion().getStartLine() + 1, //
+                        statement.getRegion().getStartColumn() + 1);
+                throw new EngineException("transaction type is conflicted between \"LONG\" and \"READ ONLY\"");
+            }
+        }
+        if (statement.getWritePreserve().isPresent()) {
+            if (readWriteMode == ReadWriteMode.READ_ONLY_IMMEDIATE || readWriteMode == ReadWriteMode.READ_ONLY_DEFERRABLE) {
+                LOG.debug("transaction type is conflicted between LTX and RO (line={}, column={})", //
+                        statement.getRegion().getStartLine() + 1, //
+                        statement.getRegion().getStartColumn() + 1);
+                throw new EngineException("transaction type is conflicted between \"READ ONLY\" and \"WRITE PRESERVE\"");
+            }
+        }
+
+        boolean ltx = transactionMode == TransactionMode.LONG //
+                || readWriteMode == ReadWriteMode.READ_ONLY_IMMEDIATE //
                 || statement.getWritePreserve().isPresent() //
                 || statement.getReadAreaInclude().isPresent() //
                 || statement.getReadAreaExclude().isPresent();
-        boolean ro = unwrap(statement.getReadWriteMode()) == ReadWriteMode.READ_ONLY_DEFERRABLE;
+        boolean ro = readWriteMode == ReadWriteMode.READ_ONLY_DEFERRABLE;
         if (ltx) {
-            if (ro) {
-                LOG.warn("transaction type is conflicted between LTX and RO; executes as LTX (line={}, column={})", //
-                        statement.getRegion().getStartLine() + 1, //
-                        statement.getRegion().getStartColumn() + 1);
-            }
             return Optional.of(SqlRequest.TransactionType.LONG);
         }
         if (ro) {

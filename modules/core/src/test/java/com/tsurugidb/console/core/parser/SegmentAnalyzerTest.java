@@ -15,17 +15,17 @@ import org.junit.jupiter.api.Test;
 
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
+import com.tsurugidb.console.core.model.CommitStatement.CommitStatus;
+import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.console.core.model.ExplainStatement;
 import com.tsurugidb.console.core.model.Regioned;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.StartTransactionStatement;
-import com.tsurugidb.console.core.model.Statement;
-import com.tsurugidb.console.core.model.Value;
-import com.tsurugidb.console.core.model.CommitStatement.CommitStatus;
-import com.tsurugidb.console.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.console.core.model.StartTransactionStatement.ExclusiveMode;
 import com.tsurugidb.console.core.model.StartTransactionStatement.ReadWriteMode;
 import com.tsurugidb.console.core.model.StartTransactionStatement.TransactionMode;
+import com.tsurugidb.console.core.model.Statement;
+import com.tsurugidb.console.core.model.Value;
 
 class SegmentAnalyzerTest {
 
@@ -119,7 +119,7 @@ class SegmentAnalyzerTest {
         assertEquals(Statement.Kind.START_TRANSACTION, s.getKind());
         var t = (StartTransactionStatement) s;
         assertEquals(null, unwrap(t.getTransactionMode()));
-        assertEquals(ReadWriteMode.READ_ONLY, unwrap(t.getReadWriteMode()));
+        assertEquals(ReadWriteMode.READ_ONLY_DEFERRABLE, unwrap(t.getReadWriteMode()));
         assertEquals(null, unwrap(t.getExclusiveMode()));
         assertEquals(null, unwrapList(t.getWritePreserve()));
         assertEquals(null, unwrapList(t.getReadAreaInclude()));
@@ -135,6 +135,21 @@ class SegmentAnalyzerTest {
         var t = (StartTransactionStatement) s;
         assertEquals(null, unwrap(t.getTransactionMode()));
         assertEquals(ReadWriteMode.READ_ONLY_DEFERRABLE, unwrap(t.getReadWriteMode()));
+        assertEquals(null, unwrap(t.getExclusiveMode()));
+        assertEquals(null, unwrapList(t.getWritePreserve()));
+        assertEquals(null, unwrapList(t.getReadAreaInclude()));
+        assertEquals(null, unwrapList(t.getReadAreaExclude()));
+        assertEquals(null, unwrap(t.getLabel()));
+        assertEquals(null, unwrapMap(t.getProperties()));
+    }
+
+    @Test
+    void start_transaction_read_only_immediate() throws Exception {
+        Statement s = analyze("START TRANSACTION READ ONLY IMMEDIATE");
+        assertEquals(Statement.Kind.START_TRANSACTION, s.getKind());
+        var t = (StartTransactionStatement) s;
+        assertEquals(null, unwrap(t.getTransactionMode()));
+        assertEquals(ReadWriteMode.READ_ONLY_IMMEDIATE, unwrap(t.getReadWriteMode()));
         assertEquals(null, unwrap(t.getExclusiveMode()));
         assertEquals(null, unwrapList(t.getWritePreserve()));
         assertEquals(null, unwrapList(t.getReadAreaInclude()));

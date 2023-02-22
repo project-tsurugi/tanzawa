@@ -178,7 +178,7 @@ final class SegmentAnalyzer {
                 var region = cursor.region(0, 2);
                 cursor.consume(3);
                 checkReadWriteModeOption(candidate, region);
-                candidate.readWriteMode = region.wrap(ReadWriteMode.READ_ONLY);
+                candidate.readWriteMode = region.wrap(ReadWriteMode.READ_ONLY_IMMEDIATE);
                 continue;
             }
             if (testNext(K_READ, K_ONLY)) {
@@ -186,7 +186,7 @@ final class SegmentAnalyzer {
                 var region = cursor.region(0, 1);
                 cursor.consume(2);
                 checkReadWriteModeOption(candidate, region);
-                candidate.readWriteMode = region.wrap(ReadWriteMode.READ_ONLY);
+                candidate.readWriteMode = region.wrap(ReadWriteMode.READ_ONLY_DEFERRABLE);
                 continue;
             }
             if (testNext(K_READ, K_WRITE)) {
