@@ -74,7 +74,7 @@ jobs:
 
       - id: Delete_Old_Snapshot_Release
         name: Delete_Old_Snapshot_Release
-        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
         if: contains(github.ref, '/heads/master')
         with:
           delete_release: true
