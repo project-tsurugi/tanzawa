@@ -213,6 +213,8 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -235,6 +237,8 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -257,6 +261,8 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.WAIT, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -279,6 +285,8 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("TESTING", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -304,6 +312,8 @@ class BasicEngineTest {
                 assertEquals("a", option.getWritePreserves(0).getTableName());
                 assertEquals("b", option.getWritePreserves(1).getTableName());
                 assertEquals("c", option.getWritePreserves(2).getTableName());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -326,6 +336,8 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -348,6 +360,8 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -370,6 +384,8 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -393,6 +409,90 @@ class BasicEngineTest {
         MockResultProcessor rs = new MockResultProcessor();
         var engine = newBasicEngine(sql, rs);
         assertThrows(EngineException.class, () -> engine.execute(parse("START LONG TRANSACTION READ ONLY")));
+    }
+
+    @Test
+    void start_transaction_statement_read_area_include() throws Exception {
+        var reached = new AtomicBoolean();
+        MockSqlProcessor sql = new MockSqlProcessor(false) {
+            @Override
+            public void startTransaction(SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+                if (!reached.compareAndSet(false, true)) {
+                    fail();
+                }
+                assertEquals(SqlRequest.TransactionType.LONG, option.getType());
+                assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
+                assertEquals("", option.getLabel());
+                assertEquals(0, option.getWritePreservesCount());
+                assertEquals(3, option.getInclusiveReadAreasCount());
+                assertEquals("a", option.getInclusiveReadAreas(0).getTableName());
+                assertEquals("b", option.getInclusiveReadAreas(1).getTableName());
+                assertEquals("c", option.getInclusiveReadAreas(2).getTableName());
+                assertEquals(0, option.getExclusiveReadAreasCount());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("START TRANSACTION READ AREA INCLUDE a, b, c"));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @Test
+    void start_transaction_statement_read_area_exclude() throws Exception {
+        var reached = new AtomicBoolean();
+        MockSqlProcessor sql = new MockSqlProcessor(false) {
+            @Override
+            public void startTransaction(SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+                if (!reached.compareAndSet(false, true)) {
+                    fail();
+                }
+                assertEquals(SqlRequest.TransactionType.LONG, option.getType());
+                assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
+                assertEquals("", option.getLabel());
+                assertEquals(0, option.getWritePreservesCount());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(3, option.getExclusiveReadAreasCount());
+                assertEquals("a", option.getExclusiveReadAreas(0).getTableName());
+                assertEquals("b", option.getExclusiveReadAreas(1).getTableName());
+                assertEquals("c", option.getExclusiveReadAreas(2).getTableName());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("START TRANSACTION READ AREA EXCLUDE a, b, c"));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @Test
+    void start_transaction_statement_read_area_both() throws Exception {
+        var reached = new AtomicBoolean();
+        MockSqlProcessor sql = new MockSqlProcessor(false) {
+            @Override
+            public void startTransaction(SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+                if (!reached.compareAndSet(false, true)) {
+                    fail();
+                }
+                assertEquals(SqlRequest.TransactionType.LONG, option.getType());
+                assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
+                assertEquals("", option.getLabel());
+                assertEquals(0, option.getWritePreservesCount());
+                assertEquals(3, option.getInclusiveReadAreasCount());
+                assertEquals("a", option.getInclusiveReadAreas(0).getTableName());
+                assertEquals("b", option.getInclusiveReadAreas(1).getTableName());
+                assertEquals("c", option.getInclusiveReadAreas(2).getTableName());
+                assertEquals(3, option.getExclusiveReadAreasCount());
+                assertEquals("d", option.getExclusiveReadAreas(0).getTableName());
+                assertEquals("e", option.getExclusiveReadAreas(1).getTableName());
+                assertEquals("f", option.getExclusiveReadAreas(2).getTableName());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("START TRANSACTION READ AREA INCLUDE a, b, c EXCLUDE d, e, f"));
+        assertTrue(cont);
+        assertTrue(reached.get());
     }
 
     @Test

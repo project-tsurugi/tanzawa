@@ -40,7 +40,8 @@ public final class ExecutorUtil {
         computeTransactionPriority(statement).ifPresent(options::setPriority);
         statement.getLabel().ifPresent(it -> options.setLabel(it.getValue()));
         computeWritePreserve(statement).ifPresent(options::addAllWritePreserves);
-        // FIXME: read area
+        computeInclusiveReadArea(statement).ifPresent(options::addAllInclusiveReadAreas);
+        computeExclusiveReadArea(statement).ifPresent(options::addAllExclusiveReadAreas);
         // FIXME: properties config.getProperty();
         return options.build();
     }
@@ -105,6 +106,25 @@ public final class ExecutorUtil {
         var wps = statement.getWritePreserve().get().stream() //
                 .map(Regioned::getValue) //
                 .map(it -> SqlRequest.WritePreserve.newBuilder().setTableName(it).build()) //
+                .collect(Collectors.toList());
+        return Optional.of(wps);
+    }
+
+    private static Optional<List<SqlRequest.ReadArea>> computeInclusiveReadArea(StartTransactionStatement statement) {
+        return computeReadArea(statement.getReadAreaInclude());
+    }
+
+    private static Optional<List<SqlRequest.ReadArea>> computeExclusiveReadArea(StartTransactionStatement statement) {
+        return computeReadArea(statement.getReadAreaExclude());
+    }
+
+    private static Optional<List<SqlRequest.ReadArea>> computeReadArea(Optional<List<Regioned<String>>> readArea) {
+        if (readArea.isEmpty()) {
+            return Optional.empty();
+        }
+        var wps = readArea.get().stream() //
+                .map(Regioned::getValue) //
+                .map(it -> SqlRequest.ReadArea.newBuilder().setTableName(it).build()) //
                 .collect(Collectors.toList());
         return Optional.of(wps);
     }
