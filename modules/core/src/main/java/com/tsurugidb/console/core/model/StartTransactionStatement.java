@@ -109,7 +109,6 @@ public class StartTransactionStatement implements Statement {
      * @param label the optional transaction label (nullable)
      * @param properties the extra transaction properties (nullable)
      */
-    @SuppressWarnings("checkstyle:parameternumber")
     public StartTransactionStatement(
             @Nonnull String text,
             @Nonnull Region region,

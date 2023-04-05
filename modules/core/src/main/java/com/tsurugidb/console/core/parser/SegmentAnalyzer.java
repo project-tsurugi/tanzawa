@@ -164,7 +164,6 @@ final class SegmentAnalyzer {
         return new SimpleStatement(Statement.Kind.GENERIC, segment.getText(), getSegmentRegion());
     }
 
-    @SuppressWarnings("checkstyle:methodlength")
     private Statement analyzeStartTransaction(StartTransactionCandidate candidate) throws ParseException {
         while (true) {
             if (testNext(TokenKind.END_OF_STATEMENT)) {

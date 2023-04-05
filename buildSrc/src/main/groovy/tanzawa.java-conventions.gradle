@@ -46,6 +46,9 @@ dependencies {
 }
 
 checkstyle {
+    def confDir = 'buildSrc/src/main/resources'
+    configFile = rootProject.file("$confDir/checkstyle.xml")
+    configProperties.suppressionFile = rootProject.file("$confDir/checkstyle-suppressions.xml")
     if ('strict' == findProperty('checkMode')) {
         maxWarnings = 0
     }
