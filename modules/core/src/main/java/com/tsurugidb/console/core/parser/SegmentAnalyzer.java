@@ -54,6 +54,12 @@ final class SegmentAnalyzer {
 
     private static final String K_PRESERVE = "PRESERVE";
 
+    private static final String K_DEFINITION = "DEFINITION";
+
+    private static final String K_DEFINITIONS = "DEFINITIONS";
+
+    private static final String K_DDL = "DDL";
+
     private static final String K_EXECUTE = "EXECUTE";
 
     private static final String K_PRIOR = "PRIOR";
@@ -158,6 +164,7 @@ final class SegmentAnalyzer {
         return new SimpleStatement(Statement.Kind.GENERIC, segment.getText(), getSegmentRegion());
     }
 
+    @SuppressWarnings("checkstyle:methodlength")
     private Statement analyzeStartTransaction(StartTransactionCandidate candidate) throws ParseException {
         while (true) {
             if (testNext(TokenKind.END_OF_STATEMENT)) {
@@ -234,6 +241,14 @@ final class SegmentAnalyzer {
                 candidate.writePreserve = consumeTableList();
                 continue;
             }
+            if (testNext(K_INCLUDE, K_DEFINITION) || testNext(K_INCLUDE, K_DEFINITIONS) || testNext(K_INCLUDE, K_DDL)) {
+                LOG.trace("found include ddl"); //$NON-NLS-1$
+                var region = cursor.region(0, 1);
+                checkIncludeDdlOption(candidate, region);
+                cursor.consume(2);
+                candidate.includeDdl = region.wrap(Boolean.TRUE);
+                continue;
+            }
             if (testNext(K_EXECUTE, K_PRIOR, K_IMMEDIATE)) {
                 LOG.trace("found execute prior immediate"); //$NON-NLS-1$
                 var region = cursor.region(0, 2);
@@ -300,6 +315,7 @@ final class SegmentAnalyzer {
                 candidate.readWriteMode,
                 candidate.exclusiveMode,
                 candidate.writePreserve,
+                candidate.includeDdl,
                 candidate.readAreaInclude,
                 candidate.readAreaExclude,
                 candidate.label,
@@ -708,6 +724,14 @@ final class SegmentAnalyzer {
         if (candidate.writePreserve != null) {
             throw new ParseException(ErrorKind.DUPLICATE_WRITE_PRESERVE_OPTION, region,
                     "write preserve is already declared");
+        }
+    }
+
+    private static void checkIncludeDdlOption(
+            StartTransactionCandidate candidate, Region region) throws ParseException {
+        if (candidate.includeDdl != null) {
+            throw new ParseException(ErrorKind.DUPLICATE_INCLUDE_DDL_OPTION, region,
+                    "include ddl is already declared");
         }
     }
 

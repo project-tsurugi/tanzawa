@@ -42,6 +42,12 @@ public class ErroneousStatement implements Statement {
         DUPLICATE_WRITE_PRESERVE_OPTION,
 
         /**
+         * conflict include ddl option in {@code START TRANSACTION}.
+         * @see StartTransactionStatement#getIncludeDdl()
+         */
+        DUPLICATE_INCLUDE_DDL_OPTION,
+
+        /**
          * conflict read area option in {@code START TRANSACTION}.
          * @see StartTransactionStatement#getReadAreaInclude()
          * @see StartTransactionStatement#getReadAreaExclude()

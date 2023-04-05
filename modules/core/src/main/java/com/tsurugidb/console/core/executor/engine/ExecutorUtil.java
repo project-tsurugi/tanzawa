@@ -40,6 +40,7 @@ public final class ExecutorUtil {
         computeTransactionPriority(statement).ifPresent(options::setPriority);
         statement.getLabel().ifPresent(it -> options.setLabel(it.getValue()));
         computeWritePreserve(statement).ifPresent(options::addAllWritePreserves);
+        computeIncludeDdl(statement, options.getType()).ifPresent(options::setModifiesDefinitions);
         computeInclusiveReadArea(statement).ifPresent(options::addAllInclusiveReadAreas);
         computeExclusiveReadArea(statement).ifPresent(options::addAllExclusiveReadAreas);
         // FIXME: properties config.getProperty();
@@ -110,6 +111,30 @@ public final class ExecutorUtil {
         return Optional.of(wps);
     }
 
+    private static Optional<Boolean> computeIncludeDdl(StartTransactionStatement statement, SqlRequest.TransactionType transactionType) throws EngineException {
+        if (statement.getIncludeDdl().isEmpty()) {
+            return Optional.empty();
+        }
+        boolean ddl = statement.getIncludeDdl().get().getValue();
+        if (ddl) {
+            ReadWriteMode readWriteMode = unwrap(statement.getReadWriteMode());
+            if (readWriteMode == ReadWriteMode.READ_ONLY_DEFERRABLE || readWriteMode == ReadWriteMode.READ_ONLY_IMMEDIATE) {
+                LOG.debug("include ddl is conflicted RO (line={}, column={})", //
+                        statement.getRegion().getStartLine() + 1, //
+                        statement.getRegion().getStartColumn() + 1);
+                throw new EngineException("include ddl is conflicted \"READ ONLY\"");
+            }
+
+            if (transactionType != SqlRequest.TransactionType.LONG) {
+                LOG.debug("include ddl is ignored (line={}, column={})", //
+                        statement.getRegion().getStartLine() + 1, //
+                        statement.getRegion().getStartColumn() + 1);
+                return Optional.of(Boolean.FALSE);
+            }
+        }
+        return Optional.of(ddl);
+    }
+
     private static Optional<List<SqlRequest.ReadArea>> computeInclusiveReadArea(StartTransactionStatement statement) {
         return computeReadArea(statement.getReadAreaInclude());
     }
@@ -122,11 +147,11 @@ public final class ExecutorUtil {
         if (readArea.isEmpty()) {
             return Optional.empty();
         }
-        var wps = readArea.get().stream() //
+        var ras = readArea.get().stream() //
                 .map(Regioned::getValue) //
                 .map(it -> SqlRequest.ReadArea.newBuilder().setTableName(it).build()) //
                 .collect(Collectors.toList());
-        return Optional.of(wps);
+        return Optional.of(ras);
     }
 
     /**

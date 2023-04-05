@@ -14,6 +14,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.exception.ScriptNoMessageException;
@@ -213,6 +215,7 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
             }
@@ -237,6 +240,7 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
             }
@@ -261,6 +265,7 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.WAIT, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
             }
@@ -285,6 +290,7 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("TESTING", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
             }
@@ -312,6 +318,7 @@ class BasicEngineTest {
                 assertEquals("a", option.getWritePreserves(0).getTableName());
                 assertEquals("b", option.getWritePreserves(1).getTableName());
                 assertEquals("c", option.getWritePreserves(2).getTableName());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
             }
@@ -319,6 +326,67 @@ class BasicEngineTest {
         MockResultProcessor rs = new MockResultProcessor();
         var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("START TRANSACTION WRITE PRESERVE a, b, c"));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "DEFINITION", "DEFINITIONS", "DDL" })
+    void start_transaction_statement_include_ddl(String word) throws Exception {
+        var reached = new AtomicBoolean();
+        MockSqlProcessor sql = new MockSqlProcessor(false) {
+            @Override
+            public void startTransaction(SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+                if (!reached.compareAndSet(false, true)) {
+                    fail();
+                }
+                assertEquals(SqlRequest.TransactionType.LONG, option.getType());
+                assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
+                assertEquals("", option.getLabel());
+                assertEquals(0, option.getWritePreservesCount());
+                assertTrue(option.getModifiesDefinitions());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("START LONG TRANSACTION INCLUDE " + word));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "DEFERRABLE", "IMMEDIATE", "" })
+    void start_transaction_statement_include_ddl_read_only(String word) throws Exception {
+        MockSqlProcessor sql = new MockSqlProcessor(false);
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var e = assertThrows(EngineException.class, () -> engine.execute(parse("START TRANSACTION INCLUDE DDL READ ONLY " + word)));
+        assertEquals("include ddl is conflicted \"READ ONLY\"", e.getMessage());
+    }
+
+    @Test
+    void start_transaction_statement_include_ddl_shortTx() throws Exception {
+        var reached = new AtomicBoolean();
+        MockSqlProcessor sql = new MockSqlProcessor(false) {
+            @Override
+            public void startTransaction(SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+                if (!reached.compareAndSet(false, true)) {
+                    fail();
+                }
+                assertEquals(SqlRequest.TransactionType.TRANSACTION_TYPE_UNSPECIFIED, option.getType());
+                assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
+                assertEquals("", option.getLabel());
+                assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("START TRANSACTION INCLUDE DDL"));
         assertTrue(cont);
         assertTrue(reached.get());
     }
@@ -336,6 +404,7 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
             }
@@ -360,6 +429,7 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
             }
@@ -384,6 +454,7 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
             }
@@ -424,6 +495,7 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(3, option.getInclusiveReadAreasCount());
                 assertEquals("a", option.getInclusiveReadAreas(0).getTableName());
                 assertEquals("b", option.getInclusiveReadAreas(1).getTableName());
@@ -451,6 +523,7 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(3, option.getExclusiveReadAreasCount());
                 assertEquals("a", option.getExclusiveReadAreas(0).getTableName());
@@ -478,6 +551,7 @@ class BasicEngineTest {
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
                 assertEquals(3, option.getInclusiveReadAreasCount());
                 assertEquals("a", option.getInclusiveReadAreas(0).getTableName());
                 assertEquals("b", option.getInclusiveReadAreas(1).getTableName());

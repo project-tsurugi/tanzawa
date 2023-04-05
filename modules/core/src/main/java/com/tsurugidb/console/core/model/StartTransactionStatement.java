@@ -85,6 +85,8 @@ public class StartTransactionStatement implements Statement {
 
     private final List<Regioned<String>> writePreserve;
 
+    private final Regioned<Boolean> includeDdl;
+
     private final List<Regioned<String>> readAreaInclude;
 
     private final List<Regioned<String>> readAreaExclude;
@@ -101,11 +103,13 @@ public class StartTransactionStatement implements Statement {
      * @param readWriteMode the read-write mode (nullable)
      * @param exclusiveMode the exclusive mode (nullable)
      * @param writePreserve the write preserve (nullable)
+     * @param includeDdl the include ddl (nullable)
      * @param readAreaInclude the inclusive tables of read area (nullable)
      * @param readAreaExclude the exclusive tables of read area (nullable)
      * @param label the optional transaction label (nullable)
      * @param properties the extra transaction properties (nullable)
      */
+    @SuppressWarnings("checkstyle:parameternumber")
     public StartTransactionStatement(
             @Nonnull String text,
             @Nonnull Region region,
@@ -113,6 +117,7 @@ public class StartTransactionStatement implements Statement {
             @Nullable Regioned<ReadWriteMode> readWriteMode,
             @Nullable Regioned<ExclusiveMode> exclusiveMode,
             @Nullable List<Regioned<String>> writePreserve,
+            @Nullable Regioned<Boolean> includeDdl,
             @Nullable List<Regioned<String>> readAreaInclude,
             @Nullable List<Regioned<String>> readAreaExclude,
             @Nullable Regioned<String> label,
@@ -125,6 +130,7 @@ public class StartTransactionStatement implements Statement {
         this.readWriteMode = readWriteMode;
         this.exclusiveMode = exclusiveMode;
         this.writePreserve = copyOrNull(writePreserve);
+        this.includeDdl = includeDdl;
         this.readAreaInclude = copyOrNull(readAreaInclude);
         this.readAreaExclude = copyOrNull(readAreaExclude);
         this.label = label;
@@ -190,6 +196,14 @@ public class StartTransactionStatement implements Statement {
      */
     public Optional<List<Regioned<String>>> getWritePreserve() {
         return Optional.ofNullable(writePreserve);
+    }
+
+    /**
+     * Returns the include ddl.
+     * @return the include ddl, or empty if it was not set
+     */
+    public Optional<Regioned<Boolean>> getIncludeDdl() {
+        return Optional.ofNullable(includeDdl);
     }
 
     /**

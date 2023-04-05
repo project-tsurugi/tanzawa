@@ -93,6 +93,9 @@ public class ReplJLineCompleter implements Completer {
                 "read only deferrable", //
                 "read write", //
                 "write preserve", //
+                "include definition", //
+                "include definitions", //
+                "include ddl", //
                 "read area include", //
                 "read area exclude", //
                 "as", //

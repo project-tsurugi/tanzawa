@@ -5,10 +5,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.tsurugidb.console.core.model.Regioned;
-import com.tsurugidb.console.core.model.Value;
 import com.tsurugidb.console.core.model.StartTransactionStatement.ExclusiveMode;
 import com.tsurugidb.console.core.model.StartTransactionStatement.ReadWriteMode;
 import com.tsurugidb.console.core.model.StartTransactionStatement.TransactionMode;
+import com.tsurugidb.console.core.model.Value;
 
 class StartTransactionCandidate {
 
@@ -19,6 +19,8 @@ class StartTransactionCandidate {
     Regioned<ExclusiveMode> exclusiveMode;
 
     List<Regioned<String>> writePreserve;
+
+    Regioned<Boolean> includeDdl;
 
     List<Regioned<String>> readAreaInclude;
 

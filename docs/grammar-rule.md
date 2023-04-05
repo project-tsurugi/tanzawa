@@ -37,7 +37,7 @@
                       |  "READ" "ONLY" "DEFERRABLE"
                       |  "READ" "WRITE"
                       |  "WRITE" "PRESERVE" <table-list>
-                      |  "INCLUDE" ( "DEFINITION" | "DEFINITIONS" )
+                      |  "INCLUDE" ( "DEFINITION" | "DEFINITIONS" | "DDL" )
                       |  "READ" "AREA" "INCLUDE" <table-list> ( "EXCLUDE" <table-list> )?
                       |  "READ" "AREA" "EXCLUDE" <table-list> ( "INCLUDE" <table-list> )?
                       |  "EXECUTE" ( "PRIOR" | "EXCLUDING" ) ( "DEFERRABLE" | "IMMEDIATE" )?
