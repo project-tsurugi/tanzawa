@@ -1,12 +1,11 @@
-name: Tanzawa-CI
+name: Tanzawa-CI-Publish
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
-  Build:
+  Publish:
     runs-on: [self-hosted, docker]
     timeout-minutes: 30
     container:
@@ -23,13 +22,6 @@ jobs:
       JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
       GPR_USER: ${{ github.repository_owner }}
       GPR_KEY: ${{ secrets.GHCR_PAT }}
-
-    services:
-      tsurugi:
-        image: ghcr.io/project-tsurugi/tsurugi:latest
-        credentials:
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_PAT }}
 
     steps:
       - id: Setup_Java
@@ -56,29 +48,37 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GHA_PAT }}
 
-      - id: Assemble
-        name: Assemble
+      - id: Publish
+        name: Publish
         run: |
-          ./gradlew -i tanzawa-core:showTsubakuroManifest clean assemble
+          ./gradlew -i tanzawa-core:showTsubakuroManifest clean publish
 
-      - id: Check
-        name: Check
-        run: |
-          ./gradlew -i check --continue
-
-      - id: Generate_Annotations
-        name: Generate_Annotations
-        uses: ./.github/actions/tsurugi-annotations-action
-        if: always()
+      - id: Delete_Old_Snapshot_Release
+        name: Delete_Old_Snapshot_Release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        if: contains(github.ref, '/heads/master')
         with:
-          junit_input: '**/build/test-results/**/TEST-*.xml'
-          spotbugs_input: '**/build/reports/spotbugs/main/*.xml'
-          checkstyle_input: '**/build/reports/checkstyle/main.xml'
+          delete_release: true
+          tag_name: SNAPSHOT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: Create_Snapshot_Release
+        name: Create_Snapshot_Release
+        uses: softprops/action-gh-release@v1
+        if: contains(github.ref, '/heads/master')
+        with:
+          prerelease: true
+          draft: false
+          name: snapshot_release
+          tag_name: SNAPSHOT
+          files: |
+            modules/cli/build/distributions/tgsql-*.zip
 
       - id: Notify_Slack
         name: Notify_Slack
         uses: ./.github/actions/tsurugi-slack-action
-        if: always() && (github.event.pull_request.draft == false) && (contains(github.ref, '/tags/') || contains(github.ref, '/pull/') || contains(github.ref, '/heads/master'))
+        if: always() && (contains(github.ref, '/tags/') || contains(github.ref, '/heads/master'))
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
@@ -87,9 +87,3 @@ jobs:
           status: ${{ job.status }}
           step_context: ${{ toJson(steps) }}
           username: ${{ github.workflow }}
-
-  Publish:
-    uses: ./.github/workflows/ci-publish.yml
-    if: (contains(github.ref, '/tags/') || contains(github.ref, '/heads/master'))
-    needs: Build
-    secrets: inherit
