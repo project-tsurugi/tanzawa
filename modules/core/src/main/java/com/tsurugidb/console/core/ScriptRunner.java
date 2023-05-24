@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -38,7 +37,6 @@ import com.tsurugidb.console.core.model.Statement.Kind;
 import com.tsurugidb.console.core.parser.SqlParser;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
-import com.tsurugidb.tsubakuro.common.SessionBuilder;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 /**
@@ -71,7 +69,7 @@ public final class ScriptRunner {
         LOG.debug("script: {}", args[0]); //$NON-NLS-1$
         LOG.debug("endpoint: {}", args[1]); //$NON-NLS-1$
         var script = args[0];
-        var endpoint = URI.create(args[1]);
+        var endpoint = args[1];
         Credential credential = NullCredential.INSTANCE;
         boolean success = execute(toReaderSupplier(script), endpoint, credential);
         if (!success) {
@@ -92,7 +90,7 @@ public final class ScriptRunner {
      */
     public static boolean execute(//
             @Nonnull IoSupplier<? extends Reader> script, //
-            @Nonnull URI endpoint, //
+            @Nonnull String endpoint, //
             @Nonnull Credential credential) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(script);
         Objects.requireNonNull(endpoint);
@@ -138,11 +136,8 @@ public final class ScriptRunner {
             @Nonnull ScriptConfig config) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(script);
         Objects.requireNonNull(config);
-        var endpoint = config.getEndpoint();
-        var credential = config.getCredential();
-        LOG.info("establishing connection: {}", endpoint);
-        try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create(); //
-                var sqlProcessor = new BasicSqlProcessor(session); //
+
+        try (var sqlProcessor = new BasicSqlProcessor(); //
                 var resultProcessor = new BasicResultProcessor()) {
             var reporter = new BasicReporter();
             return execute(script, new BasicEngine(config, sqlProcessor, resultProcessor, reporter));
@@ -164,6 +159,7 @@ public final class ScriptRunner {
             @Nonnull Engine engine) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(script);
         Objects.requireNonNull(engine);
+        engine.connect();
         LOG.info("start processing script");
         try (var parser = new SqlParser(script.get())) {
             while (true) {
@@ -234,11 +230,7 @@ public final class ScriptRunner {
         Objects.requireNonNull(script);
         Objects.requireNonNull(resultProcessor);
 
-        var endpoint = config.getEndpoint();
-        var credential = config.getCredential();
-        LOG.info("establishing connection: {}", endpoint);
-        try (var session = SessionBuilder.connect(endpoint).withCredential(credential).create(); //
-                var sqlProcessor = new BasicSqlProcessor(session)) {
+        try (var sqlProcessor = new BasicSqlProcessor()) {
             var engine = new BasicEngine(config, sqlProcessor, resultProcessor, reporter);
             repl(script, engineWrapper.apply(engine));
         }
@@ -249,11 +241,17 @@ public final class ScriptRunner {
      *
      * @param script console reader
      * @param engine the statement executor
-     * @throws IOException if I/O error was occurred while establishing connection
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while establishing connection
+     * @throws InterruptedException if interrupted while establishing connection
      */
     public static void repl(//
             @Nonnull IoSupplier<? extends List<Statement>> script, //
-            @Nonnull Engine engine) throws IOException {
+            @Nonnull Engine engine) throws ServerException, IOException, InterruptedException {
+        if (engine.getConfig().getEndpoint() != null) {
+            engine.connect();
+        }
+
         LOG.info("start repl");
         loop: while (true) {
             try {

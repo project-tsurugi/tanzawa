@@ -46,6 +46,11 @@ public class ReplEngine extends AbstractEngine {
     }
 
     @Override
+    public void connect() throws ServerException, IOException, InterruptedException {
+        delegate.connect();
+    }
+
+    @Override
     public boolean executeErroneousStatement(ErroneousStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         return delegate.executeErroneousStatement(statement);
     }
@@ -88,5 +93,10 @@ public class ReplEngine extends AbstractEngine {
     @Override
     public boolean executeEmptyStatement(Statement statement) throws EngineException, ServerException, IOException, InterruptedException {
         return delegate.executeEmptyStatement(statement);
+    }
+
+    @Override
+    public void finish(boolean succeed) throws IOException {
+        delegate.finish(succeed);
     }
 }

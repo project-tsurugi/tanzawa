@@ -10,9 +10,11 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.common.Session;
+import com.tsurugidb.tsubakuro.common.SessionBuilder;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
@@ -27,20 +29,14 @@ import com.tsurugidb.tsubakuro.sql.Transaction;
 public class BasicSqlProcessor implements SqlProcessor {
     static final Logger LOG = LoggerFactory.getLogger(BasicSqlProcessor.class);
 
-    private final Session session;
-    private final SqlClient client;
-
+    private Session session;
+    private SqlClient sqlClient;
     private Transaction transaction;
 
     /**
      * Creates a new instance.
-     *
-     * @param session the current session
      */
-    public BasicSqlProcessor(@Nonnull Session session) {
-        Objects.requireNonNull(session);
-        this.session = session;
-        this.client = SqlClient.attach(session);
+    public BasicSqlProcessor() {
     }
 
     /**
@@ -51,13 +47,53 @@ public class BasicSqlProcessor implements SqlProcessor {
     BasicSqlProcessor(@Nonnull SqlClient client) {
         Objects.requireNonNull(client);
         this.session = null;
-        this.client = client;
+        this.sqlClient = client;
+    }
+
+    @Override
+    public void connect(ScriptConfig config) throws ServerException, IOException, InterruptedException {
+        Objects.requireNonNull(config);
+        if (this.sqlClient != null) {
+            throw new IllegalStateException("connection already exists");
+        }
+        this.sqlClient = SqlClient.attach(getSession(config));
+    }
+
+    @Override
+    public void disconnect() throws ServerException, IOException, InterruptedException {
+        closeSession();
+    }
+
+    protected Session getSession(ScriptConfig config) throws ServerException, IOException, InterruptedException {
+        if (this.session == null) {
+            var endpoint = config.getEndpoint();
+            if (endpoint == null) {
+                throw new IllegalStateException("specify connection-url");
+            }
+            var credential = config.getCredential();
+            if (credential == null) {
+                var supplier = config.getCredentialSupplier();
+                credential = supplier.get();
+                config.setCredential(credential);
+            }
+            LOG.info("establishing connection: {}", endpoint);
+            this.session = SessionBuilder.connect(endpoint).withCredential(credential).create();
+        }
+        return this.session;
+    }
+
+    protected SqlClient getSqlClient() throws ServerException, IOException, InterruptedException {
+        if (this.sqlClient == null) {
+            throw new IllegalStateException("connection not exists");
+        }
+        return this.sqlClient;
     }
 
     @Override
     public TableMetadata getTableMetadata(@Nonnull String tableName) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(tableName);
         try {
+            var client = getSqlClient();
             return client.getTableMetadata(tableName).await();
         } catch (ServerException e) {
             var code = e.getDiagnosticCode();
@@ -73,6 +109,7 @@ public class BasicSqlProcessor implements SqlProcessor {
         Objects.requireNonNull(option);
         desireInactive();
         LOG.debug("start transaction: {}", option);
+        var client = getSqlClient();
         transaction = client.createTransaction(option).await();
     }
 
@@ -108,6 +145,7 @@ public class BasicSqlProcessor implements SqlProcessor {
         Objects.requireNonNull(statement);
         LOG.debug("start prepare: '{}'", statement);
         desireActive();
+        var client = getSqlClient();
         try (var prepared = client.prepare(statement).await()) {
             if (prepared.hasResultRecords()) {
                 LOG.debug("start query: '{}'", statement);
@@ -126,6 +164,7 @@ public class BasicSqlProcessor implements SqlProcessor {
         // FIXME: SqlClient.explain(String) is not work
         // https://github.com/project-tsurugi/tsubakuro/issues/169
         LOG.debug("start explain: '{}'", statement);
+        var client = getSqlClient();
         try (var prepared = client.prepare(statement).await()) {
             return client.explain(prepared, List.of()).await();
         }
@@ -172,8 +211,16 @@ public class BasicSqlProcessor implements SqlProcessor {
 
     @Override
     public void close() throws ServerException, IOException, InterruptedException {
-        try (var t = transaction; var c = client) {
+        closeSession();
+    }
+
+    private void closeSession() throws ServerException, IOException, InterruptedException {
+        try (var s = session; var c = sqlClient; var t = transaction) {
             return;
+        } finally {
+            this.session = null;
+            this.sqlClient = null;
+            this.transaction = null;
         }
     }
 }

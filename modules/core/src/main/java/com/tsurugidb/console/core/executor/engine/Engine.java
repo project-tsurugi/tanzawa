@@ -34,6 +34,17 @@ public interface Engine {
     }
 
     /**
+     * connect.
+     *
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while executing the statement
+     * @throws InterruptedException if interrupted while executing the statement
+     */
+    default void connect() throws ServerException, IOException, InterruptedException {
+        // do override
+    }
+
+    /**
      * Executes a statement.
      *
      * @param statement the target statement

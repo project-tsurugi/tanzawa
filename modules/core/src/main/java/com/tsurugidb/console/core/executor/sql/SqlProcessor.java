@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.exception.ServerException;
@@ -17,6 +18,25 @@ import com.tsurugidb.tsubakuro.util.ServerResource;
  * Processes SQL-related actions.
  */
 public interface SqlProcessor extends ServerResource {
+
+    /**
+     * connect.
+     *
+     * @param config config
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while executing the statement
+     * @throws InterruptedException if interrupted while executing the statement
+     */
+    void connect(ScriptConfig config) throws ServerException, IOException, InterruptedException;
+
+    /**
+     * disconnect.
+     *
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while executing the statement
+     * @throws InterruptedException if interrupted while executing the statement
+     */
+    void disconnect() throws ServerException, IOException, InterruptedException;
 
     /**
      * Returns table metadata.

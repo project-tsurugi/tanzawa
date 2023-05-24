@@ -57,6 +57,16 @@ class BasicEngineTest {
         }
 
         @Override
+        public void connect(ScriptConfig config) throws ServerException, IOException, InterruptedException {
+            return;
+        }
+
+        @Override
+        public void disconnect() throws ServerException, IOException, InterruptedException {
+            return;
+        }
+
+        @Override
         public TableMetadata getTableMetadata(String tableName) throws ServerException, IOException, InterruptedException {
             throw new UnsupportedOperationException();
         }

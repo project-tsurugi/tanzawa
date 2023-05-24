@@ -31,21 +31,21 @@ import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredent
 @Parameters
 public class CliArgument {
 
-    @Parameter(names = { "--console" }, arity = 0, description = "SQL console")
+    @Parameter(names = { "--console" }, arity = 0, description = "SQL console mode")
     private Boolean console;
 
-    @Parameter(names = { "--script" }, arity = 0, description = "execute SQL script file")
+    @Parameter(names = { "--script" }, arity = 0, description = "execute SQL script file mode")
     private Boolean script;
 
-    @Parameter(names = { "--exec" }, arity = 0, description = "execute a SQL statement")
+    @Parameter(names = { "--exec" }, arity = 0, description = "execute a SQL statement mode")
     private Boolean exec;
 
-    @Parameter(names = { "--explain" }, arity = 0, description = "print explain", hidden = true)
+    @Parameter(names = { "--explain" }, arity = 0, description = "print explain mode", hidden = true)
     private Boolean explain;
 
     // connection
 
-    @Parameter(names = { "--connection", "-c" }, arity = 1, description = "connection uri (e.g. tcp://localhost:12345)", required = true)
+    @Parameter(names = { "--connection", "-c" }, arity = 1, description = "connection uri (e.g. tcp://localhost:12345)")
     private String connectionUri;
 
     // commit
@@ -93,7 +93,7 @@ public class CliArgument {
         }
     }
 
-    @Parameter(names = { "--transaction", "-t" }, arity = 1, description = "transaction mode")
+    @Parameter(names = { "--transaction", "-t" }, arity = 1, description = "transaction type")
     private TransactionEnum transaction = TransactionEnum.OCC;
 
     @Parameter(names = { "--write-preserve", "-w" }, variableArity = true, description = "write preserve. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
@@ -149,7 +149,7 @@ public class CliArgument {
 
     // other
 
-    @Parameter(description = "</path/to/script.sql> when --script, <statement> when --exec")
+    @Parameter(description = "</path/to/script.sql(--script) or statement(--exec)>")
     private List<String> otherList;
 
     //

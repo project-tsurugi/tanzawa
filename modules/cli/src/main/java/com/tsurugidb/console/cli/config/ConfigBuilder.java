@@ -2,7 +2,6 @@ package com.tsurugidb.console.cli.config;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
@@ -72,13 +71,7 @@ public abstract class ConfigBuilder {
     }
 
     private void fillEndpoint() {
-        URI endpoint;
-        try {
-            endpoint = URI.create(argument.getConnectionUri());
-        } catch (Exception e) {
-            throw new RuntimeException("invalid connection-uri", e);
-        }
-
+        String endpoint = argument.getConnectionUri();
         log.debug("config.endpoint={}", endpoint);
         config.setEndpoint(endpoint);
     }
@@ -194,18 +187,17 @@ public abstract class ConfigBuilder {
 
     private void fillCredential() {
         var credential = getCredential();
-        log.debug("config.credential={}", credential);
-        config.setCredential(credential);
+        log.debug("config.credentialSupplier={}", credential);
+        config.setCredentialSupplier(credential);
     }
 
-    private Credential getCredential() {
+    private Supplier<Credential> getCredential() {
         var credentialList = argument.getCredentialList();
         switch (credentialList.size()) {
         case 0:
-            return getDefaultCredential();
+            return this::getDefaultCredential;
         case 1:
-            Supplier<Credential> supplier = credentialList.get(0);
-            return supplier.get();
+            return credentialList.get(0);
         default:
             throw new ParameterException("specify only one of [--user, --auth-token, --credentials, --no-auth]");
         }

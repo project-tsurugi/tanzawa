@@ -41,7 +41,7 @@ java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-
 * `-D` - client variable (`\set <key> <value>` 相当, 複数指定可)
   * see [client-variable]
 * transaction
-  * `--transaction,-t` - トランザクションモード
+  * `--transaction,-t` - トランザクション種別
     * `short, OCC` - OCC (default)
     * `long, LTX` - LTX (書き込みには `--write-preserve` の指定が必要)
     * `read, readonly, RO` - 読み込み専用

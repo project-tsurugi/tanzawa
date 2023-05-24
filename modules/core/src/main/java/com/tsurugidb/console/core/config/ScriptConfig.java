@@ -1,11 +1,11 @@
 package com.tsurugidb.console.core.config;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,8 +19,9 @@ import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
  */
 public class ScriptConfig {
 
-    private URI endpoint;
+    private String endpoint;
 
+    private Supplier<Credential> credentialSupplier;
     private Credential credential;
 
     private SqlRequest.TransactionOption transactionOption;
@@ -38,8 +39,7 @@ public class ScriptConfig {
      *
      * @param endpoint endpoint
      */
-    public void setEndpoint(@Nonnull URI endpoint) {
-        Objects.requireNonNull(endpoint);
+    public void setEndpoint(@Nullable String endpoint) {
         this.endpoint = endpoint;
     }
 
@@ -48,9 +48,27 @@ public class ScriptConfig {
      *
      * @return endpoint
      */
-    @Nonnull
-    public URI getEndpoint() {
+    public @Nullable String getEndpoint() {
         return this.endpoint;
+    }
+
+    /**
+     * set credential supplier.
+     *
+     * @param supplier credential supplier
+     */
+    public void setCredentialSupplier(@Nonnull Supplier<Credential> supplier) {
+        Objects.requireNonNull(supplier);
+        this.credentialSupplier = supplier;
+    }
+
+    /**
+     * get credential supplier.
+     *
+     * @return credential supplier
+     */
+    public @Nonnull Supplier<Credential> getCredentialSupplier() {
+        return this.credentialSupplier;
     }
 
     /**
@@ -68,8 +86,7 @@ public class ScriptConfig {
      *
      * @return credential
      */
-    @Nonnull
-    public Credential getCredential() {
+    public @Nonnull Credential getCredential() {
         return this.credential;
     }
 
@@ -87,8 +104,7 @@ public class ScriptConfig {
      *
      * @return transaction option. if null means --transaction=manual
      */
-    @Nullable
-    public SqlRequest.TransactionOption getTransactionOption() {
+    public @Nullable SqlRequest.TransactionOption getTransactionOption() {
         return this.transactionOption;
     }
 
@@ -107,8 +123,7 @@ public class ScriptConfig {
      *
      * @return property
      */
-    @Nonnull
-    public Map<String, String> getProperty() {
+    public @Nonnull Map<String, String> getProperty() {
         return this.propertyMap;
     }
 
@@ -127,8 +142,7 @@ public class ScriptConfig {
      *
      * @return commit mode
      */
-    @Nonnull
-    public ScriptCommitMode getCommitMode() {
+    public @Nonnull ScriptCommitMode getCommitMode() {
         return this.commitMode;
     }
 
@@ -137,8 +151,7 @@ public class ScriptConfig {
      *
      * @return client variable
      */
-    @Nonnull
-    public ScriptClientVariableMap getClientVariableMap() {
+    public @Nonnull ScriptClientVariableMap getClientVariableMap() {
         return this.clientVariableMap;
     }
 
