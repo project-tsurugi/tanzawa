@@ -4,37 +4,34 @@ import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.EnumSet;
 
 import javax.annotation.Nonnull;
 
-import com.tsurugidb.console.cli.argument.ScriptArgument;
+import com.tsurugidb.console.cli.argument.CliArgument;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 
 /**
  * ConfigBuilder for script.
  */
-public class ScriptConfigBuilder extends ConfigBuilder<ScriptArgument> {
+public class ScriptConfigBuilder extends ConfigBuilder {
 
     private Charset encoding;
     private Path script;
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param argument argument
      */
-    public ScriptConfigBuilder(ScriptArgument argument) {
+    public ScriptConfigBuilder(CliArgument argument) {
         super(argument);
     }
 
     @Override
     protected void buildSub() {
-        fillCommitMode(//
-                argument.getAutoCommit(), argument.getNoAutoCommit(), //
-                argument.getCommit(), argument.getNoCommit(), //
-                ScriptCommitMode.COMMIT, //
-                () -> List.of("--auto-commit", "--no-auto-commit", "--commit", "--no-commit").toString());
+        fillCommitMode(EnumSet.of(ScriptCommitMode.AUTO_COMMIT, ScriptCommitMode.NO_AUTO_COMMIT, ScriptCommitMode.COMMIT, ScriptCommitMode.NO_COMMIT), //
+                ScriptCommitMode.COMMIT);
 
         fillEncoding();
         fillScript();
@@ -51,7 +48,7 @@ public class ScriptConfigBuilder extends ConfigBuilder<ScriptArgument> {
 
     /**
      * get script file encoding.
-     * 
+     *
      * @return encoding
      */
     @Nonnull
@@ -73,7 +70,7 @@ public class ScriptConfigBuilder extends ConfigBuilder<ScriptArgument> {
 
     /**
      * get script.
-     * 
+     *
      * @return script file path
      */
     @Nonnull

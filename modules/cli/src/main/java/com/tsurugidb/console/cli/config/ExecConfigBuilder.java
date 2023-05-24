@@ -1,35 +1,32 @@
 package com.tsurugidb.console.cli.config;
 
-import java.util.List;
+import java.util.EnumSet;
 
 import javax.annotation.Nonnull;
 
-import com.tsurugidb.console.cli.argument.ExecArgument;
+import com.tsurugidb.console.cli.argument.CliArgument;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 
 /**
  * ConfigBuilder for exec.
  */
-public class ExecConfigBuilder extends ConfigBuilder<ExecArgument> {
+public class ExecConfigBuilder extends ConfigBuilder {
 
     private String statement;
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param argument argument
      */
-    public ExecConfigBuilder(ExecArgument argument) {
+    public ExecConfigBuilder(CliArgument argument) {
         super(argument);
     }
 
     @Override
     protected void buildSub() {
-        fillCommitMode(//
-                null, null, //
-                argument.getCommit(), argument.getNoCommit(), //
-                ScriptCommitMode.COMMIT, //
-                () -> List.of("--commit", "--no-commit").toString());
+        fillCommitMode(EnumSet.of(ScriptCommitMode.COMMIT, ScriptCommitMode.NO_COMMIT), //
+                ScriptCommitMode.COMMIT);
 
         fillStatement();
     }
@@ -41,7 +38,7 @@ public class ExecConfigBuilder extends ConfigBuilder<ExecArgument> {
 
     /**
      * get SQL statement.
-     * 
+     *
      * @return statement
      */
     @Nonnull

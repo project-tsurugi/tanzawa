@@ -9,10 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.tsurugidb.console.cli.argument.ConsoleArgument;
-import com.tsurugidb.console.cli.argument.ExecArgument;
-import com.tsurugidb.console.cli.argument.ExplainArgument;
-import com.tsurugidb.console.cli.argument.ScriptArgument;
+import com.tsurugidb.console.cli.argument.CliArgument;
 import com.tsurugidb.console.cli.config.ConsoleConfigBuilder;
 import com.tsurugidb.console.cli.config.ExecConfigBuilder;
 import com.tsurugidb.console.cli.config.ScriptConfigBuilder;
@@ -33,12 +30,6 @@ import com.tsurugidb.console.core.ScriptRunner;
 public final class Main {
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
-    // command name
-    private static final String CONSOLE = "console"; //$NON-NLS-1$
-    private static final String EXEC = "exec"; //$NON-NLS-1$
-    private static final String SCRIPT = "script"; //$NON-NLS-1$
-    private static final String EXPLAIN = "explain"; //$NON-NLS-1$
-
     /**
      * Execute script.
      *
@@ -52,41 +43,38 @@ public final class Main {
         }
     }
 
-    private static int execute(String[] args) throws Exception {
-        var consoleArgument = new ConsoleArgument();
-        var execArgument = new ExecArgument();
-        var scriptArgument = new ScriptArgument();
-        var explainArgument = new ExplainArgument();
+    /**
+     * Execute script.
+     *
+     * @param args the program arguments
+     * @return exit code
+     * @throws Exception if exception was occurred
+     */
+    public static int execute(String... args) throws Exception {
+        var argument = new CliArgument();
         var commander = JCommander.newBuilder() //
                 .programName(Main.class.getName()) //
-                .addCommand(CONSOLE, consoleArgument) //
-                .addCommand(EXEC, execArgument) //
-                .addCommand(SCRIPT, scriptArgument) //
-                .addCommand(EXPLAIN, explainArgument) //
+                .addObject(argument) //
                 .build();
         try (Closeable c0 = () -> ReplJLineTerminal.close()) {
             commander.parse(args);
 
-            String command = commander.getParsedCommand();
-            if (command == null) {
-                commander.usage();
-                return 0;
-            }
-            switch (command) {
+            switch (argument.getCliMode()) {
             case CONSOLE:
-                executeConsole(commander, consoleArgument);
+                executeConsole(commander, argument);
                 break;
             case EXEC:
-                executeExec(commander, execArgument);
+                executeExec(commander, argument);
                 break;
             case SCRIPT:
-                executeScript(commander, scriptArgument);
+                executeScript(commander, argument);
                 break;
             case EXPLAIN:
-                ExplainConvertRunner.execute(explainArgument);
+                ExplainConvertRunner.execute(argument);
                 break;
             default:
-                throw new AssertionError(command);
+                commander.usage();
+                return 1;
             }
             return 0;
         } catch (ParameterException e) {
@@ -110,7 +98,7 @@ public final class Main {
         }
     }
 
-    private static void executeConsole(JCommander commander, ConsoleArgument argument) throws Exception {
+    private static void executeConsole(JCommander commander, CliArgument argument) throws Exception {
         var builder = new ConsoleConfigBuilder(argument);
         var config = builder.build();
 
@@ -125,7 +113,7 @@ public final class Main {
         }
     }
 
-    private static void executeExec(JCommander commander, ExecArgument argument) throws Exception {
+    private static void executeExec(JCommander commander, CliArgument argument) throws Exception {
         var builder = new ExecConfigBuilder(argument);
         var config = builder.build();
         var statement = builder.getStatement();
@@ -135,7 +123,7 @@ public final class Main {
         }
     }
 
-    private static void executeScript(JCommander commander, ScriptArgument argument) throws Exception {
+    private static void executeScript(JCommander commander, CliArgument argument) throws Exception {
         var builder = new ScriptConfigBuilder(argument);
         var config = builder.build();
         var script = builder.getScript();

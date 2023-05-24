@@ -9,7 +9,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -17,8 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.ParameterException;
-import com.tsurugidb.console.cli.argument.CommonArgument;
-import com.tsurugidb.console.cli.argument.CommonArgument.TransactionEnum;
+import com.tsurugidb.console.cli.argument.CliArgument;
+import com.tsurugidb.console.cli.argument.CliArgument.TransactionEnum;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineReader;
 import com.tsurugidb.console.core.config.ScriptClientVariableMap;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
@@ -37,18 +39,18 @@ import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredent
  *
  * @param <A> argument
  */
-public abstract class ConfigBuilder<A extends CommonArgument> {
+public abstract class ConfigBuilder {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final ScriptConfig config = new ScriptConfig();
-    protected final A argument;
+    protected final CliArgument argument;
 
     /**
      * Creates a new instance.
      *
      * @param argument argument
      */
-    public ConfigBuilder(A argument) {
+    public ConfigBuilder(CliArgument argument) {
         this.argument = argument;
     }
 
@@ -146,20 +148,13 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
 
     protected abstract void buildSub();
 
-    protected void fillCommitMode(Boolean autoCommit, Boolean noAutoCommit, Boolean commit, Boolean noCommit, ScriptCommitMode defaultMode, Supplier<String> errorMessage) {
+    protected void fillCommitMode(Set<ScriptCommitMode> availableList, ScriptCommitMode defaultMode) {
         var list = new ArrayList<ScriptCommitMode>();
-        if (autoCommit != null && autoCommit) {
-            list.add(ScriptCommitMode.AUTO_COMMIT);
-        }
-        if (noAutoCommit != null && noAutoCommit) {
-            list.add(ScriptCommitMode.NO_AUTO_COMMIT);
-        }
-        if (commit != null && commit) {
-            list.add(ScriptCommitMode.COMMIT);
-        }
-        if (noCommit != null && noCommit) {
-            list.add(ScriptCommitMode.NO_COMMIT);
-        }
+        boolean error = false;
+        error |= computeCommitMode(list, availableList, ScriptCommitMode.AUTO_COMMIT, argument.getAutoCommit());
+        error |= computeCommitMode(list, availableList, ScriptCommitMode.NO_AUTO_COMMIT, argument.getNoAutoCommit());
+        error |= computeCommitMode(list, availableList, ScriptCommitMode.COMMIT, argument.getCommit());
+        error |= computeCommitMode(list, availableList, ScriptCommitMode.NO_COMMIT, argument.getNoCommit());
 
         ScriptCommitMode commitMode;
         switch (list.size()) {
@@ -170,12 +165,27 @@ public abstract class ConfigBuilder<A extends CommonArgument> {
             commitMode = list.get(0);
             break;
         default:
-            String message = errorMessage.get();
+            commitMode = null;
+            break;
+        }
+        if (commitMode == null || error) {
+            String message = availableList.stream().map(mode -> "--" + mode.name().toLowerCase().replace('_', '-')).collect(Collectors.joining(", ", "[", "]"));
             throw new ParameterException(MessageFormat.format("specify only one of {0}", message));
         }
 
         log.debug("config.commitMode={}", commitMode);
         config.setCommitMode(commitMode);
+    }
+
+    private boolean computeCommitMode(List<ScriptCommitMode> list, Set<ScriptCommitMode> availableList, ScriptCommitMode mode, boolean b) {
+        if (b) {
+            if (availableList.contains(mode)) {
+                list.add(mode);
+                return false;
+            }
+            return true; // error
+        }
+        return false;
     }
 
     /*

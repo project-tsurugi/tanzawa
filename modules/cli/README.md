@@ -13,7 +13,7 @@ This module provides a Java program entry for Tsurugi SQL console.
 
 ```sh
 # cd modules/cli
-java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-*-all.jar console -c tcp://localhost:12345
+java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-*-all.jar -c tcp://localhost:12345
 ```
 
 Please type `\help` to show available commands.
@@ -22,14 +22,14 @@ Please type `\help` to show available commands.
 
 ```sh
 # cd modules/cli
-java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-*-all.jar exec -c tcp://localhost:12345 "select * from test"
+java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-*-all.jar --exec -c tcp://localhost:12345 "select * from test"
 ```
 
 ### execute SQL script file
 
 ```sh
 # cd modules/cli
-java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-*-all.jar script -c tcp://localhost:12345 -e UTF-8 /path/to/script.sql
+java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-*-all.jar --script -c tcp://localhost:12345 -e UTF-8 /path/to/script.sql
 ```
 
 ## Program arguments
@@ -68,7 +68,7 @@ java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-
 ### SQL console
 
 ```txt
-java Main console <common options> [--auto-commit|--no-auto-commit]
+java Main --console <common options> [--auto-commit|--no-auto-commit]
 ```
 
 * `--auto-commit` - 一文ごとにコミットを実行する
@@ -77,7 +77,7 @@ java Main console <common options> [--auto-commit|--no-auto-commit]
 ### execute a SQL statement
 
 ```txt
-java Main exec <common options> [--commit|--no-commit] <statement>
+java Main --exec <common options> [--commit|--no-commit] <statement>
 ```
 
 * `<statement>` - 実行する文
@@ -87,7 +87,7 @@ java Main exec <common options> [--commit|--no-commit] <statement>
 ### execute SQL script file
 
 ```txt
-java Main script <common options> [[--encoding|-e] <charset-encoding>] [--auto-commit|--no-auto-commit|--commit|--no-commit] </path/to/script.sql>
+java Main --script <common options> [[--encoding|-e] <charset-encoding>] [--auto-commit|--no-auto-commit|--commit|--no-commit] </path/to/script.sql>
 ```
 
 * `</path/to/script.sql>` - 実行するスクリプトファイル

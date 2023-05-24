@@ -2,6 +2,7 @@ package com.tsurugidb.console.cli.argument;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
@@ -24,13 +26,43 @@ import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredential;
 
 /**
- * Common argument for Tsurugi SQL console cli.
+ * Argument for Tsurugi SQL console cli.
  */
 @Parameters
-public class CommonArgument {
+public class CliArgument {
+
+    @Parameter(names = { "--console" }, arity = 0, description = "SQL console")
+    private Boolean console;
+
+    @Parameter(names = { "--script" }, arity = 0, description = "execute SQL script file")
+    private Boolean script;
+
+    @Parameter(names = { "--exec" }, arity = 0, description = "execute a SQL statement")
+    private Boolean exec;
+
+    @Parameter(names = { "--explain" }, arity = 0, description = "print explain", hidden = true)
+    private Boolean explain;
+
+    // connection
 
     @Parameter(names = { "--connection", "-c" }, arity = 1, description = "connection uri (e.g. tcp://localhost:12345)", required = true)
     private String connectionUri;
+
+    // commit
+
+    @Parameter(names = { "--auto-commit" }, arity = 0, description = "commit every statement")
+    private Boolean autoCommit;
+
+    @Parameter(names = { "--no-auto-commit" }, arity = 0, description = "commit only if you explicitly specify a COMMIT statement")
+    private Boolean noAutoCommit;
+
+    @Parameter(names = { "--commit" }, arity = 0, description = "commit on success, rollback on failure")
+    private Boolean commit;
+
+    @Parameter(names = { "--no-commit" }, arity = 0, description = "always rollback")
+    private Boolean noCommit;
+
+    // property
 
     @DynamicParameter(names = { "--property", "-P" }, description = "SQL setting. <key>=<value>")
     private Map<String, String> propertyMap = new LinkedHashMap<>();
@@ -38,9 +70,7 @@ public class CommonArgument {
     @DynamicParameter(names = { "-D" }, description = "client variable. <key>=<value>")
     private Map<String, String> clientVariableMap = new LinkedHashMap<>();
 
-    /*
-     * transaction
-     */
+    // transaction
 
     /**
      * value for --transaction.
@@ -84,9 +114,7 @@ public class CommonArgument {
     @DynamicParameter(names = { "--with" }, description = "transaction setting. <key>=<value>")
     private Map<String, String> withMap = new LinkedHashMap<>();
 
-    /*
-     * credential
-     */
+    // credential
 
     @Parameter(names = { "--user", "-u" }, arity = 1, description = "<user name>")
     private String user;
@@ -100,25 +128,119 @@ public class CommonArgument {
     @Parameter(names = { "--no-auth" }, arity = 0, description = "no auth")
     private Boolean noAuth;
 
+    // script
+
+    @Parameter(names = { "--encoding", "-e" }, arity = 1, description = "charset encoding")
+    private String encoding = Charset.defaultCharset().name();
+
+    // explain (hidden)
+
+    @Parameter(names = { "--input", "-i" }, arity = 1, description = "explain json file", hidden = true)
+    private String inputFile;
+
+    @Parameter(names = { "--report", "-r" }, arity = 0, description = "report to stdout", hidden = true)
+    private Boolean report;
+
+    @Parameter(names = { "--output", "-o" }, arity = 1, description = "output file (dot)", hidden = true)
+    private String outputFile = null;
+
+    @Parameter(names = { "--verbose", "-v" }, arity = 0, description = "verbose", hidden = true)
+    private Boolean verbose;
+
+    // other
+
+    @Parameter(description = "</path/to/script.sql> when --script, <statement> when --exec")
+    private List<String> otherList;
+
     //
+
+    /**
+     * get cli mode.
+     *
+     * @return cli mode
+     */
+    public @Nonnull CliMode getCliMode() {
+        var list = new ArrayList<CliMode>();
+        if (this.console != null && this.console) {
+            list.add(CliMode.CONSOLE);
+        }
+        if (this.script != null && this.script) {
+            list.add(CliMode.SCRIPT);
+        }
+        if (this.exec != null && this.exec) {
+            list.add(CliMode.EXEC);
+        }
+        if (this.explain != null && this.explain) {
+            list.add(CliMode.EXPLAIN);
+        }
+
+        switch (list.size()) {
+        case 0:
+            return CliMode.CONSOLE;
+        case 1:
+            return list.get(0);
+        default:
+            throw new ParameterException("specify only one of [--console, --script, --exec]");
+        }
+    }
+
+    // connection
 
     /**
      * get --connection-uri.
      *
      * @return connection uri
      */
-    @Nonnull // required = true
-    public String getConnectionUri() {
-        return this.connectionUri;
+    public @Nonnull String getConnectionUri() {
+        return this.connectionUri; // required = true
     }
+
+    // commit
+
+    /**
+     * get --auto-commit.
+     *
+     * @return auto commit
+     */
+    public boolean getAutoCommit() {
+        return (this.autoCommit != null) && this.autoCommit;
+    }
+
+    /**
+     * get --no-auto-commit.
+     *
+     * @return no auto commit
+     */
+    public boolean getNoAutoCommit() {
+        return (this.noAutoCommit != null) && this.noAutoCommit;
+    }
+
+    /**
+     * get --commit.
+     *
+     * @return commit
+     */
+    public boolean getCommit() {
+        return (this.commit != null) && this.commit;
+    }
+
+    /**
+     * get --no-commit.
+     *
+     * @return no commit
+     */
+    public boolean getNoCommit() {
+        return (this.noCommit != null) && this.noCommit;
+    }
+
+    // property
 
     /**
      * get --property.
      *
      * @return property
      */
-    @Nonnull
-    public Map<String, String> getProperty() {
+    public @Nonnull Map<String, String> getProperty() {
         return this.propertyMap;
     }
 
@@ -127,19 +249,19 @@ public class CommonArgument {
      *
      * @return client variable
      */
-    @Nonnull
-    public Map<String, String> getClientVariable() {
+    public @Nonnull Map<String, String> getClientVariable() {
         return this.clientVariableMap;
     }
+
+    // transaction
 
     /**
      * get --transaction.
      *
      * @return transaction
      */
-    @Nonnull // has default value
-    public TransactionEnum getTransaction() {
-        return this.transaction;
+    public @Nonnull TransactionEnum getTransaction() {
+        return this.transaction; // has default value
     }
 
     /**
@@ -147,8 +269,7 @@ public class CommonArgument {
      *
      * @return write preserve
      */
-    @Nonnull
-    public List<String> getWritePreserve() {
+    public @Nonnull List<String> getWritePreserve() {
         if (this.writePreserve == null) {
             return List.of();
         }
@@ -160,8 +281,7 @@ public class CommonArgument {
      *
      * @return read area include
      */
-    @Nonnull
-    public List<String> getReadAreaInclude() {
+    public @Nonnull List<String> getReadAreaInclude() {
         if (this.readAreaInclude == null) {
             return List.of();
         }
@@ -173,8 +293,7 @@ public class CommonArgument {
      *
      * @return read area exclude
      */
-    @Nonnull
-    public List<String> getReadAreaExclude() {
+    public @Nonnull List<String> getReadAreaExclude() {
         if (this.readAreaExclude == null) {
             return List.of();
         }
@@ -186,8 +305,7 @@ public class CommonArgument {
      *
      * @return execute
      */
-    @Nonnull
-    public List<String> getExecute() {
+    public @Nonnull List<String> getExecute() {
         if (this.execute == null) {
             return List.of();
         }
@@ -219,9 +337,8 @@ public class CommonArgument {
      *
      * @return label
      */
-    @Nonnull // has default value
-    public String getLabel() {
-        return this.label;
+    public @Nonnull String getLabel() {
+        return this.label; // has default value
     }
 
     /**
@@ -229,22 +346,22 @@ public class CommonArgument {
      *
      * @return with
      */
-    @Nonnull
-    public Map<String, String> getWith() {
+    public @Nonnull Map<String, String> getWith() {
         return this.withMap;
     }
+
+    // credential
 
     /**
      * get credentials.
      *
      * @return credential list
      */
-    @Nonnull
-    public List<Supplier<Credential>> getCredentialList() {
+    public @Nonnull List<Supplier<Credential>> getCredentialList() {
         var list = new ArrayList<Supplier<Credential>>();
         if (this.user != null) {
             list.add(() -> {
-                String password = ConfigBuilder.readPassword();
+                String password = readPassword();
                 return new UsernamePasswordCredential(user, password);
             });
         }
@@ -257,7 +374,7 @@ public class CommonArgument {
                 try {
                     return FileCredential.load(path);
                 } catch (IOException e) {
-                    throw new UncheckedIOException(e);
+                    throw new UncheckedIOException(e.getMessage(), e);
                 }
             });
         }
@@ -265,5 +382,84 @@ public class CommonArgument {
             list.add(() -> NullCredential.INSTANCE);
         }
         return list;
+    }
+
+    protected String readPassword() {
+        return ConfigBuilder.readPassword();
+    }
+
+    // script
+
+    /**
+     * get --encoding.
+     *
+     * @return encoding
+     */
+    public @Nonnull String getEncoding() {
+        return this.encoding;
+    }
+
+    /**
+     * get script.
+     *
+     * @return script file path
+     */
+    public @Nonnull String getScript() {
+        if (this.otherList == null || otherList.isEmpty()) {
+            throw new ParameterException("specify /path/to/script.sql");
+        }
+        return otherList.get(0);
+    }
+
+    // exec
+
+    /**
+     * get SQL statement.
+     *
+     * @return statement
+     */
+    public @Nonnull String getStatement() {
+        if (this.otherList == null || otherList.isEmpty()) {
+            throw new ParameterException("specify SQL statement");
+        }
+        return String.join(" ", otherList);
+    }
+
+    // explain
+
+    /**
+     * get --input.
+     *
+     * @return explain json file path
+     */
+    public @Nonnull String getInputFile() {
+        return this.inputFile;
+    }
+
+    /**
+     * get --report.
+     *
+     * @return {@code true} if report
+     */
+    public boolean isReport() {
+        return (this.report != null) && this.report;
+    }
+
+    /**
+     * get --output.
+     *
+     * @return output file path
+     */
+    public @Nullable String getOutputFile() {
+        return this.outputFile;
+    }
+
+    /**
+     * get --verbose.
+     *
+     * @return {@code true} if verbose
+     */
+    public boolean isVerbose() {
+        return (this.verbose != null) && this.verbose;
     }
 }

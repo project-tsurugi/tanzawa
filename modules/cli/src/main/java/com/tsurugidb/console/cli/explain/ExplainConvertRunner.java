@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.tsurugidb.console.cli.argument.ExplainArgument;
+import com.tsurugidb.console.cli.argument.CliArgument;
 import com.tsurugidb.console.core.config.ScriptClientVariableMap;
 import com.tsurugidb.console.core.executor.engine.CommandPath;
 import com.tsurugidb.console.core.executor.engine.EngineException;
@@ -32,13 +32,13 @@ public final class ExplainConvertRunner {
      * @param argument explain argument
      * @throws Exception
      */
-    public static void execute(ExplainArgument argument) throws Exception {
+    public static void execute(CliArgument argument) throws Exception {
         new ExplainConvertRunner(argument).execute();
     }
 
-    private final ExplainArgument argument;
+    private final CliArgument argument;
 
-    private ExplainConvertRunner(ExplainArgument argument) {
+    private ExplainConvertRunner(CliArgument argument) {
         this.argument = argument;
     }
 
@@ -88,7 +88,7 @@ public final class ExplainConvertRunner {
     }
 
     private Map<Regioned<String>, Optional<Regioned<Value>>> getOptions() {
-        Map<String, String> stringMap = new LinkedHashMap<>(argument.getClientVariableMap());
+        Map<String, String> stringMap = new LinkedHashMap<>(argument.getClientVariable());
         addOption(stringMap, DotOutputHandler.KEY_OUTPUT, argument.getOutputFile());
         if (argument.isVerbose()) {
             addOption(stringMap, DotOutputHandler.KEY_VERBOSE, true);

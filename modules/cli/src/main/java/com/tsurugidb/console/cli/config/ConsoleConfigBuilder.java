@@ -1,8 +1,8 @@
 package com.tsurugidb.console.cli.config;
 
-import java.util.List;
+import java.util.EnumSet;
 
-import com.tsurugidb.console.cli.argument.ConsoleArgument;
+import com.tsurugidb.console.cli.argument.CliArgument;
 import com.tsurugidb.console.core.config.ScriptClientVariableMap;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptCvKey;
@@ -10,14 +10,14 @@ import com.tsurugidb.console.core.config.ScriptCvKey;
 /**
  * ConfigBuilder for console.
  */
-public class ConsoleConfigBuilder extends ConfigBuilder<ConsoleArgument> {
+public class ConsoleConfigBuilder extends ConfigBuilder {
 
     /**
      * Creates a new instance.
      *
      * @param argument argument
      */
-    public ConsoleConfigBuilder(ConsoleArgument argument) {
+    public ConsoleConfigBuilder(CliArgument argument) {
         super(argument);
     }
 
@@ -29,10 +29,7 @@ public class ConsoleConfigBuilder extends ConfigBuilder<ConsoleArgument> {
 
     @Override
     protected void buildSub() {
-        fillCommitMode(//
-                argument.getAutoCommit(), argument.getNoAutoCommit(), //
-                null, null, //
-                ScriptCommitMode.NO_AUTO_COMMIT, //
-                () -> List.of("--auto-commit", "--no-auto-commit").toString());
+        fillCommitMode(EnumSet.of(ScriptCommitMode.AUTO_COMMIT, ScriptCommitMode.NO_AUTO_COMMIT), //
+                ScriptCommitMode.NO_AUTO_COMMIT);
     }
 }
