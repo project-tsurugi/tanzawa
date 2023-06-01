@@ -18,7 +18,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.CommaParameterSplitter;
-import com.tsurugidb.console.cli.config.ConfigBuilder;
+import com.tsurugidb.console.cli.repl.ReplCredentialSupplier;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
@@ -385,7 +385,7 @@ public class CliArgument {
     }
 
     protected String readPassword() {
-        return ConfigBuilder.readPassword();
+        return ReplCredentialSupplier.readReplPassword();
     }
 
     // script

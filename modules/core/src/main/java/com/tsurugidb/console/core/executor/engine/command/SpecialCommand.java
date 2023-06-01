@@ -32,6 +32,8 @@ public abstract class SpecialCommand {
     public static final String COMMAND_PREFIX = "\\"; //$NON-NLS-1$
 
     private static final SpecialCommand[] COMMAND_LIST = { //
+            new ConnectCommand(), //
+            new DisconnectCommand(), //
             new ExitCommand(), //
             new HaltCommand(), //
             new HelpCommand(), //
@@ -130,6 +132,7 @@ public abstract class SpecialCommand {
         return result;
     }
 
+    private final boolean candidateEnd;
     private final List<String> commandNameList;
 
     /**
@@ -138,7 +141,17 @@ public abstract class SpecialCommand {
      * @param names command names
      */
     protected SpecialCommand(String... names) {
+        this(true, names);
+    }
+
+    /**
+     * Creates a new instance.
+     *
+     * @param names command names
+     */
+    protected SpecialCommand(boolean candidateEnd, String... names) {
         assert names.length >= 1;
+        this.candidateEnd = candidateEnd;
         this.commandNameList = Collections.unmodifiableList(Arrays.stream(names).map(SpecialCommand::toLowerCase).collect(Collectors.toList()));
     }
 
@@ -188,7 +201,7 @@ public abstract class SpecialCommand {
     protected void collectCompleterCandidate(List<CompleterCandidateWords> result) {
         var list = getCommandNameList();
         for (String name : list) {
-            result.add(new CompleterCandidateWords(COMMAND_PREFIX + name, true));
+            result.add(new CompleterCandidateWords(COMMAND_PREFIX + name, this.candidateEnd));
         }
     }
 

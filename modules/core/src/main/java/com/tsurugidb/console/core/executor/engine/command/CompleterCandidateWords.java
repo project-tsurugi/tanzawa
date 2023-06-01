@@ -45,6 +45,21 @@ public class CompleterCandidateWords {
     }
 
     /**
+     * Creates a new instance.
+     *
+     * @param word1 candidate word
+     * @param word2 candidate word
+     * @param word3 candidate word
+     * @param end   whether to terminate
+     */
+    public CompleterCandidateWords(String word1, String word2, String word3, boolean end) {
+        this(end);
+        add(word1);
+        add(word2);
+        add(word3);
+    }
+
+    /**
      * add candidate word.
      *
      * @param words candidate word

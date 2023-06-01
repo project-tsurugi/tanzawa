@@ -133,9 +133,10 @@ public class ShowCommand extends SpecialCommand {
     private static boolean executeShowSession(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         LOG.debug("show session status"); //$NON-NLS-1$
         var sqlProcessor = engine.getSqlProcessor();
+        String endpoint = sqlProcessor.getEndpoint();
         boolean active = sqlProcessor.isSessionActive();
         var reporter = engine.getReporter();
-        reporter.reportSessionStatus(active);
+        reporter.reportSessionStatus(endpoint, active);
         return true;
     }
 

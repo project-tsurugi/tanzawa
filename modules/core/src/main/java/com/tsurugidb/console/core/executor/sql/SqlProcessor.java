@@ -30,13 +30,23 @@ public interface SqlProcessor extends ServerResource {
     void connect(ScriptConfig config) throws ServerException, IOException, InterruptedException;
 
     /**
+     * get endpoint.
+     *
+     * @return endpoint
+     */
+    default @Nullable String getEndpoint() {
+        return null;
+    }
+
+    /**
      * disconnect.
      *
+     * @return {@code false} if already disconnected
      * @throws ServerException      if server side error was occurred
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    void disconnect() throws ServerException, IOException, InterruptedException;
+    boolean disconnect() throws ServerException, IOException, InterruptedException;
 
     /**
      * Returns table metadata.

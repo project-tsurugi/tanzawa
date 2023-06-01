@@ -97,6 +97,11 @@ public class BasicEngine extends AbstractEngine {
     }
 
     @Override
+    public boolean disconnect() throws ServerException, IOException, InterruptedException {
+        return sqlProcessor.disconnect();
+    }
+
+    @Override
     public boolean executeEmptyStatement(@Nonnull Statement statement) throws EngineException, ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$

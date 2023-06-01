@@ -45,6 +45,18 @@ public interface Engine {
     }
 
     /**
+     * disconnect.
+     *
+     * @return {@code false} if already disconnected
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while executing the statement
+     * @throws InterruptedException if interrupted while executing the statement
+     */
+    default boolean disconnect() throws ServerException, IOException, InterruptedException {
+        return false; // do override
+    }
+
+    /**
      * Executes a statement.
      *
      * @param statement the target statement

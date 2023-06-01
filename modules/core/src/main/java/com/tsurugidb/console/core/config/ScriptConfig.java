@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.tsurugidb.console.core.credential.CredentialDefaultSupplier;
 import com.tsurugidb.console.core.executor.report.HistoryEntry;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
@@ -21,6 +22,7 @@ public class ScriptConfig {
 
     private String endpoint;
 
+    private CredentialDefaultSupplier defaultCredentialSupplier;
     private Supplier<Credential> credentialSupplier;
     private Credential credential;
 
@@ -53,6 +55,25 @@ public class ScriptConfig {
     }
 
     /**
+     * set default credential supplier.
+     *
+     * @param supplier default credential supplier
+     */
+    public void setDefaultCredentialSupplier(@Nonnull CredentialDefaultSupplier supplier) {
+        Objects.requireNonNull(supplier);
+        this.defaultCredentialSupplier = supplier;
+    }
+
+    /**
+     * get default credential supplier.
+     *
+     * @return default credential supplier
+     */
+    public @Nonnull CredentialDefaultSupplier getDefaultCredentialSupplier() {
+        return this.defaultCredentialSupplier;
+    }
+
+    /**
      * set credential supplier.
      *
      * @param supplier credential supplier
@@ -76,8 +97,7 @@ public class ScriptConfig {
      *
      * @param credential credential
      */
-    public void setCredential(@Nonnull Credential credential) {
-        Objects.requireNonNull(credential);
+    public void setCredential(@Nullable Credential credential) {
         this.credential = credential;
     }
 
@@ -86,7 +106,7 @@ public class ScriptConfig {
      *
      * @return credential
      */
-    public @Nonnull Credential getCredential() {
+    public @Nullable Credential getCredential() {
         return this.credential;
     }
 

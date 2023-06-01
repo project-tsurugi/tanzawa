@@ -29,6 +29,7 @@ import com.tsurugidb.tsubakuro.sql.Transaction;
 public class BasicSqlProcessor implements SqlProcessor {
     static final Logger LOG = LoggerFactory.getLogger(BasicSqlProcessor.class);
 
+    private String sessionEndpoint;
     private Session session;
     private SqlClient sqlClient;
     private Transaction transaction;
@@ -53,20 +54,16 @@ public class BasicSqlProcessor implements SqlProcessor {
     @Override
     public void connect(ScriptConfig config) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(config);
+
         if (this.sqlClient != null) {
-            throw new IllegalStateException("connection already exists");
+            throw new IllegalStateException("already connected");
         }
         this.sqlClient = SqlClient.attach(getSession(config));
     }
 
-    @Override
-    public void disconnect() throws ServerException, IOException, InterruptedException {
-        closeSession();
-    }
-
     protected Session getSession(ScriptConfig config) throws ServerException, IOException, InterruptedException {
         if (this.session == null) {
-            var endpoint = config.getEndpoint();
+            String endpoint = config.getEndpoint();
             if (endpoint == null) {
                 throw new IllegalStateException("specify connection-url");
             }
@@ -76,8 +73,13 @@ public class BasicSqlProcessor implements SqlProcessor {
                 credential = supplier.get();
                 config.setCredential(credential);
             }
-            LOG.info("establishing connection: {}", endpoint);
-            this.session = SessionBuilder.connect(endpoint).withCredential(credential).create();
+            try {
+                this.session = SessionBuilder.connect(endpoint).withCredential(credential).create();
+            } catch (Exception e) {
+                LOG.warn("establishing connection: {}", endpoint);
+                throw e;
+            }
+            this.sessionEndpoint = endpoint;
         }
         return this.session;
     }
@@ -87,6 +89,16 @@ public class BasicSqlProcessor implements SqlProcessor {
             throw new IllegalStateException("connection not exists");
         }
         return this.sqlClient;
+    }
+
+    @Override
+    public String getEndpoint() {
+        return this.sessionEndpoint;
+    }
+
+    @Override
+    public boolean disconnect() throws ServerException, IOException, InterruptedException {
+        return closeSession();
     }
 
     @Override
@@ -172,6 +184,9 @@ public class BasicSqlProcessor implements SqlProcessor {
 
     @Override
     public boolean isSessionActive() {
+        if (this.session == null) {
+            return false;
+        }
         return session.isAlive();
     }
 
@@ -214,10 +229,11 @@ public class BasicSqlProcessor implements SqlProcessor {
         closeSession();
     }
 
-    private void closeSession() throws ServerException, IOException, InterruptedException {
+    private boolean closeSession() throws ServerException, IOException, InterruptedException {
         try (var s = session; var c = sqlClient; var t = transaction) {
-            return;
+            return this.session != null;
         } finally {
+            this.sessionEndpoint = null;
             this.session = null;
             this.sqlClient = null;
             this.transaction = null;

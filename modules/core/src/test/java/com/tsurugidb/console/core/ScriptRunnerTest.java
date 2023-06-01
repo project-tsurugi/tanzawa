@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.executor.IoSupplier;
 import com.tsurugidb.console.core.executor.engine.Engine;
 import com.tsurugidb.console.core.executor.engine.EngineException;
@@ -22,7 +23,13 @@ class ScriptRunnerTest {
 
     static class Recorder implements Engine {
 
+        private final ScriptConfig config = new ScriptConfig();
         final List<Statement> statements = new ArrayList<>();
+
+        @Override
+        public ScriptConfig getConfig() {
+            return this.config;
+        }
 
         @Override
         public boolean execute(Statement statement) throws EngineException {
@@ -56,6 +63,13 @@ class ScriptRunnerTest {
     @Test
     void raise() throws Exception {
         var r = ScriptRunner.execute(script("SELECT * FROM T"), new Engine() {
+            private final ScriptConfig config = new ScriptConfig();
+
+            @Override
+            public ScriptConfig getConfig() {
+                return config;
+            }
+
             @Override
             public boolean execute(Statement statement) throws EngineException {
                 throw new EngineException("TESTING");

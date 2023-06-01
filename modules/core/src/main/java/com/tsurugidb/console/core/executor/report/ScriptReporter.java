@@ -64,6 +64,31 @@ public abstract class ScriptReporter {
         warn(message);
     }
 
+    //
+
+    /**
+     * output message for connect.
+     *
+     * @param endpoint endpoint
+     */
+    public void reportConnect(String endpoint) {
+        String message = MessageFormat.format("connected {0}", endpoint);
+        succeed(message);
+    }
+
+    /**
+     * output message for disconnect.
+     *
+     * @param disconnected {@code false} if already disconnected
+     */
+    public void reportDisconnect(boolean disconnected) {
+        if (disconnected) {
+            succeed("disconnected");
+        } else {
+            succeed("already disconnected");
+        }
+    }
+
     /**
      * output message for start transaction implicitly.
      *
@@ -185,21 +210,30 @@ public abstract class ScriptReporter {
     /**
      * output message for session status.
      *
-     * @param active {@code true} if session is active
+     * @param endpoint endpoint
+     * @param active   {@code true} if session is active
      */
-    public void reportSessionStatus(boolean active) {
-        String message = MessageFormat.format("session is {0}", //
-                active ? "active" : "inactive");
-        reportSessionStatus(message, active);
+    public void reportSessionStatus(String endpoint, boolean active) {
+        String activeMessage = active ? "active" : "inactive";
+
+        String message;
+        if (endpoint != null) {
+            message = MessageFormat.format("session({0}) is {1}", endpoint, activeMessage);
+        } else {
+            message = MessageFormat.format("session is {0}", activeMessage);
+        }
+
+        reportSessionStatus(message, endpoint, active);
     }
 
     /**
      * output message for session status.
      *
-     * @param message message
-     * @param active  {@code true} if session is active
+     * @param message  message
+     * @param endpoint endpoint
+     * @param active   {@code true} if session is active
      */
-    protected void reportSessionStatus(String message, boolean active) {
+    protected void reportSessionStatus(String message, String endpoint, boolean active) {
         info(message);
     }
 

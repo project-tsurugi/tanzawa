@@ -52,7 +52,7 @@ public class ReplReporter extends ScriptReporter {
     }
 
     @Override
-    protected void reportSessionStatus(String message, boolean active) {
+    protected void reportSessionStatus(String message, String endpoint, boolean active) {
         var color = active ? GREEN : RED;
         println(message, color);
     }

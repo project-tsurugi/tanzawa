@@ -159,7 +159,9 @@ public final class ScriptRunner {
             @Nonnull Engine engine) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(script);
         Objects.requireNonNull(engine);
-        engine.connect();
+
+        prepareConnect(engine);
+
         LOG.info("start processing script");
         try (var parser = new SqlParser(script.get())) {
             while (true) {
@@ -248,9 +250,10 @@ public final class ScriptRunner {
     public static void repl(//
             @Nonnull IoSupplier<? extends List<Statement>> script, //
             @Nonnull Engine engine) throws ServerException, IOException, InterruptedException {
-        if (engine.getConfig().getEndpoint() != null) {
-            engine.connect();
-        }
+        Objects.requireNonNull(script);
+        Objects.requireNonNull(engine);
+
+        prepareConnect(engine);
 
         LOG.info("start repl");
         loop: while (true) {
@@ -306,6 +309,14 @@ public final class ScriptRunner {
         }
         engine.finish(true);
         LOG.info("repl execution was successfully completed");
+    }
+
+    private static void prepareConnect(Engine engine) throws ServerException, IOException, InterruptedException {
+        String endpoint = engine.getConfig().getEndpoint();
+        if (endpoint != null) {
+            LOG.info("establishing connection: {}", endpoint);
+            engine.connect();
+        }
     }
 
     private ScriptRunner() {

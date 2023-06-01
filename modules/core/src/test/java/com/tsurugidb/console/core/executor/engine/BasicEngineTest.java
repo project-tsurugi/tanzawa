@@ -62,8 +62,8 @@ class BasicEngineTest {
         }
 
         @Override
-        public void disconnect() throws ServerException, IOException, InterruptedException {
-            return;
+        public boolean disconnect() throws ServerException, IOException, InterruptedException {
+            return true;
         }
 
         @Override
