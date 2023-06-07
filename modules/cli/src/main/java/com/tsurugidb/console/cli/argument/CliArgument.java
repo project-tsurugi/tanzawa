@@ -31,6 +31,9 @@ import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredent
 @Parameters
 public class CliArgument {
 
+    @Parameter(names = { "--help", "-h" }, arity = 0, description = "print this message", help = true)
+    private Boolean help;
+
     @Parameter(names = { "--console" }, arity = 0, description = "SQL console mode")
     private Boolean console;
 
@@ -153,6 +156,15 @@ public class CliArgument {
     private List<String> otherList;
 
     //
+
+    /**
+     * get --help.
+     *
+     * @return help
+     */
+    public boolean isHelp() {
+        return this.help != null && this.help;
+    }
 
     /**
      * get cli mode.

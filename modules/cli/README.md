@@ -36,6 +36,7 @@ java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-
 
 ### common
 
+* `--help, -h` - ヘルプを表示する
 * `--connection,-c` - 接続先URL (`tcp://...`, `ipc://...`, など、 [SessionBuilder.connect](https://github.com/project-tsurugi/tsubakuro/blob/98fa342082af04cf927b875b9d898dd7961f575e/modules/session/src/main/java/com/nautilus_technologies/tsubakuro/low/common/SessionBuilder.java#L35-L45) の end-point URI に準拠)
 * `--property,-P` - SQL設定 (`SET <key> TO <value>` 相当, 複数指定可)
 * `-D` - client variable (`\set <key> <value>` 相当, 複数指定可)

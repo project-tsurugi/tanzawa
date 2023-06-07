@@ -59,6 +59,11 @@ public final class Main {
         try (Closeable c0 = () -> ReplJLineTerminal.close()) {
             commander.parse(args);
 
+            if (argument.isHelp()) {
+                commander.usage();
+                return 0;
+            }
+
             switch (argument.getCliMode()) {
             case CONSOLE:
                 executeConsole(commander, argument);
