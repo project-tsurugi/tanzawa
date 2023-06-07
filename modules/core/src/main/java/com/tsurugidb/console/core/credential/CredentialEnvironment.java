@@ -33,12 +33,12 @@ public final class CredentialEnvironment {
     /**
      * get path under user.home
      *
-     * @param relativePath relative path
+     * @param relativePath relative path under user.home
      * @return path
      */
     public static Optional<Path> findUserHomePath(String relativePath) {
         return Optional.ofNullable(System.getProperty("user.home")) //$NON-NLS-1$
-                .map(home -> Path.of(home, TSURUGI_HIDDEN_DIR, relativePath)); // $NON-NLS-1$
+                .map(home -> Path.of(home, TSURUGI_HIDDEN_DIR, relativePath));
     }
 
     private CredentialEnvironment() {

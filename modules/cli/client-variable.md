@@ -7,12 +7,24 @@
 
 ## クライアント変数の指定方法
 
+### デフォルトファイルで指定する方法
+
+SQLコンソール起動時に、ユーザーホームディレクトリー（Linuxの場合は`$HOME`, Windowsの場合は`%USERPROFILE%`）の下に`.tsurugidb/tgsql/client-variable.properties`があれば、それが読まれる。
+
+このプロパティーファイルの中に`key=value`形式でクライアント変数を指定する。
+
 ### プログラム引数で指定する方法
 
 プログラム引数に `-D<key>=<value>` 形式で指定する。
 
 ```bash
-java -jar build/libs/sql-console-*-all.jar console -Dkey1=value1 -D key2=value2
+java -jar build/libs/sql-console-*-all.jar -Dkey1=value1 -D key2=value2
+```
+
+または、クライアント変数が記述されたプロパティーファイルを指定する。
+
+```bash
+java -jar build/libs/sql-console-*-all.jar --client-variable client-variable.properties
 ```
 
 ### 実行中に指定する方法

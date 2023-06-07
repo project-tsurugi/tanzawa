@@ -73,6 +73,9 @@ public class CliArgument {
     @DynamicParameter(names = { "-D" }, description = "client variable. <key>=<value>")
     private Map<String, String> clientVariableMap = new LinkedHashMap<>();
 
+    @Parameter(names = { "--client-variable" }, arity = 1, description = "client variable file. </path/to/client-variable.properties>")
+    private String clientVariableFile;
+
     // transaction
 
     /**
@@ -263,6 +266,15 @@ public class CliArgument {
      */
     public @Nonnull Map<String, String> getClientVariable() {
         return this.clientVariableMap;
+    }
+
+    /**
+     * get --client-variable.
+     *
+     * @return client variable file path
+     */
+    public @Nullable String getClientVariableFile() {
+        return this.clientVariableFile;
     }
 
     // transaction

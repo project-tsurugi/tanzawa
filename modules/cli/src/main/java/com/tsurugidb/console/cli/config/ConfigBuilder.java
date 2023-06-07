@@ -1,12 +1,20 @@
 package com.tsurugidb.console.cli.config;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.jline.utils.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,6 +127,8 @@ public abstract class ConfigBuilder {
     private void fillClientVariable() {
         var clientVariableMap = config.getClientVariableMap();
         fillClientVariableDefault(clientVariableMap);
+        fillClientVariableFromUserHomeFile(clientVariableMap);
+        fillClientVariableFromArgumentFile(clientVariableMap);
 
         var variable = argument.getClientVariable();
         log.debug("config.clientVariable={}", variable);
@@ -127,6 +137,46 @@ public abstract class ConfigBuilder {
 
     protected void fillClientVariableDefault(ScriptClientVariableMap clientVariableMap) {
         // do override
+    }
+
+    protected void fillClientVariableFromUserHomeFile(ScriptClientVariableMap clientVariableMap) {
+        CliEnvironment.findUserHomeClientVariablePath().ifPresent(path -> {
+            fillClientVariableFromFile(clientVariableMap, path, true);
+        });
+    }
+
+    protected void fillClientVariableFromArgumentFile(ScriptClientVariableMap clientVariableMap) {
+        String file = argument.getClientVariableFile();
+        if (file != null) {
+            var path = Path.of(file);
+            fillClientVariableFromFile(clientVariableMap, path, false);
+        }
+    }
+
+    protected void fillClientVariableFromFile(ScriptClientVariableMap clientVariableMap, Path file, boolean ignoreError) {
+        if (ignoreError) {
+            if (!Files.isRegularFile(file)) {
+                Log.debug("{} is not regular file. ignore", file);
+                return;
+            }
+        }
+        var properties = new Properties();
+        try (var reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+            properties.load(reader);
+        } catch (IOException e) {
+            if (ignoreError) {
+                Log.debug("client-variable file read error. ignore", e);
+                return;
+            }
+            String message;
+            if (e instanceof NoSuchFileException) {
+                message = MessageFormat.format("file not found. {0}", e.getMessage());
+            } else {
+                message = e.getMessage();
+            }
+            throw new UncheckedIOException(message, e);
+        }
+        properties.forEach((key, value) -> clientVariableMap.put((String) key, (String) value));
     }
 
     protected abstract void buildSub();

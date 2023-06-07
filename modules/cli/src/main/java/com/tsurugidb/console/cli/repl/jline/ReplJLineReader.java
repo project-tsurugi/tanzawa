@@ -32,7 +32,7 @@ public final class ReplJLineReader {
                 .parser(parser) //
                 .history(history) //
                 .build();
-        CliEnvironment.findUserHomeReplHistoryPath().ifPresent(path -> {
+        CliEnvironment.findUserHomeConsoleHistoryPath().ifPresent(path -> {
             reader.setVariable(LineReader.HISTORY_FILE, path);
         });
         return reader;
