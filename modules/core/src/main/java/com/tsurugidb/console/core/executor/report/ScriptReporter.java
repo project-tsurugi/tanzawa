@@ -137,7 +137,7 @@ public abstract class ScriptReporter {
      * @param status commit status
      */
     public void reportTransactionCommitted(Optional<CommitStatus> status) {
-        String message = MessageFormat.format("transaction committed. status={0}", //
+        String message = MessageFormat.format("transaction commit({0}) finished.", //
                 status.map(CommitStatus::name).orElse("DEFAULT"));
         reportTransactionCommitted(message, status);
     }
@@ -158,7 +158,7 @@ public abstract class ScriptReporter {
      * @param status commit status
      */
     public void reportTransactionCommittedImplicitly(CommitStatus status) {
-        String message = MessageFormat.format("transaction committed implicitly. status={0}", //
+        String message = MessageFormat.format("transaction commit({0}) finished implicitly.", //
                 status);
         reportTransactionCommittedImplicitly(message, status);
     }
@@ -177,7 +177,7 @@ public abstract class ScriptReporter {
      * output message for transaction rollbacked.
      */
     public void reportTransactionRollbacked() {
-        String message = "transaction rollbacked.";
+        String message = "transaction rollback finished.";
         reportTransactionRollbacked(message);
     }
 
@@ -194,7 +194,7 @@ public abstract class ScriptReporter {
      * output message for transaction rollbacked implicitly.
      */
     public void reportTransactionRollbackedImplicitly() {
-        String message = "transaction rollbacked implicitly.";
+        String message = "transaction rollback finished implicitly.";
         reportTransactionRollbackedImplicitly(message);
     }
 
