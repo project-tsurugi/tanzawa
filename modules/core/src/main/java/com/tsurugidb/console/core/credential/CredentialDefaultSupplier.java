@@ -23,6 +23,11 @@ import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredent
 public class CredentialDefaultSupplier {
     private static final Logger LOG = LoggerFactory.getLogger(CredentialDefaultSupplier.class);
 
+    /**
+     * get default credential.
+     *
+     * @return credential
+     */
     public Credential getDefaultCredential() {
         // 1. 環境変数TSURUGI_AUTH_TOKEN
         Optional<String> authToken = CredentialEnvironment.findTsurugiAuthToken();
