@@ -221,7 +221,7 @@ class BasicEngineTest {
                 if (!reached.compareAndSet(false, true)) {
                     fail();
                 }
-                assertEquals(SqlRequest.TransactionType.TRANSACTION_TYPE_UNSPECIFIED, option.getType());
+                assertEquals(SqlRequest.TransactionType.SHORT, option.getType());
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
@@ -271,7 +271,7 @@ class BasicEngineTest {
                 if (!reached.compareAndSet(false, true)) {
                     fail();
                 }
-                assertEquals(SqlRequest.TransactionType.TRANSACTION_TYPE_UNSPECIFIED, option.getType());
+                assertEquals(SqlRequest.TransactionType.SHORT, option.getType());
                 assertEquals(SqlRequest.TransactionPriority.WAIT, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
@@ -296,7 +296,7 @@ class BasicEngineTest {
                 if (!reached.compareAndSet(false, true)) {
                     fail();
                 }
-                assertEquals(SqlRequest.TransactionType.TRANSACTION_TYPE_UNSPECIFIED, option.getType());
+                assertEquals(SqlRequest.TransactionType.SHORT, option.getType());
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("TESTING", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());
@@ -385,7 +385,7 @@ class BasicEngineTest {
                 if (!reached.compareAndSet(false, true)) {
                     fail();
                 }
-                assertEquals(SqlRequest.TransactionType.TRANSACTION_TYPE_UNSPECIFIED, option.getType());
+                assertEquals(SqlRequest.TransactionType.SHORT, option.getType());
                 assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
                 assertEquals("", option.getLabel());
                 assertEquals(0, option.getWritePreservesCount());

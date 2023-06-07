@@ -80,7 +80,7 @@ public final class ExecutorUtil {
         if (ro) {
             return Optional.of(SqlRequest.TransactionType.READ_ONLY);
         }
-        return Optional.empty();
+        return Optional.of(SqlRequest.TransactionType.SHORT);
     }
 
     private static Optional<SqlRequest.TransactionPriority> computeTransactionPriority(StartTransactionStatement statement) {
