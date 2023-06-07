@@ -414,7 +414,7 @@ public class BasicEngine extends AbstractEngine {
         }
 
         var clientVariableMap = config.getClientVariableMap();
-        boolean timing = clientVariableMap.get(ScriptCvKey.TIMING, false);
+        boolean timing = clientVariableMap.get(ScriptCvKey.SQL_TIMING, false);
         if (timing) {
             reporter.reportTiming(timingEnd - timingStart);
         }

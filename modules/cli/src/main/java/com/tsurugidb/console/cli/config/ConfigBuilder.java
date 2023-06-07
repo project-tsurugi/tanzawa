@@ -176,7 +176,14 @@ public abstract class ConfigBuilder {
             }
             throw new UncheckedIOException(message, e);
         }
-        properties.forEach((key, value) -> clientVariableMap.put((String) key, (String) value));
+        properties.forEach((key, value) -> {
+            try {
+                clientVariableMap.put((String) key, (String) value);
+            } catch (Exception e) {
+                String message = MessageFormat.format("property error. file={0}, key={1}, value={2}. {3}", file, key, value, e.getMessage());
+                throw new RuntimeException(message, e);
+            }
+        });
     }
 
     protected abstract void buildSub();

@@ -2,10 +2,10 @@ package com.tsurugidb.console.core.config;
 
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,8 +23,8 @@ public abstract class ScriptCvKey<T> {
 
     /** select.maxlines */
     public static final ScriptCvKeyInt SELECT_MAX_LINES = new ScriptCvKeyInt("select.maxlines"); //$NON-NLS-1$
-    /** timing */
-    public static final ScriptCvKeyBoolean TIMING = new ScriptCvKeyBoolean("timing"); //$NON-NLS-1$
+    /** sql.timing */
+    public static final ScriptCvKeyBoolean SQL_TIMING = new ScriptCvKeyBoolean("sql.timing"); //$NON-NLS-1$
 
     /** dot.verbose */
     public static final ScriptCvKeyBoolean DOT_VERBOSE = new ScriptCvKeyBoolean(DotOutputHandler.KEY_VERBOSE);
@@ -125,9 +125,38 @@ public abstract class ScriptCvKey<T> {
         }
     }
 
-    private static final Map<String, ScriptCvKey<?>> KEY_MAP = new HashMap<>();
+    /**
+     * client variable key for Color.
+     */
+    public static class ScriptCvKeyColor extends ScriptCvKey<ScriptColor> {
+
+        /**
+         * Creates a new instance.
+         *
+         * @param name variable name
+         */
+        public ScriptCvKeyColor(String name) {
+            super(name);
+        }
+
+        @Override
+        public ScriptColor convertValue(@Nonnull String s) {
+            return ScriptColor.parse(s);
+        }
+    }
+
+    private static final Map<String, ScriptCvKey<?>> KEY_MAP = new ConcurrentHashMap<>();
     static {
-        for (var field : ScriptCvKey.class.getFields()) {
+        registerKey(ScriptCvKey.class);
+    }
+
+    /**
+     * register key.
+     *
+     * @param clazz class with key defined
+     */
+    public static void registerKey(Class<?> clazz) {
+        for (var field : clazz.getFields()) {
             if (Modifier.isStatic(field.getModifiers()) && ScriptCvKey.class.isAssignableFrom(field.getType())) {
                 try {
                     var key = ScriptCvKey.class.cast(field.get(null));

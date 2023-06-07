@@ -2,6 +2,7 @@ package com.tsurugidb.console.cli.repl;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
@@ -9,6 +10,9 @@ import org.jline.terminal.Terminal;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
+import com.tsurugidb.console.core.config.ScriptColor;
+import com.tsurugidb.console.core.config.ScriptConfig;
+import com.tsurugidb.console.core.config.ScriptCvKey.ScriptCvKeyColor;
 import com.tsurugidb.console.core.executor.report.ScriptReporter;
 
 /**
@@ -16,56 +20,76 @@ import com.tsurugidb.console.core.executor.report.ScriptReporter;
  */
 public class ReplReporter extends ScriptReporter {
 
-    private static final int RED = 0xc0_00_00;
-    private static final int GREEN = 0x00_c0_00;
-    private static final int YELLOW = 0xc0_c0_00;
-
     private final Terminal terminal;
+    private final ScriptConfig config;
 
     /**
      * Creates a new instance.
      *
      * @param terminal JLine Terminal
+     * @param config   SQL scripts configuration
      */
-    public ReplReporter(@Nonnull Terminal terminal) {
-        this.terminal = terminal;
+    public ReplReporter(@Nonnull Terminal terminal, @Nonnull ScriptConfig config) {
+        this.terminal = Objects.requireNonNull(terminal);
+        this.config = Objects.requireNonNull(config);
+    }
+
+    protected int red() {
+        return color(ReplCvKey.CONSOLE_WARNING_COLOR, 0xc0_00_00);
+    }
+
+    protected int green() {
+        return color(ReplCvKey.CONSOLE_SUCCEED_COLOR, 0x00_c0_00);
+    }
+
+    protected int yellow() {
+        return color(ReplCvKey.CONSOLE_IMPLICIT_COLOR, 0xc0_c0_00);
+    }
+
+    protected int color(ScriptCvKeyColor key, int defaultColor) {
+        ScriptColor color = config.getClientVariableMap().get(key);
+        if (color == null) {
+            return defaultColor;
+        }
+        return color.rgb();
     }
 
     @Override
     public void info(String message) {
-        println(message);
+        int color = color(ReplCvKey.CONSOLE_INFO_COLOR, -1);
+        println(message, color);
     }
 
     @Override
     public void implicit(String message) {
-        println(message, YELLOW);
+        println(message, yellow());
     }
 
     @Override
     public void succeed(String message) {
-        println(message, GREEN);
+        println(message, green());
     }
 
     @Override
     public void warn(String message) {
-        println(message, RED);
+        println(message, red());
     }
 
     @Override
     protected void reportSessionStatus(String message, String endpoint, boolean active) {
-        var color = active ? GREEN : RED;
+        int color = active ? green() : red();
         println(message, color);
     }
 
     @Override
     protected void reportTransactionStatus(String message, boolean active) {
-        var color = active ? GREEN : RED;
+        int color = active ? green() : red();
         println(message, color);
     }
 
     @Override
     public void reportHelp(List<String> list) {
-        int color = 0xe0_e0_e0;
+        int color = color(ReplCvKey.CONSOLE_HELP_COLOR, 0xe0_e0_e0);
         for (var s : list) {
             println(s, color);
         }
@@ -114,6 +138,10 @@ public class ReplReporter extends ScriptReporter {
      * @param color   0xrrggbb
      */
     private void println(String message, int color) {
+        if (color < 0) {
+            println(message);
+            return;
+        }
         String styledMessage = new AttributedStringBuilder() //
                 .style(AttributedStyle.DEFAULT.foregroundRgb(color)) //
                 .append(message) //

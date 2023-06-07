@@ -284,7 +284,7 @@ public final class ScriptRunner {
                 long time = e.getTimingTime();
                 if (time != 0) {
                     var clientVariableMap = engine.getConfig().getClientVariableMap();
-                    boolean timing = clientVariableMap.get(ScriptCvKey.TIMING, false);
+                    boolean timing = clientVariableMap.get(ScriptCvKey.SQL_TIMING, false);
                     if (timing) {
                         reporter.reportTiming(time);
                     }

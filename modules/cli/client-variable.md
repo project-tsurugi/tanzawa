@@ -49,9 +49,15 @@ java -jar build/libs/sql-console-*-all.jar --client-variable client-variable.pro
   - consoleモードでselect文を実行した結果を表示する件数。
     - 負の値の場合、無制限。
   - デフォルトは1000件。
-- `timing`
+- `sql.timing`
   - SQL文の実行時間の表示の有無。
   - `\timing` コマンドで切り替え可能。
+- consoleモードの文字色。十六進数6桁rrggbbで指定する。
+  - `console.info.color` - 情報メッセージの文字色
+  - `console.implicit.color` - 暗黙メッセージの文字色
+  - `console.succeed.color` - 成功メッセージの文字色
+  - `console.warning.color` - 警告メッセージの文字色
+  - `console.help.color` - ヘルプメッセージの文字色
 - `dot.executable`
   - explain文で使用する、Graphvizのdotコマンドの場所（絶対パス）。
 
@@ -59,6 +65,7 @@ java -jar build/libs/sql-console-*-all.jar --client-variable client-variable.pro
 
 ## その他
 
-クライアント変数は [ScriptCvKey] で定義されている。
+クライアント変数は [ScriptCvKey] や [ReplCvKey] で定義されている。
 
 [ScriptCvKey]: ../core/src/main/java/com/tsurugidb/console/core/config/ScriptCvKey.java
+[ReplCvKey]: ../cli/src/main/java/com/tsurugidb/console/cli/repl/ReplCvKey.java

@@ -44,13 +44,13 @@ public class TimingCommand extends SpecialCommand {
         boolean value;
         if (option == null) {
             LOG.debug("timing"); //$NON-NLS-1$
-            value = !clientVariableMap.get(ScriptCvKey.TIMING, false);
+            value = !clientVariableMap.get(ScriptCvKey.SQL_TIMING, false);
         } else {
             LOG.debug("timing {}", option); //$NON-NLS-1$
-            value = ScriptCvKey.TIMING.convertValue(option);
+            value = ScriptCvKey.SQL_TIMING.convertValue(option);
         }
 
-        clientVariableMap.put(ScriptCvKey.TIMING, value);
+        clientVariableMap.put(ScriptCvKey.SQL_TIMING, value);
 
         var message = MessageFormat.format("Timing is {0}.", value ? "on" : "off"); //$NON-NLS-1$
         var reporter = engine.getReporter();

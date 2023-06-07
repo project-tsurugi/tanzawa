@@ -53,6 +53,10 @@ public class ScriptClientVariableMap {
      */
     public <T> T put(@Nonnull ScriptCvKey<T> key, @Nullable String value) {
         T converted = (value != null) ? key.convertValue(value) : null;
+        if (converted == null) {
+            variableMap.remove(key.toString());
+            return null;
+        }
         return put(key, converted);
     }
 

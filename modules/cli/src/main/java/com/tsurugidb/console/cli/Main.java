@@ -14,6 +14,7 @@ import com.tsurugidb.console.cli.config.ConsoleConfigBuilder;
 import com.tsurugidb.console.cli.config.ExecConfigBuilder;
 import com.tsurugidb.console.cli.config.ScriptConfigBuilder;
 import com.tsurugidb.console.cli.explain.ExplainConvertRunner;
+import com.tsurugidb.console.cli.repl.ReplCvKey;
 import com.tsurugidb.console.cli.repl.ReplEngine;
 import com.tsurugidb.console.cli.repl.ReplReporter;
 import com.tsurugidb.console.cli.repl.ReplResultProcessor;
@@ -104,6 +105,8 @@ public final class Main {
     }
 
     private static void executeConsole(JCommander commander, CliArgument argument) throws Exception {
+        ReplCvKey.registerKey();
+
         var builder = new ConsoleConfigBuilder(argument);
         var config = builder.build();
 
@@ -111,7 +114,7 @@ public final class Main {
         config.setHistorySupplier(ReplJLineHistory.createHistorySupplier(lineReader.getHistory()));
         var script = new ReplScript(lineReader);
         var terminal = lineReader.getTerminal();
-        var reporter = new ReplReporter(terminal);
+        var reporter = new ReplReporter(terminal, config);
         try (var executor = new ReplThreadExecutor("SQL engine", terminal); //
                 var resultProcessor = new ReplResultProcessor(config, reporter)) {
             ScriptRunner.repl(script, config, engine -> new ReplEngine(engine, executor), resultProcessor, reporter);
