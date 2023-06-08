@@ -234,7 +234,7 @@ public class DotOutputHandler implements PlanGraphOutputHandler {
                     MessageFormat.format(//
                             "\"{0}\" command is not executable: {1}", //
                             DOT_COMMAND, //
-                            output));
+                            executable));
         }
         if (executable == null && requireCommand) {
             executable = path.find(DOT_COMMAND).orElseThrow(() -> new EngineConfigurationException(//

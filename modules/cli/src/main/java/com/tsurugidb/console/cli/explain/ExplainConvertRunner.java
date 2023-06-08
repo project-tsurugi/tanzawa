@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import com.tsurugidb.console.cli.argument.CliArgument;
-import com.tsurugidb.console.core.config.ScriptClientVariableMap;
+import com.tsurugidb.console.cli.config.ExplainConfigBuilder;
+import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.executor.engine.CommandPath;
 import com.tsurugidb.console.core.executor.engine.EngineException;
 import com.tsurugidb.console.core.executor.explain.DotOutputHandler;
@@ -33,13 +33,17 @@ public final class ExplainConvertRunner {
      * @throws Exception
      */
     public static void execute(CliArgument argument) throws Exception {
-        new ExplainConvertRunner(argument).execute();
+        var builder = new ExplainConfigBuilder(argument);
+        var config = builder.build();
+        new ExplainConvertRunner(argument, config).execute();
     }
 
     private final CliArgument argument;
+    private final ScriptConfig config;
 
-    private ExplainConvertRunner(CliArgument argument) {
+    private ExplainConvertRunner(CliArgument argument, ScriptConfig config) {
         this.argument = argument;
+        this.config = config;
     }
 
     /**
@@ -88,25 +92,12 @@ public final class ExplainConvertRunner {
     }
 
     private Map<Regioned<String>, Optional<Regioned<Value>>> getOptions() {
-        Map<String, String> stringMap = new LinkedHashMap<>(argument.getClientVariable());
-        addOption(stringMap, DotOutputHandler.KEY_OUTPUT, argument.getOutputFile());
+        var clientVariableMap = config.getClientVariableMap();
+        clientVariableMap.put(DotOutputHandler.KEY_OUTPUT, argument.getOutputFile());
         if (argument.isVerbose()) {
-            addOption(stringMap, DotOutputHandler.KEY_VERBOSE, true);
+            clientVariableMap.put(DotOutputHandler.KEY_VERBOSE, Boolean.TRUE.toString());
         }
-
-        var clientVariableMap = new ScriptClientVariableMap();
-        clientVariableMap.putAll(stringMap);
 
         return DotOutputHandler.extendOptions(Map.of(), clientVariableMap);
-    }
-
-    private void addOption(Map<String, String> map, String key, boolean value) {
-        addOption(map, key, Boolean.toString(value));
-    }
-
-    private void addOption(Map<String, String> map, String key, String value) {
-        if (value != null) {
-            map.put(key, value);
-        }
     }
 }
