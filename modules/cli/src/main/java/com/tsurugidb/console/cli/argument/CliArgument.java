@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -91,7 +92,7 @@ public class CliArgument {
     @Parameter(names = { "--transaction", "-t" }, arity = 1, description = "transaction type")
     private TransactionEnum transaction = TransactionEnum.OCC;
 
-    @Parameter(names = { "--write-preserve", "-w" }, variableArity = true, description = "write preserve. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
+    @Parameter(names = { "--write-preserve", "-w" }, arity = 1, description = "write preserve. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
     private List<String> writePreserve;
 
     @Parameter(names = { "--read-area-include" }, arity = 1, description = "read area include. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
@@ -263,10 +264,7 @@ public class CliArgument {
      * @return write preserve
      */
     public @Nonnull List<String> getWritePreserve() {
-        if (this.writePreserve == null) {
-            return List.of();
-        }
-        return this.writePreserve;
+        return normalizeList(this.writePreserve);
     }
 
     /**
@@ -275,10 +273,7 @@ public class CliArgument {
      * @return read area include
      */
     public @Nonnull List<String> getReadAreaInclude() {
-        if (this.readAreaInclude == null) {
-            return List.of();
-        }
-        return this.readAreaInclude;
+        return normalizeList(this.readAreaInclude);
     }
 
     /**
@@ -287,10 +282,14 @@ public class CliArgument {
      * @return read area exclude
      */
     public @Nonnull List<String> getReadAreaExclude() {
-        if (this.readAreaExclude == null) {
+        return normalizeList(this.readAreaExclude);
+    }
+
+    private List<String> normalizeList(List<String> list) {
+        if (list == null) {
             return List.of();
         }
-        return this.readAreaExclude;
+        return list.stream().map(String::trim).collect(Collectors.toList());
     }
 
     /**
