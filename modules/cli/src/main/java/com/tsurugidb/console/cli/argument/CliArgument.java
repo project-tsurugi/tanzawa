@@ -51,30 +51,19 @@ public class CliArgument {
     @Parameter(names = { "--connection", "-c" }, arity = 1, description = "connection uri (e.g. tcp://localhost:12345)")
     private String connectionUri;
 
-    // commit
+    // credential
 
-    @Parameter(names = { "--auto-commit" }, arity = 0, description = "commit every statement")
-    private Boolean autoCommit;
+    @Parameter(names = { "--user", "-u" }, arity = 1, description = "<user name>")
+    private String user;
 
-    @Parameter(names = { "--no-auto-commit" }, arity = 0, description = "commit only if you explicitly specify a COMMIT statement")
-    private Boolean noAutoCommit;
+    @Parameter(names = { "--auth-token" }, arity = 1, description = "<token>")
+    private String authToken;
 
-    @Parameter(names = { "--commit" }, arity = 0, description = "commit on success, rollback on failure")
-    private Boolean commit;
+    @Parameter(names = { "--credentials" }, arity = 1, description = "</path/to/credentials.json>")
+    private String credentials;
 
-    @Parameter(names = { "--no-commit" }, arity = 0, description = "always rollback")
-    private Boolean noCommit;
-
-    // property
-
-    @DynamicParameter(names = { "--property", "-P" }, description = "SQL setting. <key>=<value>")
-    private Map<String, String> propertyMap = new LinkedHashMap<>();
-
-    @DynamicParameter(names = { "-D" }, description = "client variable. <key>=<value>")
-    private Map<String, String> clientVariableMap = new LinkedHashMap<>();
-
-    @Parameter(names = { "--client-variable" }, arity = 1, description = "client variable file. </path/to/client-variable.properties>")
-    private String clientVariableFile;
+    @Parameter(names = { "--no-auth" }, arity = 0, description = "no auth")
+    private Boolean noAuth;
 
     // transaction
 
@@ -120,19 +109,19 @@ public class CliArgument {
     @DynamicParameter(names = { "--with" }, description = "transaction setting. <key>=<value>")
     private Map<String, String> withMap = new LinkedHashMap<>();
 
-    // credential
+    // commit
 
-    @Parameter(names = { "--user", "-u" }, arity = 1, description = "<user name>")
-    private String user;
+    @Parameter(names = { "--auto-commit" }, arity = 0, description = "commit every statement")
+    private Boolean autoCommit;
 
-    @Parameter(names = { "--auth-token" }, arity = 1, description = "<token>")
-    private String authToken;
+    @Parameter(names = { "--no-auto-commit" }, arity = 0, description = "commit only if you explicitly specify a COMMIT statement")
+    private Boolean noAutoCommit;
 
-    @Parameter(names = { "--credentials" }, arity = 1, description = "</path/to/credentials.json>")
-    private String credentials;
+    @Parameter(names = { "--commit" }, arity = 0, description = "commit on success, rollback on failure")
+    private Boolean commit;
 
-    @Parameter(names = { "--no-auth" }, arity = 0, description = "no auth")
-    private Boolean noAuth;
+    @Parameter(names = { "--no-commit" }, arity = 0, description = "always rollback")
+    private Boolean noCommit;
 
     // script
 
@@ -154,6 +143,15 @@ public class CliArgument {
     private Boolean verbose;
 
     // other
+
+    @DynamicParameter(names = { "--property", "-P" }, description = "SQL setting. <key>=<value>")
+    private Map<String, String> propertyMap = new LinkedHashMap<>();
+
+    @DynamicParameter(names = { "-D" }, description = "client variable. <key>=<value>")
+    private Map<String, String> clientVariableMap = new LinkedHashMap<>();
+
+    @Parameter(names = { "--client-variable" }, arity = 1, description = "client variable file. </path/to/client-variable.properties>")
+    private String clientVariableFile;
 
     @Parameter(description = "</path/to/script.sql(--script) or statement(--exec)>")
     private List<String> otherList;
@@ -210,71 +208,42 @@ public class CliArgument {
         return this.connectionUri; // required = true
     }
 
-    // commit
+    // credential
 
     /**
-     * get --auto-commit.
+     * get credentials.
      *
-     * @return auto commit
+     * @return credential list
      */
-    public boolean getAutoCommit() {
-        return (this.autoCommit != null) && this.autoCommit;
+    public @Nonnull List<Supplier<Credential>> getCredentialList() {
+        var list = new ArrayList<Supplier<Credential>>();
+        if (this.user != null) {
+            list.add(() -> {
+                String password = readPassword();
+                return new UsernamePasswordCredential(user, password);
+            });
+        }
+        if (this.authToken != null) {
+            list.add(() -> new RememberMeCredential(authToken));
+        }
+        if (this.credentials != null) {
+            list.add(() -> {
+                var path = Path.of(credentials);
+                try {
+                    return FileCredential.load(path);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e.getMessage(), e);
+                }
+            });
+        }
+        if (this.noAuth != null && this.noAuth) {
+            list.add(() -> NullCredential.INSTANCE);
+        }
+        return list;
     }
 
-    /**
-     * get --no-auto-commit.
-     *
-     * @return no auto commit
-     */
-    public boolean getNoAutoCommit() {
-        return (this.noAutoCommit != null) && this.noAutoCommit;
-    }
-
-    /**
-     * get --commit.
-     *
-     * @return commit
-     */
-    public boolean getCommit() {
-        return (this.commit != null) && this.commit;
-    }
-
-    /**
-     * get --no-commit.
-     *
-     * @return no commit
-     */
-    public boolean getNoCommit() {
-        return (this.noCommit != null) && this.noCommit;
-    }
-
-    // property
-
-    /**
-     * get --property.
-     *
-     * @return property
-     */
-    public @Nonnull Map<String, String> getProperty() {
-        return this.propertyMap;
-    }
-
-    /**
-     * get -D.
-     *
-     * @return client variable
-     */
-    public @Nonnull Map<String, String> getClientVariable() {
-        return this.clientVariableMap;
-    }
-
-    /**
-     * get --client-variable.
-     *
-     * @return client variable file path
-     */
-    public @Nullable String getClientVariableFile() {
-        return this.clientVariableFile;
+    protected String readPassword() {
+        return ReplCredentialSupplier.readReplPassword();
     }
 
     // transaction
@@ -374,42 +343,42 @@ public class CliArgument {
         return this.withMap;
     }
 
-    // credential
+    // commit
 
     /**
-     * get credentials.
+     * get --auto-commit.
      *
-     * @return credential list
+     * @return auto commit
      */
-    public @Nonnull List<Supplier<Credential>> getCredentialList() {
-        var list = new ArrayList<Supplier<Credential>>();
-        if (this.user != null) {
-            list.add(() -> {
-                String password = readPassword();
-                return new UsernamePasswordCredential(user, password);
-            });
-        }
-        if (this.authToken != null) {
-            list.add(() -> new RememberMeCredential(authToken));
-        }
-        if (this.credentials != null) {
-            list.add(() -> {
-                var path = Path.of(credentials);
-                try {
-                    return FileCredential.load(path);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e.getMessage(), e);
-                }
-            });
-        }
-        if (this.noAuth != null && this.noAuth) {
-            list.add(() -> NullCredential.INSTANCE);
-        }
-        return list;
+    public boolean getAutoCommit() {
+        return (this.autoCommit != null) && this.autoCommit;
     }
 
-    protected String readPassword() {
-        return ReplCredentialSupplier.readReplPassword();
+    /**
+     * get --no-auto-commit.
+     *
+     * @return no auto commit
+     */
+    public boolean getNoAutoCommit() {
+        return (this.noAutoCommit != null) && this.noAutoCommit;
+    }
+
+    /**
+     * get --commit.
+     *
+     * @return commit
+     */
+    public boolean getCommit() {
+        return (this.commit != null) && this.commit;
+    }
+
+    /**
+     * get --no-commit.
+     *
+     * @return no commit
+     */
+    public boolean getNoCommit() {
+        return (this.noCommit != null) && this.noCommit;
     }
 
     // script
@@ -485,5 +454,34 @@ public class CliArgument {
      */
     public boolean isVerbose() {
         return (this.verbose != null) && this.verbose;
+    }
+
+    // other
+
+    /**
+     * get --property.
+     *
+     * @return property
+     */
+    public @Nonnull Map<String, String> getProperty() {
+        return this.propertyMap;
+    }
+
+    /**
+     * get -D.
+     *
+     * @return client variable
+     */
+    public @Nonnull Map<String, String> getClientVariable() {
+        return this.clientVariableMap;
+    }
+
+    /**
+     * get --client-variable.
+     *
+     * @return client variable file path
+     */
+    public @Nullable String getClientVariableFile() {
+        return this.clientVariableFile;
     }
 }
