@@ -29,6 +29,7 @@ import com.tsurugidb.console.core.credential.CredentialDefaultSupplier;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlRequest.ReadArea;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionPriority;
+import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 
@@ -88,44 +89,48 @@ public abstract class ConfigBuilder {
             return;
         }
 
-        if (argument.isIncludeDdl()) {
-            options.setModifiesDefinitions(true);
-        }
-
-        List<String> writePreserve = argument.getWritePreserve();
-        for (var tableName : writePreserve) {
-            var wp = WritePreserve.newBuilder().setTableName(tableName).build();
-            options.addWritePreserves(wp);
-        }
-
-        List<String> readAreaInclude = argument.getReadAreaInclude();
-        for (var tableName : readAreaInclude) {
-            var area = ReadArea.newBuilder().setTableName(tableName).build();
-            options.addInclusiveReadAreas(area);
-        }
-        List<String> readAreaExclude = argument.getReadAreaExclude();
-        for (var tableName : readAreaExclude) {
-            var area = ReadArea.newBuilder().setTableName(tableName).build();
-            options.addExclusiveReadAreas(area);
-        }
-
-        var execute = argument.getExecute();
-        if (execute != null) {
-            TransactionPriority prior;
-            if (execute.isDeferrable()) {
-                if (execute.isExcluding()) {
-                    prior = TransactionPriority.WAIT_EXCLUDE;
-                } else {
-                    prior = TransactionPriority.WAIT;
-                }
-            } else {
-                if (execute.isExcluding()) {
-                    prior = TransactionPriority.INTERRUPT_EXCLUDE;
-                } else {
-                    prior = TransactionPriority.INTERRUPT;
-                }
+        if (type == TransactionType.LONG) {
+            if (argument.isIncludeDdl()) {
+                options.setModifiesDefinitions(true);
             }
-            options.setPriority(prior);
+
+            List<String> writePreserve = argument.getWritePreserve();
+            for (var tableName : writePreserve) {
+                var wp = WritePreserve.newBuilder().setTableName(tableName).build();
+                options.addWritePreserves(wp);
+            }
+
+            List<String> readAreaInclude = argument.getReadAreaInclude();
+            for (var tableName : readAreaInclude) {
+                var area = ReadArea.newBuilder().setTableName(tableName).build();
+                options.addInclusiveReadAreas(area);
+            }
+            List<String> readAreaExclude = argument.getReadAreaExclude();
+            for (var tableName : readAreaExclude) {
+                var area = ReadArea.newBuilder().setTableName(tableName).build();
+                options.addExclusiveReadAreas(area);
+            }
+        }
+
+        if (type == TransactionType.LONG || type == TransactionType.READ_ONLY) {
+            var execute = argument.getExecute();
+            if (execute != null) {
+                TransactionPriority prior;
+                if (execute.isDeferrable()) {
+                    if (execute.isExcluding()) {
+                        prior = TransactionPriority.WAIT_EXCLUDE;
+                    } else {
+                        prior = TransactionPriority.WAIT;
+                    }
+                } else {
+                    if (execute.isExcluding()) {
+                        prior = TransactionPriority.INTERRUPT_EXCLUDE;
+                    } else {
+                        prior = TransactionPriority.INTERRUPT;
+                    }
+                }
+                options.setPriority(prior);
+            }
         }
 
         String label = argument.getLabel();
