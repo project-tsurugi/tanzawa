@@ -179,6 +179,20 @@ class CliArgumentTest {
     }
 
     @Test
+    void includeDdl() {
+        {
+            var argument = new CliArgument();
+            assertFalse(argument.isIncludeDdl());
+        }
+        {
+            var argument = new CliArgument();
+            set(argument, "--include-ddl", true);
+
+            assertTrue(argument.isIncludeDdl());
+        }
+    }
+
+    @Test
     void writePreserve() {
         {
             var argument = new CliArgument();

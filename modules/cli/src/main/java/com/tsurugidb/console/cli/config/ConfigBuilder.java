@@ -88,6 +88,10 @@ public abstract class ConfigBuilder {
             return;
         }
 
+        if (argument.isIncludeDdl()) {
+            options.setModifiesDefinitions(true);
+        }
+
         List<String> writePreserve = argument.getWritePreserve();
         for (var tableName : writePreserve) {
             var wp = WritePreserve.newBuilder().setTableName(tableName).build();

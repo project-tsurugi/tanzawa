@@ -104,6 +104,9 @@ public class CliArgument {
     @Parameter(names = { "--transaction", "-t" }, arity = 1, description = "transaction type")
     private TransactionEnum transaction = TransactionEnum.OCC;
 
+    @Parameter(names = { "--include-ddl" }, arity = 0, description = "declares DDL execution")
+    private Boolean includeDdl;
+
     @Parameter(names = { "--write-preserve", "-w" }, arity = 1, description = "write preserve. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
     private List<String> writePreserve;
 
@@ -268,6 +271,15 @@ public class CliArgument {
      */
     public @Nonnull TransactionEnum getTransaction() {
         return this.transaction; // has default value
+    }
+
+    /**
+     * get --include-ddl.
+     *
+     * @return include ddl
+     */
+    public boolean isIncludeDdl() {
+        return this.includeDdl != null && this.includeDdl;
     }
 
     /**
