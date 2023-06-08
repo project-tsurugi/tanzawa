@@ -27,7 +27,8 @@ import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.credential.CredentialDefaultSupplier;
 import com.tsurugidb.sql.proto.SqlRequest;
-import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
+import com.tsurugidb.sql.proto.SqlRequest.ReadArea;
+import com.tsurugidb.sql.proto.SqlRequest.TransactionPriority;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 
@@ -78,21 +79,10 @@ public abstract class ConfigBuilder {
         var options = SqlRequest.TransactionOption.newBuilder();
 
         TransactionEnum transaction = argument.getTransaction();
-        switch (transaction) {
-        case SHORT:
-        case OCC:
-            options.setType(TransactionType.SHORT);
-            break;
-        case LONG:
-        case LTX:
-            options.setType(TransactionType.LONG);
-            break;
-        case READ:
-        case READONLY:
-        case RO:
-            options.setType(TransactionType.READ_ONLY);
-            break;
-        case MANUAL:
+        var type = transaction.toTransactionType();
+        if (type != null) {
+            options.setType(type);
+        } else { // manual
             log.debug("config.transactionOption=<manual>");
             config.setTransactionOption(null);
             return;
@@ -104,9 +94,35 @@ public abstract class ConfigBuilder {
             options.addWritePreserves(wp);
         }
 
-        // TODO List<String> readAreaInclude = argument.getReadAreaInclude();
-        // TODO List<String> readAreaExclude = argument.getReadAreaExclude();
-        // TODO List<String> execute = argument.getExecute();
+        List<String> readAreaInclude = argument.getReadAreaInclude();
+        for (var tableName : readAreaInclude) {
+            var area = ReadArea.newBuilder().setTableName(tableName).build();
+            options.addInclusiveReadAreas(area);
+        }
+        List<String> readAreaExclude = argument.getReadAreaExclude();
+        for (var tableName : readAreaExclude) {
+            var area = ReadArea.newBuilder().setTableName(tableName).build();
+            options.addExclusiveReadAreas(area);
+        }
+
+        var execute = argument.getExecute();
+        if (execute != null) {
+            TransactionPriority prior;
+            if (execute.isDeferrable()) {
+                if (execute.isExcluding()) {
+                    prior = TransactionPriority.WAIT_EXCLUDE;
+                } else {
+                    prior = TransactionPriority.WAIT;
+                }
+            } else {
+                if (execute.isExcluding()) {
+                    prior = TransactionPriority.INTERRUPT_EXCLUDE;
+                } else {
+                    prior = TransactionPriority.INTERRUPT;
+                }
+            }
+            options.setPriority(prior);
+        }
 
         String label = argument.getLabel();
         options.setLabel(label);

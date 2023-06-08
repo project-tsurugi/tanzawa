@@ -3,6 +3,7 @@ package com.tsurugidb.console.cli.argument;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -226,20 +227,36 @@ class CliArgumentTest {
     void execute() {
         {
             var argument = new CliArgument();
-            assertEquals(List.of(), argument.getExecute());
+            assertNull(argument.getExecute());
         }
 
-        for (String optionName : List.of("--execute")) {
+        {
             var argument = new CliArgument();
-            setList(argument, optionName, "prior");
+            setList(argument, "--execute", "prior");
 
-            assertEquals(List.of("prior"), argument.getExecute());
+            var execute = argument.getExecute();
+            assertTrue(execute.isPrior());
+            assertTrue(execute.isDeferrable());
         }
-        for (String optionName : List.of("--execute")) {
+        {
             var argument = new CliArgument();
-            setList(argument, optionName, "prior", "immediate");
+            setList(argument, "--execute", "excluding");
 
-            assertEquals(List.of("prior", "immediate"), argument.getExecute());
+            var execute = argument.getExecute();
+            assertTrue(execute.isExcluding());
+            assertTrue(execute.isDeferrable());
+        }
+        for (String s1 : List.of("prior", "excluding")) {
+            for (String s2 : List.of("deferrable", "immediate")) {
+                var argument = new CliArgument();
+                setList(argument, "--execute", s1, s2);
+
+                var execute = argument.getExecute();
+                assertEquals(s1.equals("prior"), execute.isPrior());
+                assertEquals(s1.equals("excluding"), execute.isExcluding());
+                assertEquals(s2.equals("deferrable"), execute.isDeferrable());
+                assertEquals(s2.equals("immediate"), execute.isImmediate());
+            }
         }
 
         {

@@ -20,6 +20,7 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.tsurugidb.console.cli.repl.ReplCredentialSupplier;
+import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
@@ -72,15 +73,26 @@ public class CliArgument {
      * value for --transaction.
      */
     public enum TransactionEnum {
-        SHORT("short"), OCC("OCC"), //
-        LONG("long"), LTX("LTX"), //
-        READ("read"), READONLY("readonly"), RO("RO"), //
-        MANUAL("manual");
+        SHORT("short", TransactionType.SHORT), OCC("OCC", TransactionType.SHORT), //
+        LONG("long", TransactionType.LONG), LTX("LTX", TransactionType.LONG), //
+        READ("read", TransactionType.READ_ONLY), READONLY("readonly", TransactionType.READ_ONLY), RO("RO", TransactionType.READ_ONLY), RTX("RTX", TransactionType.READ_ONLY), //
+        MANUAL("manual", null);
 
         private final String value;
+        private final TransactionType type;
 
-        TransactionEnum(String value) {
+        TransactionEnum(String value, TransactionType type) {
             this.value = value;
+            this.type = type;
+        }
+
+        /**
+         * get transaction type.
+         *
+         * @return transaction type
+         */
+        public TransactionType toTransactionType() {
+            return this.type;
         }
 
         @Override
@@ -293,19 +305,68 @@ public class CliArgument {
     }
 
     /**
+     * --execute
+     */
+    public static class CliExecute {
+        boolean prior = false;
+        boolean deferrable = true;
+
+        /**
+         * get piror.
+         *
+         * @return {@code true} if prior
+         */
+        public boolean isPrior() {
+            return this.prior;
+        }
+
+        /**
+         * get excluding.
+         *
+         * @return {@code true} if excluding
+         */
+        public boolean isExcluding() {
+            return !this.prior;
+        }
+
+        /**
+         * get deferrable.
+         *
+         * @return {@code true} if deferrable
+         */
+        public boolean isDeferrable() {
+            return this.deferrable;
+        }
+
+        /**
+         * get immediate.
+         *
+         * @return {@code true} if immediate
+         */
+        public boolean isImmediate() {
+            return !this.deferrable;
+        }
+    }
+
+    /**
      * get --execute.
      *
      * @return execute
      */
-    public @Nonnull List<String> getExecute() {
+    public @Nullable CliExecute getExecute() {
         if (this.execute == null) {
-            return List.of();
+            return null;
         }
+
+        var result = new CliExecute();
         if (execute.size() >= 1) {
             String arg = execute.get(0).toUpperCase();
             switch (arg) {
             case "PRIOR":
+                result.prior = true;
+                break;
             case "EXCLUDING":
+                result.prior = false;
                 break;
             default:
                 throw new ParameterException("specify PRIOR or EXCLUDING for the first parameter of --execute");
@@ -315,13 +376,16 @@ public class CliArgument {
             String arg = execute.get(1).toUpperCase();
             switch (arg) {
             case "DEFERRABLE":
+                result.deferrable = true;
+                break;
             case "IMMEDIATE":
+                result.deferrable = false;
                 break;
             default:
                 throw new ParameterException("specify DEFERRABLE or IMMEDIATE for the second parameter of --execute");
             }
         }
-        return this.execute;
+        return result;
     }
 
     /**
