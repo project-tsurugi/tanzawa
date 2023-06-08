@@ -138,8 +138,15 @@ public abstract class ScriptReporter {
      */
     public void reportTransactionCommitted(Optional<CommitStatus> status) {
         String message = MessageFormat.format("transaction commit({0}) finished.", //
-                status.map(CommitStatus::name).orElse("DEFAULT"));
+                getCommitStatusMessage(status.orElse(null)));
         reportTransactionCommitted(message, status);
+    }
+
+    protected String getCommitStatusMessage(CommitStatus status) {
+        if (status == null || status == CommitStatus.COMMIT_STATUS_UNSPECIFIED) {
+            return "DEFAULT";
+        }
+        return status.name();
     }
 
     /**
@@ -159,7 +166,7 @@ public abstract class ScriptReporter {
      */
     public void reportTransactionCommittedImplicitly(CommitStatus status) {
         String message = MessageFormat.format("transaction commit({0}) finished implicitly.", //
-                status);
+                getCommitStatusMessage(status));
         reportTransactionCommittedImplicitly(message, status);
     }
 

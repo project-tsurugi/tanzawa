@@ -20,6 +20,7 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.tsurugidb.console.cli.repl.ReplCredentialSupplier;
+import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
@@ -139,6 +140,49 @@ public class CliArgument {
     @Parameter(names = { "--no-commit" }, arity = 0, description = "always rollback")
     private Boolean noCommit;
 
+    /**
+     * commit option.
+     */
+    public enum CommitOption {
+        /**
+         * rely on the database settings
+         */
+        DEFAULT(CommitStatus.COMMIT_STATUS_UNSPECIFIED),
+
+        /**
+         * commit operation has accepted (the transaction will never abort except system errors)
+         */
+        ACCEPTED(CommitStatus.ACCEPTED),
+
+        /**
+         * commit data has been visible for others
+         */
+        AVAILABLE(CommitStatus.AVAILABLE),
+
+        /**
+         * commit data has been saved on the local disk
+         */
+        STORED(CommitStatus.STORED),
+
+        /**
+         * commit data has been propagated to the all suitable nodes
+         */
+        PROPAGATED(CommitStatus.PROPAGATED);
+
+        private final CommitStatus commitStatus;
+
+        CommitOption(CommitStatus commitStatus) {
+            this.commitStatus = commitStatus;
+        }
+
+        public CommitStatus toCommitStatus() {
+            return this.commitStatus;
+        }
+    }
+
+    @Parameter(names = { "--commit-option" }, arity = 1, description = "commit option")
+    private CommitOption commitOption;
+
     // script
 
     @Parameter(names = { "--encoding", "-e" }, arity = 1, description = "charset encoding")
@@ -180,7 +224,7 @@ public class CliArgument {
      * @return help
      */
     public boolean isHelp() {
-        return this.help != null && this.help;
+        return (this.help != null) && this.help;
     }
 
     /**
@@ -279,7 +323,7 @@ public class CliArgument {
      * @return include ddl
      */
     public boolean isIncludeDdl() {
-        return this.includeDdl != null && this.includeDdl;
+        return (this.includeDdl != null) && this.includeDdl;
     }
 
     /**
@@ -454,6 +498,15 @@ public class CliArgument {
      */
     public boolean getNoCommit() {
         return (this.noCommit != null) && this.noCommit;
+    }
+
+    /**
+     * get --commit-option.
+     *
+     * @return commit option
+     */
+    public @Nullable CommitOption getCommitOption() {
+        return this.commitOption;
     }
 
     // script

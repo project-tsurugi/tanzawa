@@ -33,7 +33,6 @@ import com.tsurugidb.console.core.model.ExplainStatement;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.model.StartTransactionStatement;
 import com.tsurugidb.console.core.model.Statement;
-import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -180,7 +179,7 @@ public class BasicEngine extends AbstractEngine {
      * @throws InterruptedException if interrupted while executing the statement
      */
     protected void executeCommitImplicitly() throws ServerException, IOException, InterruptedException {
-        var status = SqlRequest.CommitStatus.COMMIT_STATUS_UNSPECIFIED;
+        var status = config.getCommitStatus();
         executeTiming(timingEnd -> {
             sqlProcessor.commitTransaction(status);
             timingEnd.accept(System.nanoTime());

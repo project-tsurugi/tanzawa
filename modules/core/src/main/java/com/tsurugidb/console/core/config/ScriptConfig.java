@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import com.tsurugidb.console.core.credential.CredentialDefaultSupplier;
 import com.tsurugidb.console.core.executor.report.HistoryEntry;
 import com.tsurugidb.sql.proto.SqlRequest;
+import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 
 /**
@@ -27,10 +28,10 @@ public class ScriptConfig {
     private Credential credential;
 
     private SqlRequest.TransactionOption transactionOption;
-
     private Map<String, String> propertyMap;
 
     private ScriptCommitMode commitMode;
+    private CommitStatus commitStatus;
 
     private final ScriptClientVariableMap clientVariableMap = new ScriptClientVariableMap();
 
@@ -164,6 +165,24 @@ public class ScriptConfig {
      */
     public @Nonnull ScriptCommitMode getCommitMode() {
         return this.commitMode;
+    }
+
+    /**
+     * set commit status.
+     *
+     * @param status commit status
+     */
+    public void setCommitStatus(@Nullable CommitStatus status) {
+        this.commitStatus = status;
+    }
+
+    /**
+     * get commit status.
+     *
+     * @return commit status
+     */
+    public @Nullable CommitStatus getCommitStatus() {
+        return this.commitStatus;
     }
 
     /**

@@ -63,6 +63,7 @@ public abstract class ConfigBuilder {
         fillTransactionOption();
         fillProperty();
         fillClientVariable();
+        fillCommitOption();
 
         buildSub();
 
@@ -251,6 +252,13 @@ public abstract class ConfigBuilder {
             return true; // error
         }
         return false;
+    }
+
+    protected void fillCommitOption() {
+        var commitOption = argument.getCommitOption();
+        var status = (commitOption != null) ? commitOption.toCommitStatus() : null;
+        log.debug("config.commitStatus={}", status);
+        config.setCommitStatus(status);
     }
 
     /*
