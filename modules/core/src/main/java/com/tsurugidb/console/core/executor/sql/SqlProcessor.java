@@ -1,6 +1,7 @@
 package com.tsurugidb.console.core.executor.sql;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,6 +48,16 @@ public interface SqlProcessor extends ServerResource {
      * @throws InterruptedException if interrupted while executing the statement
      */
     boolean disconnect() throws ServerException, IOException, InterruptedException;
+
+    /**
+     * Returns a list of the available table names in the database, except system tables.
+     *
+     * @return a list of the available table names
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while executing the statement
+     * @throws InterruptedException if interrupted while executing the statement
+     */
+    List<String> getTableNames() throws ServerException, IOException, InterruptedException;
 
     /**
      * Returns table metadata.

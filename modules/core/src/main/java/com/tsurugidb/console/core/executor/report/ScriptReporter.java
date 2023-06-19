@@ -272,6 +272,17 @@ public abstract class ScriptReporter {
     }
 
     /**
+     * output message for table list.
+     *
+     * @param tableList table names
+     */
+    public void reportTableList(List<String> tableList) {
+        for (var name : tableList) {
+            info(name);
+        }
+    }
+
+    /**
      * output message for table metadata.
      *
      * @param specifiedTableName table name

@@ -67,6 +67,11 @@ class BasicEngineTest {
         }
 
         @Override
+        public List<String> getTableNames() throws ServerException, IOException, InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public TableMetadata getTableMetadata(String tableName) throws ServerException, IOException, InterruptedException {
             throw new UnsupportedOperationException();
         }

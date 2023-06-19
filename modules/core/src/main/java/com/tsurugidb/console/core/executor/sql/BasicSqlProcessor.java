@@ -102,6 +102,13 @@ public class BasicSqlProcessor implements SqlProcessor {
     }
 
     @Override
+    public List<String> getTableNames() throws ServerException, IOException, InterruptedException {
+        var client = getSqlClient();
+        var tableList = client.listTables().await();
+        return tableList.getTableNames();
+    }
+
+    @Override
     public TableMetadata getTableMetadata(@Nonnull String tableName) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(tableName);
         try {

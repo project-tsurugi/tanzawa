@@ -154,12 +154,20 @@ public class ShowCommand extends SpecialCommand {
         String tableName = getOption(statement, 1);
         LOG.debug("show table. tableName={}", tableName); //$NON-NLS-1$
         if (tableName == null) {
-            return engine.execute(toSubUnknownError(statement, "tableName")); //$NON-NLS-1$
+            return executeShowTables(engine);
         }
         var sqlProcessor = engine.getSqlProcessor();
         var metadata = sqlProcessor.getTableMetadata(tableName);
         var reporter = engine.getReporter();
         reporter.reportTableMetadata(tableName, metadata);
+        return true;
+    }
+
+    private static boolean executeShowTables(BasicEngine engine) throws EngineException, ServerException, IOException, InterruptedException {
+        var sqlProcessor = engine.getSqlProcessor();
+        var tableList = sqlProcessor.getTableNames();
+        var reporter = engine.getReporter();
+        reporter.reportTableList(tableList);
         return true;
     }
 
@@ -179,18 +187,6 @@ public class ShowCommand extends SpecialCommand {
                 MessageFormat.format(//
                         "unrecognized sub option: \"{0}\"", //
                         option.getValue()));
-    }
-
-    private static ErroneousStatement toSubUnknownError(SpecialStatement statement, String name) {
-        Regioned<String> option = statement.getCommandOptions().get(0);
-        return new ErroneousStatement(//
-                statement.getText(), //
-                statement.getRegion(), //
-                ErrorKind.UNKNOWN_SPECIAL_COMMAND_OPTION, //
-                option.getRegion(), //
-                MessageFormat.format(//
-                        "unrecognized {0} option", //
-                        name));
     }
 
     private static ErroneousStatement toSubUnknownError(SpecialStatement statement, List<String> nameList) {
