@@ -27,6 +27,7 @@ dependencies {
 application {
     applicationName = 'tgsql'
     mainClass = 'com.tsurugidb.console.cli.Main'
+    applicationDefaultJvmArgs = ['-Dcom.tsurugidb.tsubakuro.jniverify=false']
 }
 
 run {
@@ -40,4 +41,8 @@ shadowJar {
     archiveBaseName = 'sql-console'
     archiveClassifier = 'all'
     mergeServiceFiles()
+}
+
+distZip {
+    archiveFileName = "tgsql.zip"
 }
