@@ -98,7 +98,7 @@ public final class ScriptRunner {
 
         var config = new ScriptConfig();
         config.setEndpoint(endpoint);
-        config.setCredential(credential);
+        config.setCredential(() -> credential);
 
         return execute(script, config);
     }

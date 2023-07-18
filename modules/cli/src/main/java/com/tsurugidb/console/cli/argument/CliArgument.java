@@ -19,7 +19,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.CommaParameterSplitter;
-import com.tsurugidb.console.cli.repl.ReplCredentialSupplier;
+import com.tsurugidb.console.cli.repl.ReplDefaultCredentialSessionConnector;
 import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
@@ -303,7 +303,7 @@ public class CliArgument {
     }
 
     protected String readPassword() {
-        return ReplCredentialSupplier.readReplPassword();
+        return ReplDefaultCredentialSessionConnector.readReplPassword();
     }
 
     // transaction

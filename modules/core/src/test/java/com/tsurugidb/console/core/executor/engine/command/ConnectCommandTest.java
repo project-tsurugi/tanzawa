@@ -15,7 +15,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.tsurugidb.console.core.config.ScriptConfig;
-import com.tsurugidb.console.core.credential.CredentialDefaultSupplier;
+import com.tsurugidb.console.core.credential.DefaultCredentialSessionConnector;
 import com.tsurugidb.console.core.model.SpecialStatement;
 import com.tsurugidb.console.core.parser.SqlParser;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
@@ -26,7 +26,7 @@ class ConnectCommandTest {
 
     private static final ScriptConfig config = new ScriptConfig();
     static {
-        config.setDefaultCredentialSupplier(new CredentialDefaultSupplier() {
+        config.setDefaultCredentialSessionConnector(new DefaultCredentialSessionConnector() {
 
             @Override
             public String readUser() {

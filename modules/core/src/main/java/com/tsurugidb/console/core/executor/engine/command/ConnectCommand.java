@@ -98,8 +98,7 @@ public class ConnectCommand extends SpecialCommand {
             break;
         case 1:
             var credentialSupplier = list.get(0);
-            config.setCredential(null);
-            config.setCredentialSupplier(credentialSupplier);
+            config.setCredential(credentialSupplier);
             break;
         default:
             throw new IllegalArgumentException("specify only one of [user, auth-token, credentials, no-auth, default]");
@@ -144,15 +143,15 @@ public class ConnectCommand extends SpecialCommand {
             }
                 if (user == null) {
                     option.credentialList.add(() -> {
-                        var defaultCredentialSupplier = config.getDefaultCredentialSupplier();
-                        String u = defaultCredentialSupplier.readUser();
-                        String p = defaultCredentialSupplier.readPassword();
+                        var defaultCredentialSessionConnector = config.getDefaultCredentialSessionConnector();
+                        String u = defaultCredentialSessionConnector.readUser();
+                        String p = defaultCredentialSessionConnector.readPassword();
                         return new UsernamePasswordCredential(u, p);
                     });
                 } else if (password == null) {
                     option.credentialList.add(() -> {
-                        var defaultCredentialSupplier = config.getDefaultCredentialSupplier();
-                        String p = defaultCredentialSupplier.readPassword();
+                        var defaultCredentialSessionConnector = config.getDefaultCredentialSessionConnector();
+                        String p = defaultCredentialSessionConnector.readPassword();
                         return new UsernamePasswordCredential(user, p);
                     });
                 } else {
@@ -189,10 +188,7 @@ public class ConnectCommand extends SpecialCommand {
                 option.credentialList.add(() -> NullCredential.INSTANCE);
                 break;
             case "default":
-                option.credentialList.add(() -> {
-                    var defaultCredentialSupplier = config.getDefaultCredentialSupplier();
-                    return defaultCredentialSupplier.getDefaultCredential();
-                });
+                option.credentialList.add(null);
                 break;
             default:
                 if (option.endpoint == null) {

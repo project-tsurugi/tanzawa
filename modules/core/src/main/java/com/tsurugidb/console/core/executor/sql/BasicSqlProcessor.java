@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.sql.proto.SqlRequest;
+import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.common.SessionBuilder;
 import com.tsurugidb.tsubakuro.exception.ServerException;
@@ -67,19 +68,25 @@ public class BasicSqlProcessor implements SqlProcessor {
             if (endpoint == null) {
                 throw new IllegalStateException("specify connection-url");
             }
-            var credential = config.getCredential();
-            if (credential == null) {
-                var supplier = config.getCredentialSupplier();
-                credential = supplier.get();
-                config.setCredential(credential);
-            }
+
+            Credential credential;
             try {
-                this.session = SessionBuilder.connect(endpoint).withCredential(credential).create();
+                var supplier = config.getCredential();
+                if (supplier != null) {
+                    credential = supplier.get();
+                    this.session = SessionBuilder.connect(endpoint).withCredential(credential).create();
+                } else {
+                    var sessionConnector = config.getDefaultCredentialSessionConnector();
+                    var connection = sessionConnector.connect(endpoint);
+                    credential = connection.credential();
+                    this.session = connection.session();
+                }
             } catch (Exception e) {
                 LOG.warn("establishing connection: {}", endpoint);
                 throw e;
             }
             this.sessionEndpoint = endpoint;
+            config.setCredential(() -> credential);
         }
         return this.session;
     }

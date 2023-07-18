@@ -3,9 +3,9 @@ package com.tsurugidb.console.cli.repl;
 import javax.annotation.Nonnull;
 
 import com.tsurugidb.console.cli.repl.jline.ReplJLineReader;
-import com.tsurugidb.console.core.credential.CredentialDefaultSupplier;
+import com.tsurugidb.console.core.credential.DefaultCredentialSessionConnector;
 
-public class ReplCredentialSupplier extends CredentialDefaultSupplier {
+public class ReplDefaultCredentialSessionConnector extends DefaultCredentialSessionConnector {
 
     @Override
     public String readUser() {

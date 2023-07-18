@@ -21,11 +21,11 @@ import org.slf4j.LoggerFactory;
 import com.beust.jcommander.ParameterException;
 import com.tsurugidb.console.cli.argument.CliArgument;
 import com.tsurugidb.console.cli.argument.CliArgument.TransactionEnum;
-import com.tsurugidb.console.cli.repl.ReplCredentialSupplier;
+import com.tsurugidb.console.cli.repl.ReplDefaultCredentialSessionConnector;
 import com.tsurugidb.console.core.config.ScriptClientVariableMap;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 import com.tsurugidb.console.core.config.ScriptConfig;
-import com.tsurugidb.console.core.credential.CredentialDefaultSupplier;
+import com.tsurugidb.console.core.credential.DefaultCredentialSessionConnector;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlRequest.ReadArea;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionPriority;
@@ -266,28 +266,28 @@ public abstract class ConfigBuilder {
      */
 
     private void fillCredential() {
-        var defaultCredentialSupplier = createDefaultCredentialSupplier();
-        config.setDefaultCredentialSupplier(defaultCredentialSupplier);
-        log.debug("config.defaultCredentialSupplier={}", defaultCredentialSupplier);
+        var credential = getCredential();
+        log.debug("config.credential={}", credential);
+        config.setCredential(credential);
 
-        var credential = getCredential(defaultCredentialSupplier);
-        log.debug("config.credentialSupplier={}", credential);
-        config.setCredentialSupplier(credential);
+        var defaultCredentialSessionConnector = createDefaultCredentialSessionConnector();
+        config.setDefaultCredentialSessionConnector(defaultCredentialSessionConnector);
+        log.debug("config.defaultCredentialSessionConnector={}", defaultCredentialSessionConnector);
     }
 
-    protected CredentialDefaultSupplier createDefaultCredentialSupplier() {
-        return new ReplCredentialSupplier();
-    }
-
-    private Supplier<Credential> getCredential(CredentialDefaultSupplier defaultCredentialSupplier) {
+    private Supplier<Credential> getCredential() {
         var credentialList = argument.getCredentialList();
         switch (credentialList.size()) {
         case 0:
-            return defaultCredentialSupplier::getDefaultCredential;
+            return null;
         case 1:
             return credentialList.get(0);
         default:
             throw new ParameterException("specify only one of [--user, --auth-token, --credentials, --no-auth]");
         }
+    }
+
+    protected DefaultCredentialSessionConnector createDefaultCredentialSessionConnector() {
+        return new ReplDefaultCredentialSessionConnector();
     }
 }

@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.tsurugidb.console.core.credential.CredentialDefaultSupplier;
+import com.tsurugidb.console.core.credential.DefaultCredentialSessionConnector;
 import com.tsurugidb.console.core.executor.report.HistoryEntry;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
@@ -23,9 +23,8 @@ public class ScriptConfig {
 
     private String endpoint;
 
-    private CredentialDefaultSupplier defaultCredentialSupplier;
-    private Supplier<Credential> credentialSupplier;
-    private Credential credential;
+    private Supplier<Credential> credential;
+    private DefaultCredentialSessionConnector defaultCredentialSessionConnector;
 
     private SqlRequest.TransactionOption transactionOption;
     private Map<String, String> propertyMap;
@@ -56,49 +55,11 @@ public class ScriptConfig {
     }
 
     /**
-     * set default credential supplier.
-     *
-     * @param supplier default credential supplier
-     */
-    public void setDefaultCredentialSupplier(@Nonnull CredentialDefaultSupplier supplier) {
-        Objects.requireNonNull(supplier);
-        this.defaultCredentialSupplier = supplier;
-    }
-
-    /**
-     * get default credential supplier.
-     *
-     * @return default credential supplier
-     */
-    public @Nonnull CredentialDefaultSupplier getDefaultCredentialSupplier() {
-        return this.defaultCredentialSupplier;
-    }
-
-    /**
-     * set credential supplier.
-     *
-     * @param supplier credential supplier
-     */
-    public void setCredentialSupplier(@Nonnull Supplier<Credential> supplier) {
-        Objects.requireNonNull(supplier);
-        this.credentialSupplier = supplier;
-    }
-
-    /**
-     * get credential supplier.
-     *
-     * @return credential supplier
-     */
-    public @Nonnull Supplier<Credential> getCredentialSupplier() {
-        return this.credentialSupplier;
-    }
-
-    /**
      * set credential.
      *
      * @param credential credential
      */
-    public void setCredential(@Nullable Credential credential) {
+    public void setCredential(@Nullable Supplier<Credential> credential) {
         this.credential = credential;
     }
 
@@ -107,8 +68,27 @@ public class ScriptConfig {
      *
      * @return credential
      */
-    public @Nullable Credential getCredential() {
+    public @Nullable Supplier<Credential> getCredential() {
         return this.credential;
+    }
+
+    /**
+     * set default credential session connector.
+     *
+     * @param sessionConnector default credential session connector
+     */
+    public void setDefaultCredentialSessionConnector(@Nonnull DefaultCredentialSessionConnector sessionConnector) {
+        Objects.requireNonNull(sessionConnector);
+        this.defaultCredentialSessionConnector = sessionConnector;
+    }
+
+    /**
+     * get default credential session connector.
+     *
+     * @return default credential session connector
+     */
+    public @Nonnull DefaultCredentialSessionConnector getDefaultCredentialSessionConnector() {
+        return this.defaultCredentialSessionConnector;
     }
 
     /**
