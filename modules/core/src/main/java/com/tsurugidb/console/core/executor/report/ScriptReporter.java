@@ -14,7 +14,11 @@ import javax.annotation.Nullable;
 
 import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
+import com.tsurugidb.sql.proto.SqlRequest.ReadArea;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
+import com.tsurugidb.sql.proto.SqlRequest.TransactionPriority;
+import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
+import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.explain.PlanGraph;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
@@ -95,8 +99,8 @@ public abstract class ScriptReporter {
      * @param option transaction option
      */
     public void reportStartTransactionImplicitly(TransactionOption option) {
-        String message = MessageFormat.format("start transaction implicitly. option=[{0}]", //
-                option);
+        String message = MessageFormat.format("start transaction implicitly. option={0}", //
+                toString(option));
         reportStartTransactionImplicitly(message, option);
     }
 
@@ -116,9 +120,102 @@ public abstract class ScriptReporter {
      * @param option transaction option
      */
     public void reportTransactionStarted(TransactionOption option) {
-        String message = MessageFormat.format("transaction started. option=[{0}]", //
-                option);
+        String message = MessageFormat.format("transaction started. option={0}", //
+                toString(option));
         reportTransactionStarted(message, option);
+    }
+
+    protected String toString(TransactionOption option) {
+        var sb = new StringBuilder(64);
+
+        {
+            sb.append("[\n  type: ");
+            sb.append(toString(option.getType()));
+        }
+        {
+            var label = option.getLabel();
+            if (label != null && !label.isEmpty()) {
+                sb.append("\n  label: \"");
+                sb.append(label);
+                sb.append("\"");
+            }
+        }
+        {
+            var list = option.getWritePreservesList();
+            if (!list.isEmpty()) {
+                sb.append("\n  write_preserve: ");
+                sb.append(toStringWp(list));
+            }
+        }
+        {
+            var includeDdl = option.getModifiesDefinitions();
+            if (includeDdl) {
+                sb.append("\n  include_ddl: ");
+                sb.append(includeDdl);
+            }
+        }
+        {
+            var list = option.getInclusiveReadAreasList();
+            if (!list.isEmpty()) {
+                sb.append("\n  read_area_include: ");
+                sb.append(toStringRa(list));
+            }
+        }
+        {
+            var list = option.getExclusiveReadAreasList();
+            if (!list.isEmpty()) {
+                sb.append("\n  read_area_exclude: ");
+                sb.append(toStringRa(list));
+            }
+        }
+        {
+            var priority = option.getPriority();
+            if (priority != null && priority != TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED) {
+                sb.append("\n  priority: ");
+                sb.append(toString(priority));
+            }
+        }
+
+        sb.append("\n]");
+        return sb.toString();
+    }
+
+    protected String toString(TransactionType type) {
+        switch (type) {
+        case SHORT:
+            return "OCC";
+        case LONG:
+            return "LTX";
+        case READ_ONLY:
+            return "RTX";
+        case TRANSACTION_TYPE_UNSPECIFIED:
+            return "DEFAULT";
+        default:
+            return type.toString();
+        }
+    }
+
+    protected String toStringWp(List<WritePreserve> list) {
+        return list.stream().map(s -> "\"" + s.getTableName() + "\"").collect(Collectors.joining(", "));
+    }
+
+    protected String toStringRa(List<ReadArea> list) {
+        return list.stream().map(s -> "\"" + s.getTableName() + "\"").collect(Collectors.joining(", "));
+    }
+
+    protected String toString(TransactionPriority priority) {
+        switch (priority) {
+        case WAIT:
+            return "prior deferrable";
+        case INTERRUPT:
+            return "prior immediate";
+        case WAIT_EXCLUDE:
+            return "excluding deferrable";
+        case INTERRUPT_EXCLUDE:
+            return "excluding immediate";
+        default:
+            return priority.toString();
+        }
     }
 
     /**
