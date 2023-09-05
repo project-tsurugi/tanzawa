@@ -19,10 +19,10 @@ import com.tsurugidb.tsubakuro.common.SessionBuilder;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
-import com.tsurugidb.tsubakuro.sql.SqlServiceCode;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.Transaction;
+import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
 
 /**
  * A basic implementation of {@link SqlProcessor}.
@@ -122,8 +122,7 @@ public class BasicSqlProcessor implements SqlProcessor {
             var client = getSqlClient();
             return client.getTableMetadata(tableName).await();
         } catch (ServerException e) {
-            var code = e.getDiagnosticCode();
-            if (code == SqlServiceCode.ERR_NOT_FOUND) {
+            if (e instanceof TargetNotFoundException) {
                 return null;
             }
             throw e;
