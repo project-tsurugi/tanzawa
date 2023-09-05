@@ -121,11 +121,8 @@ public class BasicSqlProcessor implements SqlProcessor {
         try {
             var client = getSqlClient();
             return client.getTableMetadata(tableName).await();
-        } catch (ServerException e) {
-            if (e instanceof TargetNotFoundException) {
-                return null;
-            }
-            throw e;
+        } catch (TargetNotFoundException e) {
+            return null;
         }
     }
 
