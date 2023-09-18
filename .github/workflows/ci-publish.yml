@@ -1,12 +1,13 @@
 name: Tanzawa-CI-Publish
 
-on:
-  workflow_dispatch:
-  workflow_call:
+on: [workflow_dispatch, workflow_call]
 
 jobs:
   Publish:
     runs-on: [self-hosted, docker]
+    permissions:
+      contents: write
+      packages: write
     timeout-minutes: 30
     container:
       image: ghcr.io/project-tsurugi/oltp-sandbox:ubuntu-22.04
@@ -24,66 +25,30 @@ jobs:
       GPR_KEY: ${{ secrets.GHCR_PAT }}
 
     steps:
-      - id: Setup_Java
-        name: Setup_Java
+      - name: Setup_Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '11'
 
-      - id: Checkout
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v3
         with:
-          submodules: recursive
           token: ${{ secrets.GHA_PAT }}
 
-      - id: Checkout_Actions
-        name: Checkout_Actions
-        uses: actions/checkout@v3
-        with:
-          repository: project-tsurugi/tsurugi-github-actions
-          path: .github/actions
-          ref: master
-          submodules: recursive
-          token: ${{ secrets.GHA_PAT }}
-
-      - id: Publish
-        name: Publish
+      - name: Publish
         run: |
           ./gradlew -i tanzawa-core:showTsubakuroManifest clean publish
 
-      - id: Delete_Old_Snapshot_Release
-        name: Delete_Old_Snapshot_Release
-        uses: dev-drprasad/delete-tag-and-release@v0.2.1
-        if: contains(github.ref, '/heads/master')
-        with:
-          delete_release: true
-          tag_name: SNAPSHOT
+      - id: Create_Release
+        name: Create_Release
+        run: |
+          if [[ "${TANZAWA_VERSION}" == "SNAPSHOT" ]]; then
+            _DELETE_OPTION=--cleanup-tag
+          fi
+          set -x
+          gh release delete ${TANZAWA_VERSION} -y ${_DELETE_OPTION} --repo project-tsurugi/tanzawa || true
+          gh release create ${TANZAWA_VERSION} modules/cli/build/distributions/tgsql-*.zip --title ${TANZAWA_VERSION} --prerelease --latest --repo project-tsurugi/tanzawa
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - id: Create_Snapshot_Release
-        name: Create_Snapshot_Release
-        uses: softprops/action-gh-release@v1
-        if: contains(github.ref, '/heads/master')
-        with:
-          prerelease: true
-          draft: false
-          name: snapshot_release
-          tag_name: SNAPSHOT
-          files: |
-            modules/cli/build/distributions/tgsql-*.zip
-
-      - id: Notify_Slack
-        name: Notify_Slack
-        uses: ./.github/actions/tsurugi-slack-action
-        if: always() && (contains(github.ref, '/tags/') || contains(github.ref, '/heads/master'))
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        with:
-          kind: 'job-result'
-          channel: 'tsurugi-build'
-          status: ${{ job.status }}
-          step_context: ${{ toJson(steps) }}
-          username: ${{ github.workflow }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TSURUGI_VERSION: ${{ (github.ref_type == 'tag' && github.ref_name) || 'SNAPSHOT' }}
