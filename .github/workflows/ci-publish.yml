@@ -51,4 +51,4 @@ jobs:
           gh release create ${TANZAWA_VERSION} modules/cli/build/distributions/tgsql-*.zip --title ${TANZAWA_VERSION} --prerelease --latest --repo project-tsurugi/tanzawa
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TSURUGI_VERSION: ${{ (github.ref_type == 'tag' && github.ref_name) || 'SNAPSHOT' }}
+          TANZAWA_VERSION: ${{ (github.ref_type == 'tag' && github.ref_name) || 'SNAPSHOT' }}
