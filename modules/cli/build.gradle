@@ -1,5 +1,5 @@
 plugins {
-    id 'tanzawa.libs-conventions'
+    id 'tanzawa.java-conventions'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
