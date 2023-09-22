@@ -7,10 +7,6 @@ plugins {
 dependencies {
     // dependent projects
     implementation project(':tanzawa-core')
-    implementation "com.tsurugidb.tsubakuro:tsubakuro-session:${tsubakuroVersion}"
-    implementation "com.tsurugidb.tsubakuro:tsubakuro-common:${tsubakuroVersion}"
-    implementation "com.tsurugidb.tsubakuro:tsubakuro-ipc:${tsubakuroVersion}"
-    implementation "com.tsurugidb.tsubakuro:tsubakuro-stream:${tsubakuroVersion}"
 
     implementation 'com.beust:jcommander:1.82'
 
@@ -27,7 +23,6 @@ dependencies {
 application {
     applicationName = 'tgsql'
     mainClass = 'com.tsurugidb.console.cli.Main'
-    applicationDefaultJvmArgs = ['-Dcom.tsurugidb.tsubakuro.jniverify=false']
 }
 
 run {
