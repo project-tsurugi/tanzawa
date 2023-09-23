@@ -7,6 +7,8 @@ plugins {
 dependencies {
     // dependent projects
     implementation project(':tanzawa-core')
+    runtimeOnly "com.tsurugidb.tsubakuro:tsubakuro-ipc:${tsubakuroVersion}"
+    runtimeOnly "com.tsurugidb.tsubakuro:tsubakuro-stream:${tsubakuroVersion}"
 
     implementation 'com.beust:jcommander:1.82'
 
