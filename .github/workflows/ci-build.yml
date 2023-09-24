@@ -4,29 +4,15 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   Build:
-    runs-on: [self-hosted, docker]
+    runs-on: ubuntu-latest
     permissions:
       checks: write
     timeout-minutes: 30
-    container:
-      image: ghcr.io/project-tsurugi/oltp-sandbox:ubuntu-22.04
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GHCR_PAT }}
-      volumes:
-        - ${{ vars.gradle_cache_dir }}:/root/.gradle
     defaults:
       run:
         shell: bash
     env:
       JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
-
-    services:
-      tsurugi:
-        image: ghcr.io/project-tsurugi/tsurugi:latest
-        credentials:
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_PAT }}
 
     steps:
       - name: Setup_Java
