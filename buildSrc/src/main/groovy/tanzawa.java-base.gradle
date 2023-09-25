@@ -13,6 +13,8 @@ java {
 
 ext {
     tsubakuroVersion = '1.0.0-SNAPSHOT'
+    isReleaseVersion = !version.endsWith("SNAPSHOT")
+
     buildTimestamp = new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     buildRevision = System.getenv("GITHUB_SHA") ?: ""
     createdBy = "Gradle ${gradle.gradleVersion}"
