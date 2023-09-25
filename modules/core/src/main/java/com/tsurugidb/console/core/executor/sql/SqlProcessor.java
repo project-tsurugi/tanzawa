@@ -11,6 +11,7 @@ import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
+import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.util.ServerResource;
@@ -91,6 +92,13 @@ public interface SqlProcessor extends ServerResource {
      * @return the id String for this transaction
      */
     String getTransactionId();
+
+    /**
+     * Returns occurred error in the target transaction, only if the transaction has been accidentally aborted.
+     *
+     * @return the error information
+     */
+    SqlServiceException getTransactionException() throws ServerException, IOException, InterruptedException;
 
     /**
      * Executes a SQL statement.

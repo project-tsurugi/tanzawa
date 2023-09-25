@@ -19,6 +19,7 @@ import com.tsurugidb.tsubakuro.common.SessionBuilder;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
+import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.Transaction;
@@ -211,6 +212,14 @@ public class BasicSqlProcessor implements SqlProcessor {
             return null;
         }
         return transaction.getTransactionId();
+    }
+
+    @Override
+    public SqlServiceException getTransactionException() throws ServerException, IOException, InterruptedException {
+        if (!isTransactionActive()) {
+            return null;
+        }
+        return transaction.getSqlServiceException().await();
     }
 
     /**

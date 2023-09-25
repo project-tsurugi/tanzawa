@@ -21,6 +21,7 @@ import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.explain.PlanGraph;
+import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 
 /**
@@ -366,6 +367,35 @@ public abstract class ScriptReporter {
      */
     protected void reportTransactionStatus(String message, boolean active) {
         info(message);
+    }
+
+    /**
+     * output message for transaction exception.
+     *
+     * @param exception transaction exception
+     */
+    public void reportTransactionException(SqlServiceException exception) {
+        String message;
+        if (exception == null) {
+            message = "tranasction status: normal";
+        } else {
+            message = "transaction status: cannot continue (" + exception.getMessage() + ")";
+        }
+        reportTransactionException(message, exception);
+    }
+
+    /**
+     * output message for transaction exception.
+     *
+     * @param message   message
+     * @param exception transaction exception
+     */
+    protected void reportTransactionException(String message, SqlServiceException exception) {
+        if (exception == null) {
+            info(message);
+        } else {
+            warn(message);
+        }
     }
 
     /**

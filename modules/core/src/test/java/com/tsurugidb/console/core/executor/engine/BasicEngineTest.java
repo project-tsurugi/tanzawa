@@ -33,6 +33,7 @@ import com.tsurugidb.tsubakuro.explain.PlanGraph;
 import com.tsurugidb.tsubakuro.explain.PlanNode;
 import com.tsurugidb.tsubakuro.explain.json.JsonPlanGraphLoader;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
+import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.Types;
@@ -89,6 +90,11 @@ class BasicEngineTest {
         @Override
         public String getTransactionId() {
             return transactionId;
+        }
+
+        @Override
+        public SqlServiceException getTransactionException() throws ServerException, IOException, InterruptedException {
+            return null;
         }
 
         @Override

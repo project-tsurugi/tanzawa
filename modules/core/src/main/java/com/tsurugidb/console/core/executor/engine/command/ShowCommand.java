@@ -142,11 +142,19 @@ public class ShowCommand extends SpecialCommand {
 
     private static boolean executeShowTransaction(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         LOG.debug("show transaction status"); //$NON-NLS-1$
+        return executeShowTransaction(engine);
+    }
+
+    static boolean executeShowTransaction(BasicEngine engine) throws EngineException, ServerException, IOException, InterruptedException {
         var sqlProcessor = engine.getSqlProcessor();
         boolean active = sqlProcessor.isTransactionActive();
         String transactionId = sqlProcessor.getTransactionId();
         var reporter = engine.getReporter();
         reporter.reportTransactionStatus(active, transactionId);
+        if (active) {
+            var exception = sqlProcessor.getTransactionException();
+            reporter.reportTransactionException(exception);
+        }
         return true;
     }
 

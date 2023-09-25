@@ -30,11 +30,6 @@ public class StatusCommand extends SpecialCommand {
             return executeUnknownOption(engine, statement);
         }
         LOG.debug("show status"); //$NON-NLS-1$
-        var sqlProcessor = engine.getSqlProcessor();
-        boolean active = sqlProcessor.isTransactionActive();
-        String transactionId = sqlProcessor.getTransactionId();
-        var reporter = engine.getReporter();
-        reporter.reportTransactionStatus(active, transactionId);
-        return true;
+        return ShowCommand.executeShowTransaction(engine);
     }
 }

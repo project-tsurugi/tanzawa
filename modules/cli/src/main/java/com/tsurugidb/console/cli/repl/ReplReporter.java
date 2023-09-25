@@ -14,6 +14,7 @@ import com.tsurugidb.console.core.config.ScriptColor;
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.config.ScriptCvKey.ScriptCvKeyColor;
 import com.tsurugidb.console.core.executor.report.ScriptReporter;
+import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 
 /**
  * Tsurugi SQL console repl Reporter.
@@ -84,6 +85,12 @@ public class ReplReporter extends ScriptReporter {
     @Override
     protected void reportTransactionStatus(String message, boolean active) {
         int color = active ? green() : red();
+        println(message, color);
+    }
+
+    @Override
+    protected void reportTransactionException(String message, SqlServiceException exception) {
+        int color = (exception == null) ? green() : red();
         println(message, color);
     }
 
