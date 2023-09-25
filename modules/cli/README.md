@@ -99,3 +99,13 @@ java Main --script <common options> [[--encoding|-e] <charset-encoding>] [--auto
 * `--commit` - すべての文の実行に成功したらコミットし、いずれかが失敗したらロールバックする (default)
 * `--no-commit` - 実行の成否にかかわらず、常にロールバックする
 
+
+
+## How to build
+
+```bash
+cd /path/to/tanzawa/modules/cli/
+../../gradlew shadowJar
+ls build/libs/sql-console-*-all.jar
+```
+
