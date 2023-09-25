@@ -313,6 +313,13 @@ public abstract class ScriptReporter {
     }
 
     /**
+     * output message for transaction close implicitly.
+     */
+    public void reportTransactionCloseImplicitly() {
+        implicit("transaction closed.");
+    }
+
+    /**
      * output message for session status.
      *
      * @param endpoint endpoint

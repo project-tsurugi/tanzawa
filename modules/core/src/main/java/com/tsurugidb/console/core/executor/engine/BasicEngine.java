@@ -163,11 +163,16 @@ public class BasicEngine extends AbstractEngine {
 
         checkTransactionActive(statement, false);
         var status = ExecutorUtil.toCommitStatus(statement);
-        executeTiming(timingEnd -> {
-            sqlProcessor.commitTransaction(status.orElse(null));
-            timingEnd.accept(System.nanoTime());
-            reporter.reportTransactionCommitted(status);
-        });
+        try {
+            executeTiming(timingEnd -> {
+                sqlProcessor.commitTransaction(status.orElse(null));
+                timingEnd.accept(System.nanoTime());
+                reporter.reportTransactionCommitted(status);
+            });
+        } catch (Throwable e) {
+            reporter.reportTransactionCloseImplicitly();
+            throw e;
+        }
         return true;
     }
 
@@ -180,11 +185,16 @@ public class BasicEngine extends AbstractEngine {
      */
     protected void executeCommitImplicitly() throws ServerException, IOException, InterruptedException {
         var status = config.getCommitStatus();
-        executeTiming(timingEnd -> {
-            sqlProcessor.commitTransaction(status);
-            timingEnd.accept(System.nanoTime());
-            reporter.reportTransactionCommittedImplicitly(status);
-        });
+        try {
+            executeTiming(timingEnd -> {
+                sqlProcessor.commitTransaction(status);
+                timingEnd.accept(System.nanoTime());
+                reporter.reportTransactionCommittedImplicitly(status);
+            });
+        } catch (Throwable e) {
+            reporter.reportTransactionCloseImplicitly();
+            throw e;
+        }
     }
 
     @Override
@@ -193,11 +203,16 @@ public class BasicEngine extends AbstractEngine {
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
         checkTransactionActive(statement, false);
-        executeTiming(timingEnd -> {
-            sqlProcessor.rollbackTransaction();
-            timingEnd.accept(System.nanoTime());
-            reporter.reportTransactionRollbacked();
-        });
+        try {
+            executeTiming(timingEnd -> {
+                sqlProcessor.rollbackTransaction();
+                timingEnd.accept(System.nanoTime());
+                reporter.reportTransactionRollbacked();
+            });
+        } catch (Throwable e) {
+            reporter.reportTransactionCloseImplicitly();
+            throw e;
+        }
         return true;
     }
 
@@ -209,11 +224,16 @@ public class BasicEngine extends AbstractEngine {
      * @throws InterruptedException if interrupted while executing the statement
      */
     protected void executeRollbackImplicitly() throws ServerException, IOException, InterruptedException {
-        executeTiming(timingEnd -> {
-            sqlProcessor.rollbackTransaction();
-            timingEnd.accept(System.nanoTime());
-            reporter.reportTransactionRollbackedImplicitly();
-        });
+        try {
+            executeTiming(timingEnd -> {
+                sqlProcessor.rollbackTransaction();
+                timingEnd.accept(System.nanoTime());
+                reporter.reportTransactionRollbackedImplicitly();
+            });
+        } catch (Throwable e) {
+            reporter.reportTransactionCloseImplicitly();
+            throw e;
+        }
     }
 
     @Override
