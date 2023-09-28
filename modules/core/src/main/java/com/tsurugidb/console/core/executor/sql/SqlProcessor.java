@@ -97,6 +97,9 @@ public interface SqlProcessor extends ServerResource {
      * Returns occurred error in the target transaction, only if the transaction has been accidentally aborted.
      *
      * @return the error information
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while retrieving transaction error
+     * @throws InterruptedException if interrupted while retrieving transaction error
      */
     SqlServiceException getTransactionException() throws ServerException, IOException, InterruptedException;
 

@@ -147,7 +147,8 @@ public abstract class SpecialCommand {
     /**
      * Creates a new instance.
      *
-     * @param names command names
+     * @param candidateEnd whether to end completion
+     * @param names        command names
      */
     protected SpecialCommand(boolean candidateEnd, String... names) {
         assert names.length >= 1;

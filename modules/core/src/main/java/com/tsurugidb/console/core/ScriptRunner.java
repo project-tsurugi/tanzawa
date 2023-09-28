@@ -216,7 +216,8 @@ public final class ScriptRunner {
      *
      * @param script          console reader
      * @param config          script configuration
-     * @param resultProcessor result processer
+     * @param engineWrapper   the statement executor
+     * @param resultProcessor result processor
      * @param reporter        reporter
      * @throws ServerException      if server side error was occurred
      * @throws IOException          if I/O error was occurred while establishing connection
