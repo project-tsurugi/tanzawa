@@ -47,10 +47,10 @@ public class ReplThreadExecutor implements Closeable {
         /**
          * do action.
          *
-         * @throws EngineException
-         * @throws ServerException
-         * @throws IOException
-         * @throws InterruptedException
+         * @throws EngineException      if error occurred in engine
+         * @throws ServerException      if server side error was occurred
+         * @throws IOException          if I/O error was occurred
+         * @throws InterruptedException if interrupted
          */
         void run() throws EngineException, ServerException, IOException, InterruptedException;
     }
@@ -59,10 +59,10 @@ public class ReplThreadExecutor implements Closeable {
      * invoke action.
      *
      * @param task action
-     * @throws EngineException
-     * @throws ServerException
-     * @throws IOException
-     * @throws InterruptedException
+     * @throws EngineException      if error occurred in engine
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred
+     * @throws InterruptedException if interrupted
      */
     public void invoke(EngineAction task) throws EngineException, ServerException, IOException, InterruptedException {
         invoke(() -> {
@@ -88,10 +88,10 @@ public class ReplThreadExecutor implements Closeable {
      * @param <R>  return type
      * @param task task
      * @return return value from task
-     * @throws EngineException
-     * @throws ServerException
-     * @throws IOException
-     * @throws InterruptedException
+     * @throws EngineException      if error occurred in engine
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred
+     * @throws InterruptedException if interrupted
      */
     public <R> R invoke(EngineTask<R> task) throws EngineException, ServerException, IOException, InterruptedException {
         long timingStart = System.nanoTime();

@@ -30,7 +30,7 @@ public final class ExplainConvertRunner {
      * Convert explain.
      *
      * @param argument explain argument
-     * @throws Exception
+     * @throws Exception if exception was occurred
      */
     public static void execute(CliArgument argument) throws Exception {
         var builder = new ExplainConfigBuilder(argument);
@@ -49,7 +49,7 @@ public final class ExplainConvertRunner {
     /**
      * Convert explain.
      *
-     * @throws Exception
+     * @throws Exception if exception was occurred
      */
     public void execute() throws Exception {
         var contents = readContents();

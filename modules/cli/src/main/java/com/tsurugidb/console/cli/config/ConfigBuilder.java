@@ -35,8 +35,6 @@ import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 
 /**
  * Configuration builder.
- *
- * @param <A> argument
  */
 public abstract class ConfigBuilder {
     protected final Logger log = LoggerFactory.getLogger(getClass());

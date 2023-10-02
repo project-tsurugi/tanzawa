@@ -22,7 +22,7 @@ public final class ReplJLineTerminal {
 
     /**
      * get terminal.
-     * 
+     *
      * @return terminal
      */
     public static Terminal getTerminal() {
@@ -60,8 +60,8 @@ public final class ReplJLineTerminal {
 
     /**
      * close terminal.
-     * 
-     * @throws IOException
+     *
+     * @throws IOException if an I/O error occurs
      */
     public static void close() throws IOException {
         if (staticTerminal != null) {
