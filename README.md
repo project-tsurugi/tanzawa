@@ -8,11 +8,6 @@ Tsurugi SQL console (Tanzawa) is a text based SQL client program.
 
 ## How to build
 
-First, set up the following credentials for the GitHub Packages, and build normally.
-
-* Gradle property `gpr.user` or environment variable `GPR_USER` with your GitHub username
-* Gradle Property `gpr.key` or environment variable `GPR_KEY` with your personal access token
-
 ```sh
 ./gradlew assemble
 ```

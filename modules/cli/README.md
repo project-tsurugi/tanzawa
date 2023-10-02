@@ -5,7 +5,6 @@ This module provides a Java program entry for Tsurugi SQL console.
 * [Main] - Executes SQL script files.
 
 [Main]:src/main/java/com/tsurugidb/console/cli/Main.java
-[client-variable]:client-variable.md
 
 ## Execute
 
@@ -36,36 +35,36 @@ java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-
 
 ### common
 
-* `--help, -h` - ヘルプを表示する
-* `--connection,-c` - 接続先URL (`tcp://...`, `ipc://...`, など、 [SessionBuilder.connect](https://github.com/project-tsurugi/tsubakuro/blob/98fa342082af04cf927b875b9d898dd7961f575e/modules/session/src/main/java/com/nautilus_technologies/tsubakuro/low/common/SessionBuilder.java#L35-L45) の end-point URI に準拠)
-* `--property,-P` - SQL設定 (`SET <key> TO <value>` 相当, 複数指定可)
-* client variable. see [client-variable]
-  * `-D` - client variable (`\set <key> <value>` 相当, 複数指定可)
+* `--help, -h` - show help
+* `--connection,-c` - connection url (`tcp://...`, `ipc://...`, etc. compliant with end-point URI of [SessionBuilder.connect](https://github.com/project-tsurugi/tsubakuro/blob/98fa342082af04cf927b875b9d898dd7961f575e/modules/session/src/main/java/com/nautilus_technologies/tsubakuro/low/common/SessionBuilder.java#L35-L45) )
+* `--property,-P` - SQL properties (corresponds to `SET <key> TO <value>` , multiple specifications allowed)
+* client variable
+  * `-D` - client variable (corresponds to `\set <key> <value>`, multiple specifications allowed)
   * `--client-variable` - property file for client variable
 * transaction
-  * `--transaction,-t` - トランザクション種別
+  * `--transaction,-t` - トtransaction type
     * `short, OCC` - OCC (default)
-    * `long, LTX` - LTX (書き込みには `--write-preserve` の指定が必要)
-    * `read, readonly, RO` - 読み込み専用
-    * `manual` - トランザクションを自動で開始せず、 `BEGIN TRANSACTION` 文を指定する
-  * `--write-preserve,-w` - 書き込み予約のテーブル (複数指定可)
-  * `--read-area-include` - read area include テーブル (複数指定可)
-  * `--read-area-exclude` - read area exclude テーブル (複数指定可)
+    * `long, LTX` - LTX ( `--write-preserve` is required for writing)
+    * `read, readonly, RO` - read only
+    * `manual` - do not start transactions automatically. execute `BEGIN TRANSACTION` explicitly.
+  * `--write-preserve,-w` - table to write preserve (multiple specifications allowed)
+  * `--read-area-include` - table to inclusive read area (multiple specifications allowed)
+  * `--read-area-exclude` - table to exclusive read area (multiple specifications allowed)
   * `--execute` - (`PRIOR`|`EXCLUDING`) (`DEFERRABLE`|`IMMEDIATE`)?
-  * `--label` - ラベル
-  * `--with` - トランザクションの設定 (複数指定可)
+  * `--label` - label
+  * `--with` - transaction settings (multiple specifications allowed)
 * credential
 
-  * `--user` - ユーザー名
-    * 対応するパスワードは起動後にパスワードプロンプトを経由して入力する
-  * `--auth-token` - 認証トークン
-  * `--credentials` - 認証情報ファイルのパス
-  * `--no-auth` - 認証機構を利用しない
-  * `--user`, `--auth-token`, `--credentials`, `--no-auth` のいずれも指定されない場合、次の順序で解決する
-    1. 環境変数 `TSURUGI_AUTH_TOKEN` が空でなければ、認証トークンとしてその文字列を利用する
-    2. 既定の認証情報ファイルがあればそれを利用する
-    3. 認証機構を利用しない（認証エラーになったら4に進む）
-    4. ユーザー名を入力するプロンプトを表示し、入力された文字列が空でなければユーザー名として利用する (その後、パスワードプロンプトも表示される)
+  * `--user` - user name
+    * enter the password via the password prompt after booting.
+  * `--auth-token` - authentication token
+  * `--credentials` - credentials file path
+  * `--no-auth` - do not use authentication mechanism
+  * if none of `--user`, `--auth-token`, `--credentials`, `--no-auth`  is specified, solve in the following order
+    1. if `TSURUGI_AUTH_TOKEN` is not empty, use that string as the authentication token.
+    2. If there is a default credentials file, use it.
+    3. do not use authentication mechanism. (if an authentication error occurs, proceed to step 4）
+    4. display a prompt to enter the username, and use the entered string as the username if it is not empty. (then a password prompt will also be displayed)
 
 ### SQL console
 
@@ -73,8 +72,8 @@ java -Dorg.slf4j.simpleLogger.defaultLogLevel=debug -jar build/libs/sql-console-
 java Main --console <common options> [--auto-commit|--no-auto-commit]
 ```
 
-* `--auto-commit` - 一文ごとにコミットを実行する
-* `--no-auto-commit` - 明示的に `COMMIT` 文を指定した場合のみコミットを実行する (default)
+* `--auto-commit` - commit each statement
+* `--no-auto-commit` - perform a commit only if you explicitly specify a `COMMIT`  (default)
 
 ### execute a SQL statement
 
@@ -82,9 +81,9 @@ java Main --console <common options> [--auto-commit|--no-auto-commit]
 java Main --exec <common options> [--commit|--no-commit] <statement>
 ```
 
-* `<statement>` - 実行する文
-* `--commit` - 文の実行に成功したらコミットし、失敗したらロールバックする (default)
-* `--no-commit` - 実行の成否にかかわらず、常にロールバックする
+* `<statement>` - statement to execute
+* `--commit` - commit if the statement executes successfully, rollback if it fails (default)
+* `--no-commit` - always rollback regardless of success or failure
 
 ### execute SQL script file
 
@@ -92,12 +91,12 @@ java Main --exec <common options> [--commit|--no-commit] <statement>
 java Main --script <common options> [[--encoding|-e] <charset-encoding>] [--auto-commit|--no-auto-commit|--commit|--no-commit] </path/to/script.sql>
 ```
 
-* `</path/to/script.sql>` - 実行するスクリプトファイル
-* `--encoding,-e` - スクリプトファイルの文字エンコーディング, 未指定の場合は実行環境に準拠
-* `--auto-commit` - 一文ごとにコミットを実行する
-* `--no-auto-commit` - 明示的に `COMMIT` 文を指定した場合のみコミットを実行する
-* `--commit` - すべての文の実行に成功したらコミットし、いずれかが失敗したらロールバックする (default)
-* `--no-commit` - 実行の成否にかかわらず、常にロールバックする
+* `</path/to/script.sql>` - script file to execute
+* `--encoding,-e` - character encoding of script files. if not specified, conforms to the execution environment
+* `--auto-commit` - commit each statement
+* `--no-auto-commit` - perform a commit only if you explicitly specify a `COMMIT` 
+* `--commit` - commit if the statement executes successfully, rollback if it fails (default)
+* `--no-commit` - always rollback regardless of success or failure
 
 
 
