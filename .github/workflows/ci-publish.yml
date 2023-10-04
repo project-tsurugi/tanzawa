@@ -24,8 +24,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GHA_PAT }}
 
       - name: Publish
         run: |
@@ -38,16 +36,12 @@ jobs:
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
 
       - id: Create_Release
+        if: contains(github.ref, '/tags/')
         name: Create_Release
         run: |
           ./gradlew -i distZip
-
-          if [[ "${TANZAWA_VERSION}" == "SNAPSHOT" ]]; then
-            _DELETE_OPTION=--cleanup-tag
-          fi
           set -x
-          gh release delete ${TANZAWA_VERSION} -y ${_DELETE_OPTION} --repo project-tsurugi/tanzawa || true
-          gh release create ${TANZAWA_VERSION} modules/cli/build/distributions/tgsql.zip --title ${TANZAWA_VERSION} --prerelease --latest --repo project-tsurugi/tanzawa
+          gh release create ${TANZAWA_VERSION} modules/cli/build/distributions/tgsql.zip --title ${TANZAWA_VERSION} --latest --repo project-tsurugi/tanzawa
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TANZAWA_VERSION: ${{ (github.ref_type == 'tag' && github.ref_name) || 'SNAPSHOT' }}
+          TANZAWA_VERSION: ${{ github.ref_name }}
