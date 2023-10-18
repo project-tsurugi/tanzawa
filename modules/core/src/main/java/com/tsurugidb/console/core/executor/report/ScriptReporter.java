@@ -406,6 +406,13 @@ public abstract class ScriptReporter {
     }
 
     /**
+     * output message for result of statement.
+     */
+    public void reportStatementResult() {
+        succeed("execute succeeded");
+    }
+
+    /**
      * output message for table list.
      *
      * @param tableList table names

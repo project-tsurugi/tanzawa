@@ -75,6 +75,8 @@ java Main --console <common options> [--auto-commit|--no-auto-commit]
 * `--auto-commit` - commit each statement
 * `--no-auto-commit` - perform a commit only if you explicitly specify a `COMMIT`  (default)
 
+If a transaction is started implicitly, commit for each statement.
+
 ### execute a SQL statement
 
 ```txt

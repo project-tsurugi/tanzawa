@@ -113,7 +113,7 @@ public class BasicEngine extends AbstractEngine {
         Objects.requireNonNull(statement);
         LOG.debug("execute: kind={}, text={}", statement.getKind(), statement.getText()); //$NON-NLS-1$
 
-        checkTransactionActive(statement, true);
+        boolean transactionSatrtedImplicitly = checkTransactionActive(statement, true);
         try {
             executeTiming(timingEnd -> {
                 try (var rs = sqlProcessor.execute(statement.getText(), statement.getRegion())) {
@@ -121,11 +121,12 @@ public class BasicEngine extends AbstractEngine {
                         timingEnd.accept(resultSetProcessor.process(rs));
                     } else {
                         timingEnd.accept(System.nanoTime());
+                        reporter.reportStatementResult();
                     }
                 }
             });
         } catch (Exception e) {
-            if (config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
+            if (transactionSatrtedImplicitly || config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
                 try {
                     executeRollbackImplicitly();
                 } catch (Exception e1) {
@@ -135,7 +136,7 @@ public class BasicEngine extends AbstractEngine {
             throw e;
         }
 
-        if (config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
+        if (transactionSatrtedImplicitly || config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
             executeCommitImplicitly();
         }
         return true;
@@ -350,9 +351,10 @@ public class BasicEngine extends AbstractEngine {
         }
     }
 
-    private void checkTransactionActive(Statement statement, boolean startIfInactive) throws EngineException, ServerException, IOException, InterruptedException {
+    // @return {@code true} if transaction started implicitly
+    private boolean checkTransactionActive(Statement statement, boolean startIfInactive) throws EngineException, ServerException, IOException, InterruptedException {
         if (sqlProcessor.isTransactionActive()) {
-            return;
+            return false;
         }
 
         if (startIfInactive) {
@@ -363,7 +365,7 @@ public class BasicEngine extends AbstractEngine {
                     sqlProcessor.startTransaction(option);
                     timingEnd.accept(System.nanoTime());
                 });
-                return;
+                return true;
             }
         }
 
