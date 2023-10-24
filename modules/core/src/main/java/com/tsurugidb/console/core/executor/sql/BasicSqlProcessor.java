@@ -17,7 +17,6 @@ import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.common.SessionBuilder;
 import com.tsurugidb.tsubakuro.exception.ServerException;
-import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
@@ -164,7 +163,7 @@ public class BasicSqlProcessor implements SqlProcessor {
     }
 
     @Override
-    public @Nullable ResultSet execute(@Nonnull String statement, @Nullable Region region) throws ServerException, IOException, InterruptedException {
+    public @Nullable PreparedStatementResult execute(@Nonnull String statement, @Nullable Region region) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         LOG.debug("start prepare: '{}'", statement);
         desireActive();
@@ -172,11 +171,12 @@ public class BasicSqlProcessor implements SqlProcessor {
         try (var prepared = client.prepare(statement).await()) {
             if (prepared.hasResultRecords()) {
                 LOG.debug("start query: '{}'", statement);
-                return transaction.executeQuery(prepared).await();
+                var result = transaction.executeQuery(prepared).await();
+                return new PreparedStatementResult(result);
             }
             LOG.debug("start execute: '{}'", statement);
-            transaction.executeStatement(prepared).await();
-            return null;
+            var result = transaction.executeStatement(prepared).await();
+            return new PreparedStatementResult(result);
         }
     }
 

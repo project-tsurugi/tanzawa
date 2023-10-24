@@ -116,12 +116,18 @@ public class BasicEngine extends AbstractEngine {
         boolean transactionSatrtedImplicitly = checkTransactionActive(statement, true);
         try {
             executeTiming(timingEnd -> {
-                try (var rs = sqlProcessor.execute(statement.getText(), statement.getRegion())) {
+                try (var result = sqlProcessor.execute(statement.getText(), statement.getRegion())) {
+                    var rs = result.getResultSet();
                     if (rs != null) {
                         timingEnd.accept(resultSetProcessor.process(rs));
                     } else {
                         timingEnd.accept(System.nanoTime());
-                        reporter.reportStatementResult();
+                        var er = result.getExecuteResult();
+                        if (er != null) {
+                            reporter.reportStatementResult(er);
+                        } else {
+                            reporter.reportStatementResult();
+                        }
                     }
                 }
             });

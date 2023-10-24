@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,6 +22,8 @@ import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.explain.PlanGraph;
+import com.tsurugidb.tsubakuro.sql.CounterType;
+import com.tsurugidb.tsubakuro.sql.ExecuteResult;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 
@@ -403,6 +406,47 @@ public abstract class ScriptReporter {
         } else {
             warn(message);
         }
+    }
+
+    /**
+     * output message for result of statement.
+     *
+     * @param result execute result
+     */
+    public void reportStatementResult(ExecuteResult result) {
+        var counterMap = result.getCounters();
+        if (counterMap.isEmpty()) {
+            reportStatementResult();
+            return;
+        }
+        var sb = new StringBuilder();
+        sb.append("(");
+        for (var entry : counterMap.entrySet()) {
+            if (sb.charAt(sb.length() - 1) != '(') {
+                sb.append(", ");
+            }
+            sb.append(entry.getValue());
+            sb.append(" rows ");
+            sb.append(getCounterName(entry.getKey()));
+        }
+        sb.append(")");
+
+        succeed(sb.toString());
+    }
+
+    /**
+     * get counter name.
+     *
+     * @param counterType counter type
+     * @return counter name
+     */
+    protected String getCounterName(CounterType counterType) {
+        String name = counterType.name().toLowerCase(Locale.ENGLISH);
+        String suffix = "_rows";
+        if (name.endsWith(suffix)) {
+            name = name.substring(0, name.length() - suffix.length());
+        }
+        return name;
     }
 
     /**

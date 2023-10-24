@@ -19,6 +19,7 @@ import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlRequest.Placeholder;
 import com.tsurugidb.sql.proto.SqlResponse;
+import com.tsurugidb.tsubakuro.sql.ExecuteResult;
 import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
@@ -151,7 +152,7 @@ class BasicSqlProcessorTest {
         PreparedStatement ps = createPreparedStatement(false);
         Transaction tx = new Transaction() {
             @Override
-            public FutureResponse<Void> executeStatement(
+            public FutureResponse<ExecuteResult> executeStatement(
                     PreparedStatement statement,
                     Collection<? extends SqlRequest.Parameter> parameters) throws IOException {
                 if (!reached.compareAndSet(false, true)) {
@@ -175,7 +176,8 @@ class BasicSqlProcessorTest {
         };
         try (var sql = new BasicSqlProcessor(client)) {
             sql.startTransaction(SqlRequest.TransactionOption.getDefaultInstance());
-            try (var rs = sql.execute("", new Region(0, 0, 0, 0))) {
+            try (var result = sql.execute("", new Region(0, 0, 0, 0))) {
+                var rs = result.getResultSet();
                 assertNull(rs);
             }
         }
@@ -214,7 +216,8 @@ class BasicSqlProcessorTest {
         };
         try (var sql = new BasicSqlProcessor(client)) {
             sql.startTransaction(SqlRequest.TransactionOption.getDefaultInstance());
-            try (var rs = sql.execute("", new Region(0, 0, 0, 0))) {
+            try (var result = sql.execute("", new Region(0, 0, 0, 0))) {
+                var rs = result.getResultSet();
                 assertSame(r, rs);
             }
         }

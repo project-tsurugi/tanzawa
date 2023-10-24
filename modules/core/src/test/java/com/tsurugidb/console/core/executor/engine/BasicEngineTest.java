@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
@@ -22,6 +23,7 @@ import com.tsurugidb.console.core.exception.ScriptNoMessageException;
 import com.tsurugidb.console.core.executor.explain.StatementMetadataHandler;
 import com.tsurugidb.console.core.executor.report.BasicReporter;
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
+import com.tsurugidb.console.core.executor.sql.PreparedStatementResult;
 import com.tsurugidb.console.core.executor.sql.SqlProcessor;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.console.core.model.Statement;
@@ -32,6 +34,8 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.explain.PlanGraph;
 import com.tsurugidb.tsubakuro.explain.PlanNode;
 import com.tsurugidb.tsubakuro.explain.json.JsonPlanGraphLoader;
+import com.tsurugidb.tsubakuro.sql.CounterType;
+import com.tsurugidb.tsubakuro.sql.ExecuteResult;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
@@ -98,7 +102,7 @@ class BasicEngineTest {
         }
 
         @Override
-        public ResultSet execute(String statement, Region region) throws ServerException, IOException, InterruptedException {
+        public PreparedStatementResult execute(String statement, Region region) throws ServerException, IOException, InterruptedException {
             throw new UnsupportedOperationException();
         }
 
@@ -145,12 +149,18 @@ class BasicEngineTest {
         var reached = new AtomicBoolean();
         MockSqlProcessor sql = new MockSqlProcessor(true) {
             @Override
-            public ResultSet execute(String statement, Region region) {
+            public PreparedStatementResult execute(String statement, Region region) {
                 if (!reached.compareAndSet(false, true)) {
                     fail();
                 }
                 assertEquals("INSERT INTO A DEFAULT VALUES", statement);
-                return null;
+                var er = new ExecuteResult() {
+                    @Override
+                    public Map<CounterType, Long> getCounters() {
+                        return Map.of(CounterType.INSERTED_ROWS, 1L);
+                    }
+                };
+                return new PreparedStatementResult(er);
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -165,12 +175,13 @@ class BasicEngineTest {
         var reachedExec = new AtomicBoolean();
         MockSqlProcessor sql = new MockSqlProcessor(true) {
             @Override
-            public ResultSet execute(String statement, Region region) {
+            public PreparedStatementResult execute(String statement, Region region) {
                 if (!reachedExec.compareAndSet(false, true)) {
                     fail();
                 }
                 assertEquals("SELECT * FROM T", statement);
-                return Relation.of(new Object[][] { { 1 } }).getResultSet(new ResultSetMetadataAdapter(SqlResponse.ResultSetMetadata.newBuilder().addColumns(Types.column(int.class)).build()));
+                var rs = Relation.of(new Object[][] { { 1 } }).getResultSet(new ResultSetMetadataAdapter(SqlResponse.ResultSetMetadata.newBuilder().addColumns(Types.column(int.class)).build()));
+                return new PreparedStatementResult(rs);
             }
         };
         var reachedRs = new AtomicBoolean();
@@ -200,12 +211,18 @@ class BasicEngineTest {
         var reached = new AtomicBoolean();
         MockSqlProcessor sql = new MockSqlProcessor(true) {
             @Override
-            public ResultSet execute(String statement, Region region) {
+            public PreparedStatementResult execute(String statement, Region region) {
                 if (!reached.compareAndSet(false, true)) {
                     fail();
                 }
                 assertEquals("CALL proc()", statement);
-                return null;
+                var er = new ExecuteResult() {
+                    @Override
+                    public Map<CounterType, Long> getCounters() {
+                        return Map.of();
+                    }
+                };
+                return new PreparedStatementResult(er);
             }
         };
         MockResultProcessor rs = new MockResultProcessor();

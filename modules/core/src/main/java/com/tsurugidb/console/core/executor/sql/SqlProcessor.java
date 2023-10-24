@@ -10,7 +10,6 @@ import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.exception.ServerException;
-import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
@@ -114,7 +113,7 @@ public interface SqlProcessor extends ServerResource {
      * @throws InterruptedException if interrupted while executing the statement
      */
     @Nullable
-    ResultSet execute(@Nonnull String statement, @Nullable Region region) throws ServerException, IOException, InterruptedException;
+    PreparedStatementResult execute(@Nonnull String statement, @Nullable Region region) throws ServerException, IOException, InterruptedException;
 
     /**
      * Starts a new transaction. After this operation, this object will hold the started transaction as active.
