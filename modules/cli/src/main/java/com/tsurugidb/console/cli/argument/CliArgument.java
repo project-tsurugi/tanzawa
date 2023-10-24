@@ -37,6 +37,9 @@ public class CliArgument {
     @Parameter(names = { "--help", "-h" }, arity = 0, description = "print this message", help = true)
     private Boolean help;
 
+    @Parameter(names = { "--version" }, arity = 0, description = "print version", help = true)
+    private Boolean version;
+
     @Parameter(names = { "--console" }, arity = 0, description = "SQL console mode")
     private Boolean console;
 
@@ -225,6 +228,15 @@ public class CliArgument {
      */
     public boolean isHelp() {
         return (this.help != null) && this.help;
+    }
+
+    /**
+     * get --version.
+     *
+     * @return version
+     */
+    public boolean isVersion() {
+        return (this.version != null) && this.version;
     }
 
     /**

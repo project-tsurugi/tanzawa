@@ -1,9 +1,11 @@
 package com.tsurugidb.console.cli;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 
+import org.jline.utils.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +26,8 @@ import com.tsurugidb.console.cli.repl.jline.ReplJLineHistory;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineReader;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineTerminal;
 import com.tsurugidb.console.core.ScriptRunner;
+import com.tsurugidb.console.core.util.TanzawaVersion;
+import com.tsurugidb.tsubakuro.util.TsubakuroVersion;
 
 /**
  * A program entry of Tsurugi SQL console cli.
@@ -60,8 +64,15 @@ public final class Main {
         try (Closeable c0 = () -> ReplJLineTerminal.close()) {
             commander.parse(args);
 
+            if (argument.isVersion()) {
+                printVersion();
+                // return
+            }
             if (argument.isHelp()) {
                 commander.usage();
+                return 0;
+            }
+            if (argument.isVersion()) {
                 return 0;
             }
 
@@ -101,6 +112,41 @@ public final class Main {
 
             commander.usage();
             return 1;
+        }
+    }
+
+    private static void printVersion() {
+        String core = TanzawaVersion.MODULE_CORE;
+        String tgsqlVersion = getVersion("tgsqlVersion", () -> TanzawaVersion.getBuildVersion(core));
+        System.out.println("-------------------------------------");
+        System.out.printf("Tsurugi SQL console %s%n", tgsqlVersion);
+        System.out.println("-------------------------------------");
+
+        System.out.println();
+        String tgsqlTimestamp = getVersion("tgsqlTimestamp", () -> TanzawaVersion.getBuildTimestamp(core));
+        System.out.printf("Build time: %s%n", tgsqlTimestamp);
+        String tgsqlRevision = getVersion("tgsqlRevision", () -> TanzawaVersion.getBuildRevision(core));
+        System.out.printf("Revision:   %s%n", tgsqlRevision);
+
+        System.out.println();
+        String tsubakuroVersion = getVersion("tsubakuroVersion", () -> TsubakuroVersion.getBuildVersion("session"));
+        System.out.printf("Tsubakuro:  %s%n", tsubakuroVersion);
+        String jvmVersion = getVersion("jvmVersion", () -> System.getProperty("java.vm.version"));
+        String javaHome = getVersion("javaHome", () -> System.getProperty("java.home"));
+        System.out.printf("JVM:        %s (%s)%n", jvmVersion, javaHome);
+    }
+
+    @FunctionalInterface
+    private interface StringSupplier {
+        String get() throws IOException;
+    }
+
+    private static String getVersion(String title, StringSupplier supplier) {
+        try {
+            return supplier.get();
+        } catch (Exception e) {
+            Log.debug(title + " get error", e);
+            return "unknown";
         }
     }
 

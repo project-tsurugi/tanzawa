@@ -65,6 +65,7 @@ jar {
     manifest.attributes (
         'Build-Timestamp': buildTimestamp,
         'Build-Revision' : buildRevision,
+        'Build-Version'  : version,
         'Created-By'     : createdBy,
         'Build-Jdk'      : buildJdk,
         'Build-OS'       : buildOs,
@@ -98,6 +99,7 @@ task writeVersion(type: WriteProperties) {
     properties (
         'Build-Timestamp': buildTimestamp,
         'Build-Revision' : buildRevision,
+        'Build-Version'  : version,
         'Created-By'     : createdBy,
         'Build-Jdk'      : buildJdk,
         'Build-OS'       : buildOs,

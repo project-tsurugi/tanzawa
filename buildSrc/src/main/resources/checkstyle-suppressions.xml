@@ -4,4 +4,5 @@
 <suppressions>
   <suppress checks="ParameterNumber" files="StartTransactionStatement.java" />
   <suppress checks="MethodLength" files="SegmentAnalyzer.java" />
+  <suppress checks="EmptyBlock" files="PreparedStatementResult.java" />
 </suppressions>
