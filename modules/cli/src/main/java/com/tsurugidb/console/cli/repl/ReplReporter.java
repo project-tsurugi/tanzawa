@@ -35,6 +35,12 @@ public class ReplReporter extends ScriptReporter {
         this.config = Objects.requireNonNull(config);
     }
 
+    // for test
+    ReplReporter() {
+        this.terminal = null;
+        this.config = null;
+    }
+
     protected int red() {
         return color(ReplCvKey.CONSOLE_WARNING_COLOR, 0xc0_00_00);
     }
@@ -127,13 +133,23 @@ public class ReplReporter extends ScriptReporter {
      * @param over {@code true} if over max lines
      */
     public void reportResultSetSize(int size, boolean over) {
-        String message;
-        if (over) {
-            message = MessageFormat.format("({0} rows over)", size);
-        } else {
-            message = MessageFormat.format("({0} rows)", size);
-        }
+        String message = getResultSetSizeMessage(size, over);
         reportResultSetSize(message);
+    }
+
+    /**
+     * get ResultSet size message.
+     *
+     * @param size row size
+     * @param over {@code true} if over max lines
+     * @return message
+     */
+    protected String getResultSetSizeMessage(int size, boolean over) {
+        if (over) {
+            return MessageFormat.format("({0,choice,0#0 rows|1#1 row|1<{0} rows} over)", size);
+        } else {
+            return MessageFormat.format("({0,choice,0#0 rows|1#1 row|1<{0} rows})", size);
+        }
     }
 
     protected void reportResultSetSize(String text) {

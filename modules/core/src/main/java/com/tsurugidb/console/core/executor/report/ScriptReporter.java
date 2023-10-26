@@ -425,13 +425,39 @@ public abstract class ScriptReporter {
             if (sb.charAt(sb.length() - 1) != '(') {
                 sb.append(", ");
             }
-            sb.append(entry.getValue());
-            sb.append(" rows ");
-            sb.append(getCounterName(entry.getKey()));
+            sb.append(getStatementResultMessage(entry.getKey(), entry.getValue()));
         }
         sb.append(")");
 
         succeed(sb.toString());
+    }
+
+    /**
+     * get message for result of statement.
+     *
+     * @param counterType counter type
+     * @param count       rows
+     * @return message
+     */
+    protected String getStatementResultMessage(CounterType counterType, long count) {
+        switch (counterType) {
+        case INSERTED_ROWS:
+            return MessageFormat.format("{0,choice,0#0 rows|1#1 row|1<{0} rows} inserted", count);
+        case UPDATED_ROWS:
+            return MessageFormat.format("{0,choice,0#0 rows|1#1 row|1<{0} rows} updated", count);
+        case MERGED_ROWS:
+            return MessageFormat.format("{0,choice,0#0 rows|1#1 row|1<{0} rows} merged", count);
+        case DELETED_ROWS:
+            return MessageFormat.format("{0,choice,0#0 rows|1#1 row|1<{0} rows} deleted", count);
+        default:
+            break;
+        }
+
+        if (count == 1) {
+            return "1 row " + getCounterName(counterType); //$NON-NLS-1$
+        } else {
+            return count + " rows " + getCounterName(counterType); //$NON-NLS-1$
+        }
     }
 
     /**
