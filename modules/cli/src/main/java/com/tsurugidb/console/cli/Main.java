@@ -125,8 +125,6 @@ public final class Main {
         System.out.println();
         String tgsqlTimestamp = getVersion("tgsqlTimestamp", () -> TanzawaVersion.getBuildTimestamp(core));
         System.out.printf("Build time: %s%n", tgsqlTimestamp);
-        String tgsqlRevision = getVersion("tgsqlRevision", () -> TanzawaVersion.getBuildRevision(core));
-        System.out.printf("Revision:   %s%n", tgsqlRevision);
 
         System.out.println();
         String tsubakuroVersion = getVersion("tsubakuroVersion", () -> TsubakuroVersion.getBuildVersion("session"));
