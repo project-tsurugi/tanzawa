@@ -16,6 +16,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
     return eof();
 %eofval}
 
+%ctorarg boolean skipComments
+%init{
+    this.skipComments = skipComments;
+%init}
+
 %char
 %line
 %column
@@ -27,7 +32,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
     static final int SAW_BODY = 1;
 
-    private Segment.Builder buffer = new Segment.Builder();
+    private boolean skipComments;
+
+    private final Segment.Builder buffer = new Segment.Builder();
 
     private boolean textContinue = false;
     private int textStartLine = -1;
@@ -48,11 +55,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
     }
 
     private int token(TokenKind kind) {
+        if (skipComments && kind.getCategory() == TokenCategory.COMMENT) {
+            return skip();
+        }
         initialize();
         flushUnhandled();
         appendText();
         buffer.addToken(new TokenInfo(kind, buffer.relative(yychar), yylength(), yyline, yycolumn));
-        if (kind.isStatementDelimiter()) {
+        if (kind.getCategory() == TokenCategory.DELIMITER) {
             return SAW_DELIMITER;
         }
         return SAW_BODY;

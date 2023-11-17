@@ -111,10 +111,10 @@ class Segment {
          */
         void addToken(@Nonnull TokenInfo token) {
             if (LOG.isTraceEnabled()) {
-                LOG.trace("token: kind={}, position={}, delimiter={}, line={}, column={}, text={}", new Object[] { //$NON-NLS-1$
+                LOG.trace("token: kind={}, position={}, category={}, line={}, column={}, text={}", new Object[] { //$NON-NLS-1$
                         token.getKind(),
                         offset + token.getOffset(),
-                        token.getKind().isStatementDelimiter(),
+                        token.getKind().getCategory(),
                         token.getStartLine(),
                         token.getStartColumn(),
                         getText(token).map(it -> "'" + it + "'").orElse("N/A") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -162,7 +162,7 @@ class Segment {
         private void normalizeDelimiter() {
             if (!tokens.isEmpty()) {
                 var last = tokens.get(tokens.size() - 1);
-                if (last.getKind().isStatementDelimiter()) {
+                if (last.getKind().getCategory() == TokenCategory.DELIMITER) {
                     tokens.set(tokens.size() - 1, new TokenInfo(
                             TokenKind.END_OF_STATEMENT,
                             last.getOffset(),

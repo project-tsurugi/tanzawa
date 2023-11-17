@@ -213,6 +213,23 @@ class SqlScannerTest {
     }
 
     @Test
+    void block_comment_skip() throws Exception {
+        var opts = new SqlScanner.Options();
+        opts.skipComments = true;
+        var s = scanOne(
+                opts,
+                "SELECT",
+                "/*",
+                " * TESTING",
+                " */ 1");
+        assertEquals(List.of(
+                TokenKind.REGULAR_IDENTIFIER,
+                TokenKind.NUMERIC_LITERAL,
+                TokenKind.END_OF_STATEMENT), kinds(s));
+        assertEquals(0, s.getComments().size());
+    }
+
+    @Test
     void slash_comment() throws Exception {
         var s = scanOne(
                 "// just returns 1",
@@ -226,6 +243,21 @@ class SqlScannerTest {
     }
 
     @Test
+    void slash_comment_skip() throws Exception {
+        var opts = new SqlScanner.Options();
+        opts.skipComments = true;
+        var s = scanOne(
+                opts,
+                "// just returns 1",
+                "SELECT 1");
+        assertEquals(List.of(
+                TokenKind.REGULAR_IDENTIFIER,
+                TokenKind.NUMERIC_LITERAL,
+                TokenKind.END_OF_STATEMENT), kinds(s));
+        assertEquals(0, s.getComments().size());
+    }
+
+    @Test
     void hyphen_comment() throws Exception {
         var s = scanOne(
                 "-- just returns 1",
@@ -236,6 +268,21 @@ class SqlScannerTest {
                 TokenKind.END_OF_STATEMENT), kinds(s));
         assertEquals(1, s.getComments().size());
         assertEquals(TokenKind.HYPHEN_COMMENT, s.getComments().get(0).getKind());
+    }
+
+    @Test
+    void hyphen_comment_skip() throws Exception {
+        var opts = new SqlScanner.Options();
+        opts.skipComments = true;
+        var s = scanOne(
+                opts,
+                "-- just returns 1",
+                "SELECT 1");
+        assertEquals(List.of(
+                TokenKind.REGULAR_IDENTIFIER,
+                TokenKind.NUMERIC_LITERAL,
+                TokenKind.END_OF_STATEMENT), kinds(s));
+        assertEquals(0, s.getComments().size());
     }
 
     @Test
@@ -280,16 +327,32 @@ class SqlScannerTest {
         return segments.get(0);
     }
 
+    private static Segment scanOne(SqlScanner.Options opts, String... lines) throws IOException {
+        List<Segment> segments = scan(opts, lines);
+        assertEquals(1, segments.size());
+        return segments.get(0);
+    }
+
     private static List<Segment> scan(String... lines) throws IOException {
-        List<Segment> segments = new ArrayList<>();
         try (var scanner = new SqlScanner(new StringReader(String.join("\n", lines)))) {
-            while (true) {
-                var s = scanner.next();
-                if (s == null) {
-                    break;
-                }
-                segments.add(s);
+            return scan0(scanner);
+        }
+    }
+
+    private static List<Segment> scan(SqlScanner.Options opts, String... lines) throws IOException {
+        try (var scanner = new SqlScanner(new StringReader(String.join("\n", lines)), opts)) {
+            return scan0(scanner);
+        }
+    }
+
+    private static List<Segment> scan0(SqlScanner scanner) throws IOException {
+        List<Segment> segments = new ArrayList<>();
+        while (true) {
+            var s = scanner.next();
+            if (s == null) {
+                break;
             }
+            segments.add(s);
         }
         return segments;
     }

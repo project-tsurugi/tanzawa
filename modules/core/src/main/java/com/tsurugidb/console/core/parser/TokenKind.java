@@ -4,162 +4,159 @@ enum TokenKind {
     /**
      * End-Of-File.
      */
-    EOF(true),
+    EOF(TokenCategory.DELIMITER),
 
     /**
      * text segment which the parser cannot handle.
      */
-    UNHANDLED_TEXT,
+    UNHANDLED_TEXT(TokenCategory.UNKNOWN),
 
     /**
      * regular (unquoted) identifiers.
      */
-    REGULAR_IDENTIFIER,
+    REGULAR_IDENTIFIER(TokenCategory.REGULAR),
 
     /**
      * delimited identifiers.
      */
-    DELIMITED_IDENTIFIER,
+    DELIMITED_IDENTIFIER(TokenCategory.REGULAR),
 
     // literals
 
     /**
      * numeric literals.
      */
-    NUMERIC_LITERAL,
+    NUMERIC_LITERAL(TokenCategory.REGULAR),
 
     /**
      * true.
      */
-    TRUE_LITERAL,
+    TRUE_LITERAL(TokenCategory.REGULAR),
 
     /**
      * false.
      */
-    FALSE_LITERAL,
+    FALSE_LITERAL(TokenCategory.REGULAR),
 
     /**
      * null.
      */
-    NULL_LITERAL,
+    NULL_LITERAL(TokenCategory.REGULAR),
 
     /**
      * character string literals.
      */
-    CHARACTER_STRING_LITERAL,
+    CHARACTER_STRING_LITERAL(TokenCategory.REGULAR),
 
     /**
      * binary string literals.
      */
-    BINARY_STRING_LITERAL,
+    BINARY_STRING_LITERAL(TokenCategory.REGULAR),
 
     // punctuation
 
     /**
      * dot.
      */
-    DOT,
+    DOT(TokenCategory.PUNCTUATION),
 
     /**
      * comma.
      */
-    COMMA,
+    COMMA(TokenCategory.PUNCTUATION),
 
     /**
      * semicolon.
      */
-    SEMICOLON(true),
+    SEMICOLON(TokenCategory.DELIMITER),
 
     /**
      * open paren.
      */
-    LEFT_PAREN,
+    LEFT_PAREN(TokenCategory.PUNCTUATION),
 
     /**
      * close paren.
      */
-    RIGHT_PAREN,
+    RIGHT_PAREN(TokenCategory.PUNCTUATION),
 
     // operators
 
     /**
      * plus sign.
      */
-    PLUS,
+    PLUS(TokenCategory.PUNCTUATION),
 
     /**
      * minus sign.
      */
-    MINUS,
+    MINUS(TokenCategory.PUNCTUATION),
 
     /**
      * asterisk.
      */
-    ASTERISK,
+    ASTERISK(TokenCategory.PUNCTUATION),
 
     /**
      * equal sign.
      */
-    EQUAL,
+    EQUAL(TokenCategory.PUNCTUATION),
 
     /**
      * bare back-slash sign.
      */
-    BACK_SLASH,
+    BACK_SLASH(TokenCategory.PUNCTUATION),
 
     /**
      * special command name.
      */
-    SPECIAL_COMMAND,
+    SPECIAL_COMMAND(TokenCategory.REGULAR),
 
     /**
      * special command argument.
      */
-    SPECIAL_COMMAND_ARGUMENT,
+    SPECIAL_COMMAND_ARGUMENT(TokenCategory.REGULAR),
 
     /**
      * line break in special command.
      */
-    LINE_BREAK(true),
+    LINE_BREAK(TokenCategory.DELIMITER),
 
     // comments
 
     /**
      * C-style comment block.
      */
-    BLOCK_COMMENT,
+    BLOCK_COMMENT(TokenCategory.COMMENT),
 
     /**
      * comments leading two slashes.
      */
-    SLASH_COMMENT,
+    SLASH_COMMENT(TokenCategory.COMMENT),
 
     /**
      * comments leading two hyphens.
      */
-    HYPHEN_COMMENT,
+    HYPHEN_COMMENT(TokenCategory.COMMENT),
 
     /**
      * pseudo-symbol of end of statement.
      */
-    END_OF_STATEMENT,
+    END_OF_STATEMENT(TokenCategory.PSEUDO),
 
     ;
-    private final boolean statementDelimiter;
+    private final TokenCategory category;
 
-    TokenKind() {
-        statementDelimiter = false;
-    }
-
-    TokenKind(boolean statementDelimiter) {
-        this.statementDelimiter = statementDelimiter;
+    TokenKind(TokenCategory category) {
+        assert category != null;
+        this.category = category;
     }
 
     /**
-     * Returns whether or not the token is a statement delimiter.
-     * @return whether or not the token is a statement delimiter
+     * Returns the category of this token.
+     * @return the token category
      */
-    public boolean isStatementDelimiter() {
-        return statementDelimiter;
+    public TokenCategory getCategory() {
+        return category;
     }
 }

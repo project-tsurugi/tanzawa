@@ -16,6 +16,75 @@ import com.tsurugidb.console.core.model.Statement;
  */
 public class SqlParser implements Closeable {
 
+    /**
+     * Options of {@link SqlParser}.
+     */
+    public static class Options {
+
+        /**
+         * The default value of {@link #withSkipComments(boolean)} ({@value #DEFAULT_SKIP_COMMENTS}).
+         */
+        public static final boolean DEFAULT_SKIP_COMMENTS = SqlScanner.Options.DEFAULT_SKIP_COMMENTS;
+
+        private final SqlScanner.Options scannerOpts = new SqlScanner.Options();
+
+        /**
+         * Sets whether or not skip comment tokens.
+         * @param enabled {@code true} to skip comments, or {@code false} to treat comments as tokens
+         * @return this
+         * @see #DEFAULT_SKIP_COMMENTS
+         */
+        public Options withSkipComments(boolean enabled) {
+            this.scannerOpts.skipComments = enabled;
+            return this;
+        }
+
+        /**
+         * Returns whether or not skip comment tokens.
+         * @return {@code true} to skip comments, or {@code false} to treat comments as tokens
+         * @see #DEFAULT_SKIP_COMMENTS
+         */
+        public boolean isSkipComments() {
+            return this.scannerOpts.skipComments;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((scannerOpts == null) ? 0 : scannerOpts.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            Options other = (Options) obj;
+            if (scannerOpts == null) {
+                if (other.scannerOpts != null) {
+                    return false;
+                }
+            } else if (!scannerOpts.equals(other.scannerOpts)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("{skipComments:%s}", //$NON-NLS-1$
+                    scannerOpts.skipComments);
+        }
+    }
+
     private final SqlScanner scanner;
 
     /**
@@ -25,6 +94,17 @@ public class SqlParser implements Closeable {
     public SqlParser(@Nonnull Reader input) {
         Objects.requireNonNull(input);
         this.scanner = new SqlScanner(input);
+    }
+
+    /**
+     * Creates a new instance.
+     * @param input the input source
+     * @param options the parser options
+     */
+    public SqlParser(@Nonnull Reader input, @Nonnull Options options) {
+        Objects.requireNonNull(input);
+        Objects.requireNonNull(options);
+        this.scanner = new SqlScanner(input, options.scannerOpts);
     }
 
     /**
