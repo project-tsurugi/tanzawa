@@ -12,15 +12,63 @@ import javax.annotation.Nonnull;
  */
 class SqlScanner implements Closeable {
 
+    /**
+     * Options of {@link SqlScanner}.
+     */
+    static class Options {
+
+        static final boolean DEFAULT_SKIP_COMMENTS = false;
+
+        boolean skipComments = DEFAULT_SKIP_COMMENTS;
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + (skipComments ? 1231 : 1237);
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            Options other = (Options) obj;
+            if (skipComments != other.skipComments) {
+                return false;
+            }
+            return true;
+        }
+    }
+
     private final SqlScannerFlex flex;
+
+    /**
+     * Creates a new instance with default options.
+     * @param input the input
+     */
+    SqlScanner(@Nonnull Reader input) {
+        this(input, new Options());
+    }
 
     /**
      * Creates a new instance.
      * @param input the input
+     * @param options the scanner options
      */
-    SqlScanner(@Nonnull Reader input) {
+    SqlScanner(@Nonnull Reader input, @Nonnull Options options) {
         Objects.requireNonNull(input);
-        flex = new SqlScannerFlex(input);
+        Objects.requireNonNull(options);
+        flex = new SqlScannerFlex(
+                input,
+                options.skipComments);
     }
 
     /**
