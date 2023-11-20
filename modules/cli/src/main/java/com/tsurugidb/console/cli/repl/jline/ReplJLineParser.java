@@ -43,8 +43,9 @@ public class ReplJLineParser extends DefaultParser {
         if (context == ParseContext.ACCEPT_LINE) {
             String input = line + "\n"; //$NON-NLS-1$
             LOG.trace("input=[{}]", input); //$NON-NLS-1$
+            var parserOptions = new SqlParser.Options().withSkipComments(true);
             try (var reader = new StringReader(input); //
-                    var parser = new SqlParser(reader)) {
+                    var parser = new SqlParser(reader, parserOptions)) {
                 var statementList = new ArrayList<Statement>();
                 while (true) {
                     var statement = parser.next();
