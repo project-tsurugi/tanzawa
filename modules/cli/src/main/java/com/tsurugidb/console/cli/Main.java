@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.util.stream.Collectors;
 
 import org.jline.utils.Log;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import com.tsurugidb.console.cli.repl.jline.ReplJLineReader;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineTerminal;
 import com.tsurugidb.console.core.ScriptRunner;
 import com.tsurugidb.console.core.util.TanzawaVersion;
+import com.tsurugidb.tsubakuro.client.ServiceClientCollector;
 import com.tsurugidb.tsubakuro.util.TsubakuroVersion;
 
 /**
@@ -129,6 +131,8 @@ public final class Main {
         System.out.println();
         String tsubakuroVersion = getVersion("tsubakuroVersion", () -> TsubakuroVersion.getBuildVersion("session"));
         System.out.printf("Tsubakuro:  %s%n", tsubakuroVersion);
+        String serviceMessageVersion = getServiceMessageVersion();
+        System.out.printf("  service message version: %s%n", serviceMessageVersion);
         String jvmVersion = getVersion("jvmVersion", () -> System.getProperty("java.vm.version"));
         String javaHome = getVersion("javaHome", () -> System.getProperty("java.home"));
         System.out.printf("JVM:        %s (%s)%n", jvmVersion, javaHome);
@@ -145,6 +149,16 @@ public final class Main {
         } catch (Exception e) {
             Log.debug(title + " get error", e);
             return "unknown";
+        }
+    }
+
+    private static String getServiceMessageVersion() {
+        try {
+            var classList = ServiceClientCollector.collect(false);
+            return classList.stream().flatMap(c -> ServiceClientCollector.findServiceMessageVersion(c).stream()).collect(Collectors.joining(", "));
+        } catch (Exception e) {
+            Log.debug("getServiceMessageVersion error", e);
+            return "N/A";
         }
     }
 
