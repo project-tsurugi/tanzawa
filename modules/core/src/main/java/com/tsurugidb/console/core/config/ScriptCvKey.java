@@ -25,6 +25,8 @@ public abstract class ScriptCvKey<T> {
     public static final ScriptCvKeyInt SELECT_MAX_LINES = new ScriptCvKeyInt("select.maxlines"); //$NON-NLS-1$
     /** sql.timing */
     public static final ScriptCvKeyBoolean SQL_TIMING = new ScriptCvKeyBoolean("sql.timing"); //$NON-NLS-1$
+    /** sql.timing */
+    public static final ScriptCvKeyBoolean AUTO_COMMIT_TX_STARTED_IMPLICITLY = new ScriptCvKeyBoolean("auto-commit.when-transaction-started-implicitly"); //$NON-NLS-1$
 
     /** dot.verbose */
     public static final ScriptCvKeyBoolean DOT_VERBOSE = new ScriptCvKeyBoolean(DotOutputHandler.KEY_VERBOSE);

@@ -132,7 +132,7 @@ public class BasicEngine extends AbstractEngine {
                 }
             });
         } catch (Exception e) {
-            if (transactionSatrtedImplicitly || config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
+            if (isAutoCommit(transactionSatrtedImplicitly)) {
                 try {
                     executeRollbackImplicitly();
                 } catch (Exception e1) {
@@ -142,10 +142,22 @@ public class BasicEngine extends AbstractEngine {
             throw e;
         }
 
-        if (transactionSatrtedImplicitly || config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
+        if (isAutoCommit(transactionSatrtedImplicitly)) {
             executeCommitImplicitly();
         }
         return true;
+    }
+
+    private boolean isAutoCommit(boolean transactionSatrtedImplicitly) {
+        if (transactionSatrtedImplicitly) {
+            if (config.getClientVariableMap().get(ScriptCvKey.AUTO_COMMIT_TX_STARTED_IMPLICITLY, true)) {
+                return true;
+            }
+        }
+        if (config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
+            return true;
+        }
+        return false;
     }
 
     @Override
