@@ -1,6 +1,8 @@
-# Tanzawa: Tsurugi SQL console
+# Tanzawa: Tsurugi command line tools written in Java
 
-Tsurugi SQL console (Tanzawa) is a text based SQL client program.
+## Available Tools
+
+- [tgsql](./modules/tgsql/cli) - Text based SQL client program.
 
 ## Requirements
 
@@ -10,6 +12,20 @@ Tsurugi SQL console (Tanzawa) is a text based SQL client program.
 
 ```sh
 ./gradlew assemble
+```
+
+### for Eclipse Buildship users
+
+If you work with [Eclipse Buildship](https://github.com/eclipse/buildship), the following [Gradle initialization script](https://docs.gradle.org/current/userguide/init_scripts.html) avoids the conflict of each project name on the Eclipse workspace.
+
+```gradle
+allprojects { project ->
+    if (project != project.rootProject) {
+        project.tasks.matching { it.name == 'eclipseProject' }.each { task ->
+            task.projectModel.name = (project.rootProject.name + project.path).replace(':', '-')
+        }
+    }
+}
 ```
 
 ## How to test

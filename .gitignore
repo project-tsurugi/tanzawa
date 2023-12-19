@@ -1,7 +1,7 @@
 # Gradle
 .gradle/
 /build
-/modules/*/build
+/modules/**/build
 /buildSrc/build
 
 # Eclipse
@@ -9,14 +9,14 @@
 /.project
 /.classpath
 /.settings
-/modules/*/bin
-/modules/*/.project
-/modules/*/.classpath
-/modules/*/.settings
+/modules/**/bin
+/modules/**/.project
+/modules/**/.classpath
+/modules/**/.settings
 
 # IDEA
 /.idea
-/modules/*/out
+/modules/**/out
 
 # VSCode
 /.vscode
