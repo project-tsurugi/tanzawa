@@ -1,0 +1,20 @@
+plugins {
+    id 'tanzawa.libs-conventions'
+}
+
+dependencies {
+    api project(':common:monitoring')
+
+    api "com.tsurugidb.tsubakuro:tsubakuro-session:${tsubakuroVersion}"
+
+    api 'com.google.code.findbugs:jsr305:3.0.2'
+    api 'org.slf4j:slf4j-api:1.7.36'
+
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.1'
+
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+}
+
+test {
+    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', findProperty('test.logLevel') ?: 'info'
+}

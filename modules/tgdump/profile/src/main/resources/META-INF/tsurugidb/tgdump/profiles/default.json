@@ -1,0 +1,9 @@
+// default dump profile
+{
+    "format_version": 1,
+    "title": "default",
+    "description": "A default dump profile.",
+
+    // use the default file format type.
+    "file_format": null,
+}

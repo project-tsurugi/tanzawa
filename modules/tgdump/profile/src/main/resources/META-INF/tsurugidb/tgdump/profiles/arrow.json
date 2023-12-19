@@ -1,0 +1,11 @@
+// dump profile for generic Apache Arrow files.
+{
+    "format_version": 1,
+    "title": "arrow",
+    "description": "dump tables as Apache Arrow files.",
+
+    // use the arrow file format type.
+    "file_format": {
+        "format_type": "arrow",
+    },
+}

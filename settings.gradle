@@ -1,7 +1,13 @@
 rootProject.name = 'tanzawa'
 
+include 'common:monitoring'
+include 'common:connection'
+include 'common:util'
 include 'tgsql:core'
 include 'tgsql:cli'
+include 'tgdump:core'
+include 'tgdump:profile'
+include 'tgdump:cli'
 
 def setProjectDir(ProjectDescriptor project) {
     if (project.parent == null) {
