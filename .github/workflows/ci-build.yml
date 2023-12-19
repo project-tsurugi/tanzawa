@@ -26,7 +26,7 @@ jobs:
 
       - name: Assemble
         run: |
-          ./gradlew -i tanzawa-core:showTsubakuroManifest clean assemble
+          ./gradlew -i tgsql:core:showTsubakuroManifest clean assemble
 
       - name: Check
         run: |
@@ -41,8 +41,8 @@ jobs:
           checkstyle_input: '**/build/reports/checkstyle/main.xml'
 
   Publish:
-    uses: ./.github/workflows/ci-publish.yml
-    if: github.repository_owner == 'project-tsurugi' && (contains(github.ref, '/tags/') || contains(github.ref, '/heads/master'))
+    uses: ./.github/workflows/ci-release.yml
+    if: github.repository_owner == 'project-tsurugi' && (contains(github.ref, '/tags/'))
     needs: Build
     secrets: inherit
     permissions:

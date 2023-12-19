@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
     // dependent projects
-    implementation project(':tanzawa-core')
+    implementation project(':tgsql:core')
     runtimeOnly "com.tsurugidb.tsubakuro:tsubakuro-ipc:${tsubakuroVersion}"
     runtimeOnly "com.tsurugidb.tsubakuro:tsubakuro-stream:${tsubakuroVersion}"
 

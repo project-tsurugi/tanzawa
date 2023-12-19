@@ -1,11 +1,22 @@
 rootProject.name = 'tanzawa'
 
-include 'tanzawa-core'
-include 'tanzawa-cli'
+include 'tgsql:core'
+include 'tgsql:cli'
 
-rootProject.children.each { project ->
-    var dirName = project.name.substring('tanzawa-'.length());
-    project.projectDir = new File(settingsDir, "modules/${dirName}")
-    assert project.projectDir.isDirectory()
+def setProjectDir(ProjectDescriptor project) {
+    if (project.parent == null) {
+        // root project
+    } else if (project.parent.parent == null) {
+        // first-level subprojects
+        var baseDir = new File(settingsDir, "modules")
+        project.projectDir = new File(baseDir, project.name)
+    } else {
+        // nested subprojects
+        var baseDir = project.parent.projectDir
+        project.projectDir = new File(baseDir, project.name)
+    }
+    project.children.each { it -> setProjectDir(it) }
 }
+
+setProjectDir(rootProject)
 

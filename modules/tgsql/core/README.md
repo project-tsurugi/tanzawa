@@ -51,7 +51,7 @@ see [grammar-rule.md](../../docs/grammar-rule.md).
 
 ```sh
 # cd /path/to/tanzawa
-./gradlew :tanzawa-core:test \
+./gradlew :tgsql:core:test \
     -Ptanzawa.dot=/path/to/dot \
     -Ptest.logLevel=debug
 ```
