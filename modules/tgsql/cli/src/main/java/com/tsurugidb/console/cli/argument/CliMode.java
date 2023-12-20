@@ -5,12 +5,12 @@ package com.tsurugidb.console.cli.argument;
  */
 public enum CliMode {
 
-    /** console */
+    /** console. */
     CONSOLE,
-    /** script */
+    /** script. */
     SCRIPT,
-    /** exec */
+    /** exec. */
     EXEC,
-    /** explain */
+    /** explain. */
     EXPLAIN,
 }

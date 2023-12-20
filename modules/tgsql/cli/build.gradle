@@ -7,6 +7,7 @@ plugins {
 dependencies {
     // dependent projects
     implementation project(':tgsql:core')
+    implementation project(':common:util')
     runtimeOnly "com.tsurugidb.tsubakuro:tsubakuro-ipc:${tsubakuroVersion}"
     runtimeOnly "com.tsurugidb.tsubakuro:tsubakuro-stream:${tsubakuroVersion}"
 
@@ -35,11 +36,17 @@ run {
 }
 
 shadowJar {
-    archiveBaseName = 'sql-console'
+    archiveBaseName = 'tgsql'
     archiveClassifier = 'all'
     mergeServiceFiles()
 }
 
 distZip {
     archiveFileName = "tgsql.zip"
+}
+
+distTar {
+    archiveFileName = "tgsql.tar.gz"
+    archiveExtension = 'tar.gz'
+    compression = Compression.GZIP
 }

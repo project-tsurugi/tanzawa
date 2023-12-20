@@ -77,9 +77,27 @@ public class CliArgument {
      * value for --transaction.
      */
     public enum TransactionEnum {
-        SHORT("short", TransactionType.SHORT), OCC("OCC", TransactionType.SHORT), //
-        LONG("long", TransactionType.LONG), LTX("LTX", TransactionType.LONG), //
-        READ("read", TransactionType.READ_ONLY), READONLY("readonly", TransactionType.READ_ONLY), RO("RO", TransactionType.READ_ONLY), RTX("RTX", TransactionType.READ_ONLY), //
+        // OCC
+        /** short. */
+        SHORT("short", TransactionType.SHORT),
+        /** OCC. */
+        OCC("OCC", TransactionType.SHORT),
+        // LTX
+        /** long. */
+        LONG("long", TransactionType.LONG),
+        /** LTX. */
+        LTX("LTX", TransactionType.LONG),
+        // RTX
+        /** read. */
+        READ("read", TransactionType.READ_ONLY),
+        /** readonly. */
+        READONLY("readonly", TransactionType.READ_ONLY),
+        /** ro. */
+        RO("RO", TransactionType.READ_ONLY),
+        /** RTX. */
+        RTX("RTX", TransactionType.READ_ONLY),
+        // manual
+        /** manual. */
         MANUAL("manual", null);
 
         private final String value;
@@ -148,27 +166,27 @@ public class CliArgument {
      */
     public enum CommitOption {
         /**
-         * rely on the database settings
+         * rely on the database settings.
          */
         DEFAULT(CommitStatus.COMMIT_STATUS_UNSPECIFIED),
 
         /**
-         * commit operation has accepted (the transaction will never abort except system errors)
+         * commit operation has accepted (the transaction will never abort except system errors).
          */
         ACCEPTED(CommitStatus.ACCEPTED),
 
         /**
-         * commit data has been visible for others
+         * commit data has been visible for others.
          */
         AVAILABLE(CommitStatus.AVAILABLE),
 
         /**
-         * commit data has been saved on the local disk
+         * commit data has been saved on the local disk.
          */
         STORED(CommitStatus.STORED),
 
         /**
-         * commit data has been propagated to the all suitable nodes
+         * commit data has been propagated to the all suitable nodes.
          */
         PROPAGATED(CommitStatus.PROPAGATED);
 
@@ -373,7 +391,7 @@ public class CliArgument {
     }
 
     /**
-     * --execute
+     * --execute.
      */
     public static class CliExecute {
         boolean prior = false;

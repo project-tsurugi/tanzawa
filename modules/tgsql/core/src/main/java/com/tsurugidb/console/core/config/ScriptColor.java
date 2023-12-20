@@ -6,13 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * color
+ * color.
  */
 public final class ScriptColor {
     private static final Logger LOG = LoggerFactory.getLogger(ScriptColor.class);
 
     /**
-     * parse color
+     * parse color.
      *
      * @param s string
      * @return color
@@ -53,7 +53,7 @@ public final class ScriptColor {
     }
 
     /**
-     * get red
+     * get red.
      *
      * @return red
      */
@@ -62,7 +62,7 @@ public final class ScriptColor {
     }
 
     /**
-     * get green
+     * get green.
      *
      * @return green
      */
@@ -71,7 +71,7 @@ public final class ScriptColor {
     }
 
     /**
-     * get blue
+     * get blue.
      *
      * @return blue
      */
@@ -80,7 +80,7 @@ public final class ScriptColor {
     }
 
     /**
-     * get rgb
+     * get rgb.
      *
      * @return rgb
      */

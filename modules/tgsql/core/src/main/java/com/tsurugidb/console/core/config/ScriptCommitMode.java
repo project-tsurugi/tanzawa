@@ -4,13 +4,13 @@ package com.tsurugidb.console.core.config;
  * Commit mode.
  */
 public enum ScriptCommitMode {
-    /** commit every statement */
+    /** commit every statement. */
     AUTO_COMMIT,
-    /** commit only if user explicitly specify a COMMIT statement */
+    /** commit only if user explicitly specify a COMMIT statement. */
     NO_AUTO_COMMIT,
 
-    /** commit on success, rollback on failure */
+    /** commit on success, rollback on failure. */
     COMMIT,
-    /** always rollback */
+    /** always rollback. */
     NO_COMMIT,
 }

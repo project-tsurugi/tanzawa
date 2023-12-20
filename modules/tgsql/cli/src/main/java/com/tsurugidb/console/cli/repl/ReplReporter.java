@@ -157,6 +157,8 @@ public class ReplReporter extends ScriptReporter {
     }
 
     /**
+     * print message.
+     *
      * @param message message
      * @param color   0xrrggbb
      */

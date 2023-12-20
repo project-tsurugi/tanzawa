@@ -21,24 +21,24 @@ import com.tsurugidb.console.core.executor.explain.DotOutputHandler;
  */
 public abstract class ScriptCvKey<T> {
 
-    /** select.maxlines */
+    /** select.maxlines . */
     public static final ScriptCvKeyInt SELECT_MAX_LINES = new ScriptCvKeyInt("select.maxlines"); //$NON-NLS-1$
-    /** sql.timing */
+    /** sql.timing . */
     public static final ScriptCvKeyBoolean SQL_TIMING = new ScriptCvKeyBoolean("sql.timing"); //$NON-NLS-1$
-    /** sql.timing */
+    /** sql.timing . */
     public static final ScriptCvKeyBoolean AUTO_COMMIT_TX_STARTED_IMPLICITLY = new ScriptCvKeyBoolean("auto-commit.when-transaction-started-implicitly"); //$NON-NLS-1$
 
-    /** dot.verbose */
+    /** dot.verbose . */
     public static final ScriptCvKeyBoolean DOT_VERBOSE = new ScriptCvKeyBoolean(DotOutputHandler.KEY_VERBOSE);
-    /** dot.output */
+    /** dot.output . */
     public static final ScriptCvKeyString DOT_OUTPUT = new ScriptCvKeyString(DotOutputHandler.KEY_OUTPUT);
-    /** dot.executable */
+    /** dot.executable . */
     public static final ScriptCvKeyString DOT_EXECUTABLE = new ScriptCvKeyString(DotOutputHandler.KEY_EXECUTABLE);
-    /** dot.graph. */
+    /** dot.graph.* . */
     public static final ScriptCvKeyString DOT_GRAPH_PREFIX = new ScriptCvKeyString(DotOutputHandler.KEY_GRAPH_PREFIX);
-    /** dot.node. */
+    /** dot.node.* . */
     public static final ScriptCvKeyString DOT_NODE_PREFIX = new ScriptCvKeyString(DotOutputHandler.KEY_NODE_PREFIX);
-    /** dot.edge. */
+    /** dot.edge.* . */
     public static final ScriptCvKeyString DOT_EDGE_PREFIX = new ScriptCvKeyString(DotOutputHandler.KEY_EDGE_PREFIX);
 
     //
@@ -192,6 +192,7 @@ public abstract class ScriptCvKey<T> {
 
     //
 
+    /** variable name. */
     protected final String name;
 
     protected ScriptCvKey(String name) {

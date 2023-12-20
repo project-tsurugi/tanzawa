@@ -27,7 +27,7 @@ import com.tsurugidb.console.cli.repl.jline.ReplJLineHistory;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineReader;
 import com.tsurugidb.console.cli.repl.jline.ReplJLineTerminal;
 import com.tsurugidb.console.core.ScriptRunner;
-import com.tsurugidb.console.core.util.TanzawaVersion;
+import com.tsurugidb.tools.common.util.LibraryVersion;
 import com.tsurugidb.tsubakuro.client.ServiceClientCollector;
 import com.tsurugidb.tsubakuro.util.TsubakuroVersion;
 
@@ -36,6 +36,8 @@ import com.tsurugidb.tsubakuro.util.TsubakuroVersion;
  */
 public final class Main {
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
+
+    private static final String TGSQL_CORE_MODULE_NAME = "tanzawa-tgsql-core"; //$NON-NLS-1$
 
     /**
      * Execute script.
@@ -118,14 +120,15 @@ public final class Main {
     }
 
     private static void printVersion() {
-        String core = TanzawaVersion.MODULE_CORE;
-        String tgsqlVersion = getVersion("tgsqlVersion", () -> TanzawaVersion.getBuildVersion(core));
+        var tgsqlCoreVersion = getTgSqlCoreVersion();
+
+        String tgsqlVersion = getVersion("tgsqlVersion", () -> tgsqlCoreVersion.getBuildVersion().get());
         System.out.println("-------------------------------------");
         System.out.printf("Tsurugi SQL console %s%n", tgsqlVersion);
         System.out.println("-------------------------------------");
 
         System.out.println();
-        String tgsqlTimestamp = getVersion("tgsqlTimestamp", () -> TanzawaVersion.getBuildTimestamp(core));
+        String tgsqlTimestamp = getVersion("tgsqlTimestamp", () -> tgsqlCoreVersion.getBuildTimestamp().get().toString());
         System.out.printf("Build time: %s%n", tgsqlTimestamp);
 
         System.out.println();
@@ -136,6 +139,15 @@ public final class Main {
         String jvmVersion = getVersion("jvmVersion", () -> System.getProperty("java.vm.version"));
         String javaHome = getVersion("javaHome", () -> System.getProperty("java.home"));
         System.out.printf("JVM:        %s (%s)%n", jvmVersion, javaHome);
+    }
+
+    private static LibraryVersion getTgSqlCoreVersion() {
+        try {
+            return LibraryVersion.loadByName(TGSQL_CORE_MODULE_NAME, Main.class.getClassLoader());
+        } catch (Exception e) {
+            LOG.debug("getTgSqlCoreVersion error", e);
+            return null;
+        }
     }
 
     @FunctionalInterface

@@ -86,7 +86,7 @@ public interface SqlProcessor extends ServerResource {
     boolean isTransactionActive();
 
     /**
-     * Provides transaction id that is unique to for the duration of the database server's lifetime
+     * Provides transaction id that is unique to for the duration of the database server's lifetime.
      *
      * @return the id String for this transaction
      */

@@ -29,7 +29,7 @@ public class DefaultCredentialSessionConnector {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultCredentialSessionConnector.class);
 
     /**
-     * Session with Credential
+     * Session with Credential.
      */
     public static /* record */ class SessionWithCredential {
         private Session session;

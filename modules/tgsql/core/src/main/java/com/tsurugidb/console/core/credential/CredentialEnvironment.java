@@ -22,7 +22,7 @@ public final class CredentialEnvironment {
     }
 
     /**
-     * get path of credential.json under user.home
+     * get path of credential.json under user.home .
      *
      * @return path
      */
@@ -31,7 +31,7 @@ public final class CredentialEnvironment {
     }
 
     /**
-     * get path under user.home
+     * get path under user.home .
      *
      * @param relativePath relative path under user.home
      * @return path

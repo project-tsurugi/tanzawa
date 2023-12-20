@@ -21,6 +21,7 @@ import com.tsurugidb.tsubakuro.explain.PlanNode;
  */
 public class PlanGraphReporter {
 
+    /** message reporter. */
     protected final Consumer<String> messageReporter;
 
     /**

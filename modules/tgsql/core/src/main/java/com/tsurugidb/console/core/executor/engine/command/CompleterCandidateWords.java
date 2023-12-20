@@ -78,7 +78,7 @@ public class CompleterCandidateWords {
     }
 
     /**
-     * add candidate words
+     * add candidate words.
      *
      * @param words      candidate words
      * @param startIndex index to start adding
