@@ -34,13 +34,19 @@ application {
 }
 
 shadowJar {
-    archiveBaseName = 'dump-tool'
+    archiveBaseName = 'tgdump'
     archiveClassifier = 'all'
     mergeServiceFiles()
 }
 
 distZip {
     archiveFileName = "tgdump.zip"
+}
+
+distTar {
+    archiveFileName = "tgdump.tar.gz"
+    archiveExtension = 'tar.gz'
+    compression = Compression.GZIP
 }
 
 test {

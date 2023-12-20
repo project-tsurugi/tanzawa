@@ -35,11 +35,17 @@ run {
 }
 
 shadowJar {
-    archiveBaseName = 'sql-console'
+    archiveBaseName = 'tgsql'
     archiveClassifier = 'all'
     mergeServiceFiles()
 }
 
 distZip {
     archiveFileName = "tgsql.zip"
+}
+
+distTar {
+    archiveFileName = "tgsql.tar.gz"
+    archiveExtension = 'tar.gz'
+    compression = Compression.GZIP
 }
