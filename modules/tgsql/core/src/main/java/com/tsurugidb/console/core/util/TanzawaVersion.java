@@ -20,7 +20,7 @@ public final class TanzawaVersion {
     static final Logger LOG = LoggerFactory.getLogger(TanzawaVersion.class);
 
     /** core. */
-    public static final String MODULE_CORE = "core"; //$NON-NLS-1$
+    public static final String MODULE_CORE = "tgsql-core"; //$NON-NLS-1$
 
     private static final String PATH_VERSION_DIR = "/META-INF/tsurugidb/"; //$NON-NLS-1$
     private static final String MODULE_PREFIX = "tanzawa-"; //$NON-NLS-1$

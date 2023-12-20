@@ -11,6 +11,15 @@ java {
     }
 }
 
+def qualifyProjectName(Project project) {
+    if (project == project.rootProject) {
+        // root project
+        return project.name
+    }
+    // sub-projects
+    return qualifyProjectName(project.parent) + "-" + project.name
+}
+
 ext {
     tsubakuroVersion = '1.2.0-SNAPSHOT'
     isReleaseVersion = !version.endsWith("SNAPSHOT")
@@ -20,6 +29,8 @@ ext {
     createdBy = "Gradle ${gradle.gradleVersion}"
     buildJdk = "${javaToolchains.launcherFor(java.toolchain).get().getMetadata().javaRuntimeVersion} ${javaToolchains.launcherFor(java.toolchain).get().getMetadata().vendor} ${javaToolchains.launcherFor(java.toolchain).get().getMetadata().jvmVersion}"
     buildOs = "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
+
+    qualifiedProjectName = qualifyProjectName(project)
 }
 
 tasks.withType(JavaCompile) { task ->

@@ -95,7 +95,7 @@ task showTsubakuroManifest {
 task writeVersion(type: WriteProperties) {
     description 'generate version file to META-INF/tsurugidb/{project.name}.properties'
     inputs.property('Build-Revision', buildRevision)
-    outputFile "${project.buildDir}/generated/version/META-INF/tsurugidb/${project.name}.properties"
+    outputFile "${project.buildDir}/generated/version/META-INF/tsurugidb/${project.qualifiedProjectName}.properties"
     properties (
         'Build-Timestamp': buildTimestamp,
         'Build-Revision' : buildRevision,

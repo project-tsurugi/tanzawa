@@ -32,7 +32,7 @@ import com.tsurugidb.tsubakuro.sql.SqlClient;
  */
 final class CommandUtil {
 
-    private static final String SELF_MODULE_NAME = "tgdump-cli"; //$NON-NLS-1$
+    private static final String SELF_MODULE_NAME = "tanzawa-tgdump-cli"; //$NON-NLS-1$
 
     private static final String TSUBAKURO_MODULE_NAME = "tsubakuro-session"; //$NON-NLS-1$
 
