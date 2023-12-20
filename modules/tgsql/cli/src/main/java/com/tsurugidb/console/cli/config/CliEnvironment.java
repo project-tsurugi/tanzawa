@@ -15,7 +15,7 @@ public final class CliEnvironment {
     private static final String PROJECT_DIR = "tgsql"; //$NON-NLS-1$
 
     /**
-     * get path of console history file under user.home
+     * get path of console history file under user.home .
      *
      * @return path
      */
@@ -24,7 +24,7 @@ public final class CliEnvironment {
     }
 
     /**
-     * get path of client-variable.properties under user.home
+     * get path of client-variable.properties under user.home .
      *
      * @return path
      */

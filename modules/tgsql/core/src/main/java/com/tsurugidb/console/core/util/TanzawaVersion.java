@@ -19,7 +19,7 @@ import com.tsurugidb.tsubakuro.util.TsubakuroVersion;
 public final class TanzawaVersion {
     static final Logger LOG = LoggerFactory.getLogger(TanzawaVersion.class);
 
-    /** core */
+    /** core. */
     public static final String MODULE_CORE = "core"; //$NON-NLS-1$
 
     private static final String PATH_VERSION_DIR = "/META-INF/tsurugidb/"; //$NON-NLS-1$

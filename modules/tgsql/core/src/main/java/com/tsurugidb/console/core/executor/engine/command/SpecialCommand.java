@@ -27,7 +27,7 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 public abstract class SpecialCommand {
 
     /**
-     * special command prefix
+     * special command prefix.
      */
     public static final String COMMAND_PREFIX = "\\"; //$NON-NLS-1$
 
@@ -161,7 +161,7 @@ public abstract class SpecialCommand {
     }
 
     /**
-     * get representative command name
+     * get representative command name.
      *
      * @return command name
      */
