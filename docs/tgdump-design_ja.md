@@ -285,14 +285,33 @@ tgdump <table-name> [<table-name> [...]] --to </path/to/destination-dir> --conne
   フィールド名 | 形式 | 概要
   ------------|------|------
   `format_type` | 文字列 | `"parquet"`
+  `parquet_version` | 文字列 | Parquet file 形式のバージョン
+  `record_batch_size` | 整数 | row group の最大行数, 1以上
+  `record_batch_in_bytes` | 整数 | row group の最大行数を推定レコードサイズから算定, 1以上
+  `codec` | 文字列 | 圧縮コーデックの名前
+  `encoding` | 文字列 | 列のエンコーディングの名前
+  `columns` | 配列 | 列ごとの設定 (後述)
+
+  上記の `columns` フィールドには、以下のプロパティを有する JSON オブジェクトを指定する (`ParquetColumnFormat` に対応)。
+
+  フィールド名 | 形式 | 概要
+  ------------|------|------
+  `name` | 文字列 | 対象の列名
+  `codec` | 文字列 | 圧縮コーデックの名前
+  `encoding` | 文字列 | 列のエンコーディングの名前
 
   Apache Arrow 形式の場合、 `file_format` には以下のプロパティを有する JSON オブジェクトを指定する (`ArrowFileFormat` に対応)。
 
   フィールド名 | 形式 | 概要
   ------------|------|------
   `format_type` | 文字列 | `"arrow"`
-
-  TODO: protocol buffers の変更に合わせて、上記を追従させる
+  `metadata_version` | 文字列 | メタデータ形式のバージョン
+  `alignment` | 整数 | メモリアライメントのバイト数, 1以上
+  `record_batch_size` | 整数 | record batch の最大行数, 1以上
+  `record_batch_in_bytes` | 整数 | record batch の最大行数を推定レコードサイズから算定, 1以上
+  `codec` | 文字列 | 圧縮コーデックの名前
+  `min_space_saving` | 数値 | 圧縮済みデータを採用する圧縮率の閾値, 0.0~1.0の範囲
+  `character_field_type` | 文字列 | `"STRING"` または `"FIXED_SIZE_BINARY"`
 
 * ダンププロファイル記述ファイルを組み込みのダンププロファイルとする場合、以下の手順を行う
   1. クラスパス上に当該ファイルを配置する
