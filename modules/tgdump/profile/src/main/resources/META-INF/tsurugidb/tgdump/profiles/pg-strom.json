@@ -1,0 +1,12 @@
+// dump profile for PG-Strom.
+{
+    "format_version": 1,
+    "title": "PG-Strom",
+    "description": "dump tables as Apache Arrow files optimized for PG-Strom.",
+
+    "file_format": {
+        "format_type": "arrow",
+        "record_batch_in_bytes": 268435456, // 256MB
+        "character_field_type": "fixed_size_binary",
+    },
+}
