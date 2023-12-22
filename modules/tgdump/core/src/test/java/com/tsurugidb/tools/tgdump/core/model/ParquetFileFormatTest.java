@@ -40,6 +40,7 @@ class ParquetFileFormatTest {
 
         assertEquals(
                 SqlRequest.ParquetFileFormat.newBuilder()
+                    .setParquetVersion("2.5")
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -54,6 +55,7 @@ class ParquetFileFormatTest {
 
         assertEquals(
                 SqlRequest.ParquetFileFormat.newBuilder()
+                    .setRecordBatchSize(100)
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -68,6 +70,7 @@ class ParquetFileFormatTest {
 
         assertEquals(
                 SqlRequest.ParquetFileFormat.newBuilder()
+                    .setRecordBatchInBytes(10000)
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -82,6 +85,7 @@ class ParquetFileFormatTest {
 
         assertEquals(
                 SqlRequest.ParquetFileFormat.newBuilder()
+                    .setCodec("gzip")
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -96,6 +100,7 @@ class ParquetFileFormatTest {
 
         assertEquals(
                 SqlRequest.ParquetFileFormat.newBuilder()
+                    .setEncoding("plain")
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -111,6 +116,9 @@ class ParquetFileFormatTest {
 
         assertEquals(
                 SqlRequest.ParquetFileFormat.newBuilder()
+                    .addColumns(SqlRequest.ParquetColumnFormat.newBuilder()
+                            .setName("testing")
+                            .build())
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -133,18 +141,27 @@ class ParquetFileFormatTest {
 
         assertEquals(
                 SqlRequest.ParquetFileFormat.newBuilder()
-                    .build(),
+                    .addColumns(SqlRequest.ParquetColumnFormat.newBuilder()
+                            .setName("a")
+                            .build())
+                    .addColumns(SqlRequest.ParquetColumnFormat.newBuilder()
+                            .setName("b")
+                            .build())
+                    .addColumns(SqlRequest.ParquetColumnFormat.newBuilder()
+                            .setName("c")
+                            .build())
+                   .build(),
                 f.toProtocolBuffer());
     }
 
     @Test
-    void record_batch_size_zero() {
+    void record_batch_size_under() {
         var b = ParquetFileFormat.newBuilder();
         assertThrows(IllegalArgumentException.class, () -> b.withRecordBatchSize(0L));
     }
 
     @Test
-    void record_batch_in_bytes_zero() {
+    void record_batch_in_bytes_under() {
         var b = ParquetFileFormat.newBuilder();
         assertThrows(IllegalArgumentException.class, () -> b.withRecordBatchInBytes(0L));
     }

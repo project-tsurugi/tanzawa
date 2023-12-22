@@ -10,6 +10,9 @@ import java.util.OptionalLong;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.tsurugidb.sql.proto.SqlRequest;
 
 /**
@@ -161,6 +164,8 @@ public class ArrowFileFormat implements DumpFileFormat {
         }
     }
 
+    static final Logger LOG = LoggerFactory.getLogger(ArrowFileFormat.class);
+
     private final @Nullable String metadataVersion;
 
     private final @Nullable Integer alignment;
@@ -270,8 +275,27 @@ public class ArrowFileFormat implements DumpFileFormat {
 
     @Override
     public SqlRequest.ArrowFileFormat toProtocolBuffer() {
-        // FIXME: impl
-        return SqlRequest.ArrowFileFormat.getDefaultInstance();
+        var builder = SqlRequest.ArrowFileFormat.newBuilder();
+        getMetadataVersion().ifPresent(builder::setMetadataVersion);
+        getAlignment().ifPresent(builder::setAlignment);
+        getRecordBatchSize().ifPresent(builder::setRecordBatchSize);
+        getRecordBatchInBytes().ifPresent(builder::setRecordBatchInBytes);
+        getCodec().ifPresent(builder::setCodec);
+        getMinSpaceSaving().ifPresent(builder::setMinSpaceSaving);
+        getCharacterFieldType().map(ArrowFileFormat::convert).ifPresent(builder::setCharacterFieldType);
+        return builder.build();
+    }
+
+    private static SqlRequest.ArrowCharacterFieldType convert(CharacterFieldType value) {
+        switch (value) {
+        case STRING:
+            return SqlRequest.ArrowCharacterFieldType.STRING;
+        case FIXED_SIZE_BINARY:
+            return SqlRequest.ArrowCharacterFieldType.FIXED_SIZE_BINARY;
+        }
+        // may not occur
+        LOG.warn("unrecognized arrow character field type: {}", value);
+        return SqlRequest.ArrowCharacterFieldType.UNRECOGNIZED;
     }
 
     @Override

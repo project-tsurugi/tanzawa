@@ -43,6 +43,7 @@ class ArrowFileFormatTest {
 
         assertEquals(
                 SqlRequest.ArrowFileFormat.newBuilder()
+                    .setMetadataVersion("4")
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -57,6 +58,7 @@ class ArrowFileFormatTest {
 
         assertEquals(
                 SqlRequest.ArrowFileFormat.newBuilder()
+                    .setAlignment(16)
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -71,6 +73,7 @@ class ArrowFileFormatTest {
 
         assertEquals(
                 SqlRequest.ArrowFileFormat.newBuilder()
+                    .setRecordBatchSize(100)
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -85,6 +88,7 @@ class ArrowFileFormatTest {
 
         assertEquals(
                 SqlRequest.ArrowFileFormat.newBuilder()
+                    .setRecordBatchInBytes(10000)
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -99,6 +103,7 @@ class ArrowFileFormatTest {
 
         assertEquals(
                 SqlRequest.ArrowFileFormat.newBuilder()
+                    .setCodec("gzip")
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -113,6 +118,7 @@ class ArrowFileFormatTest {
 
         assertEquals(
                 SqlRequest.ArrowFileFormat.newBuilder()
+                    .setMinSpaceSaving(0.75)
                     .build(),
                 f.toProtocolBuffer());
     }
@@ -127,24 +133,40 @@ class ArrowFileFormatTest {
 
         assertEquals(
                 SqlRequest.ArrowFileFormat.newBuilder()
+                    .setCharacterFieldType(SqlRequest.ArrowCharacterFieldType.FIXED_SIZE_BINARY)
                     .build(),
                 f.toProtocolBuffer());
     }
 
     @Test
-    void alignment_zero() {
+    void character_field_type_another() {
+        var f = ArrowFileFormat.newBuilder()
+                .withCharacterFieldType(ArrowFileFormat.CharacterFieldType.STRING)
+                .build();
+
+        assertEquals(Optional.of(ArrowFileFormat.CharacterFieldType.STRING), f.getCharacterFieldType());
+
+        assertEquals(
+                SqlRequest.ArrowFileFormat.newBuilder()
+                    .setCharacterFieldType(SqlRequest.ArrowCharacterFieldType.STRING)
+                    .build(),
+                f.toProtocolBuffer());
+    }
+
+    @Test
+    void alignment_under() {
         var b = ArrowFileFormat.newBuilder();
         assertThrows(IllegalArgumentException.class, () -> b.withAlignment(0));
     }
 
     @Test
-    void record_batch_size_zero() {
+    void record_batch_size_under() {
         var b = ArrowFileFormat.newBuilder();
         assertThrows(IllegalArgumentException.class, () -> b.withRecordBatchSize(0L));
     }
 
     @Test
-    void record_batch_in_bytes_zero() {
+    void record_batch_in_bytes_under() {
         var b = ArrowFileFormat.newBuilder();
         assertThrows(IllegalArgumentException.class, () -> b.withRecordBatchInBytes(0L));
     }

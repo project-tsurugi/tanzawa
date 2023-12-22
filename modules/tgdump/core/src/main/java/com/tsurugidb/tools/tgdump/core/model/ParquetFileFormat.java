@@ -223,8 +223,16 @@ public class ParquetFileFormat implements DumpFileFormat {
 
     @Override
     public SqlRequest.ParquetFileFormat toProtocolBuffer() {
-        // FIXME: impl
-        return SqlRequest.ParquetFileFormat.getDefaultInstance();
+        var builder = SqlRequest.ParquetFileFormat.newBuilder();
+        getParquetVersion().ifPresent(builder::setParquetVersion);
+        getRecordBatchSize().ifPresent(builder::setRecordBatchSize);
+        getRecordBatchInBytes().ifPresent(builder::setRecordBatchInBytes);
+        getCodec().ifPresent(builder::setCodec);
+        getEncoding().ifPresent(builder::setEncoding);
+        getColumns().stream()
+                .map(ParquetColumnFormat::toProtocolBuffer)
+                .forEachOrdered(builder::addColumns);
+        return builder.build();
     }
 
     @Override

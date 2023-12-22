@@ -6,6 +6,8 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.tsurugidb.sql.proto.SqlRequest;
+
 /**
  * A format description of individual columns in {@link ParquetFileFormat}.
  */
@@ -136,7 +138,17 @@ public class ParquetColumnFormat {
         return Optional.ofNullable(encoding);
     }
 
-    // TODO: SqlRequest.ParquetColumnFormat toProtocolBuffer()
+    /**
+     * Builds dump options from this settings.
+     * @return the built protocol buffer object
+     */
+    public SqlRequest.ParquetColumnFormat toProtocolBuffer() {
+        var builder = SqlRequest.ParquetColumnFormat.newBuilder();
+        builder.setName(getName());
+        getCodec().ifPresent(builder::setCodec);
+        getEncoding().ifPresent(builder::setEncoding);
+        return builder.build();
+    }
 
     @Override
     public int hashCode() {

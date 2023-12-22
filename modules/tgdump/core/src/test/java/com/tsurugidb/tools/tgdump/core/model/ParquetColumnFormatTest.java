@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import com.tsurugidb.sql.proto.SqlRequest;
+
 class ParquetColumnFormatTest {
 
     @Test
@@ -17,6 +19,12 @@ class ParquetColumnFormatTest {
         assertEquals(Optional.empty(), f.getEncoding());
 
         assertEquals(f, ParquetColumnFormat.newBuilder("testing").build(), f.toString());
+
+        assertEquals(
+                SqlRequest.ParquetColumnFormat.newBuilder()
+                    .setName("testing")
+                    .build(),
+                f.toProtocolBuffer());
     }
 
     @Test
@@ -26,6 +34,13 @@ class ParquetColumnFormatTest {
                 .build();
 
         assertEquals(Optional.of("snappy"), f.getCodec());
+
+        assertEquals(
+                SqlRequest.ParquetColumnFormat.newBuilder()
+                    .setName("testing")
+                    .setCodec("snappy")
+                    .build(),
+                f.toProtocolBuffer());
     }
 
     @Test
@@ -35,5 +50,12 @@ class ParquetColumnFormatTest {
                 .build();
 
         assertEquals(Optional.of("RLE"), f.getEncoding());
+
+        assertEquals(
+                SqlRequest.ParquetColumnFormat.newBuilder()
+                    .setName("testing")
+                    .setEncoding("RLE")
+                    .build(),
+                f.toProtocolBuffer());
     }
 }
