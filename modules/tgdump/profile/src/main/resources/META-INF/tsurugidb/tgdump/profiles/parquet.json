@@ -1,7 +1,7 @@
 // dump profile for generic Apache Arrow files.
 {
     "format_version": 1,
-    "title": "parquet",
+    "title": "Parquet",
     "description": "dump tables as Apache Parquet files.",
 
     // use the arrow file format type.

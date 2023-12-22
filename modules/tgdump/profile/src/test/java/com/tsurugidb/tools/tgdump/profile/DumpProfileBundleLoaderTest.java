@@ -1,6 +1,7 @@
 package com.tsurugidb.tools.tgdump.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -26,7 +28,9 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.tsurugidb.tools.common.diagnostic.DiagnosticException;
+import com.tsurugidb.tools.tgdump.core.model.ArrowFileFormat;
 import com.tsurugidb.tools.tgdump.core.model.DumpProfile;
+import com.tsurugidb.tools.tgdump.core.model.ParquetFileFormat;
 
 class DumpProfileBundleLoaderTest {
 
@@ -300,11 +304,47 @@ class DumpProfileBundleLoaderTest {
     }
 
     @Test
-    void system() throws Exception {
+    void system_default() throws Exception {
         var loader = new DumpProfileBundleLoader(reader, DumpProfileBundleLoader.class.getClassLoader(), false);
         var bundle = loader.load();
-        assertTrue(bundle.getProfileNames().contains("default"));
-        assertTrue(bundle.getProfileNames().contains("parquet"));
-        assertTrue(bundle.getProfileNames().contains("arrow"));
+        var profile = bundle.getProfile("default");
+        assertEquals(Optional.of("default"), profile.getTitle());
+        assertNotEquals(Optional.empty(), profile.getDescription());
+        assertEquals(Optional.empty(), profile.getFileFormat());
+    }
+
+    @Test
+    void system_parquet() throws Exception {
+        var loader = new DumpProfileBundleLoader(reader, DumpProfileBundleLoader.class.getClassLoader(), false);
+        var bundle = loader.load();
+        var profile = bundle.getProfile("parquet");
+        assertEquals(Optional.of("Parquet"), profile.getTitle());
+        assertNotEquals(Optional.empty(), profile.getDescription());
+        assertEquals(Optional.of(new ParquetFileFormat()), profile.getFileFormat());
+    }
+
+    @Test
+    void system_arrow() throws Exception {
+        var loader = new DumpProfileBundleLoader(reader, DumpProfileBundleLoader.class.getClassLoader(), false);
+        var bundle = loader.load();
+        var profile = bundle.getProfile("arrow");
+        assertEquals(Optional.of("Arrow"), profile.getTitle());
+        assertNotEquals(Optional.empty(), profile.getDescription());
+        assertEquals(Optional.of(new ArrowFileFormat()), profile.getFileFormat());
+    }
+
+    @Test
+    void system_pg_strom() throws Exception {
+        var loader = new DumpProfileBundleLoader(reader, DumpProfileBundleLoader.class.getClassLoader(), false);
+        var bundle = loader.load();
+        var profile = bundle.getProfile("pg-strom");
+        assertEquals(Optional.of("PG-Strom"), profile.getTitle());
+        assertNotEquals(Optional.empty(), profile.getDescription());
+        assertEquals(
+                Optional.of(ArrowFileFormat.newBuilder()
+                        .withRecordBatchInBytes(256L * 1024 * 1024)
+                        .withCharacterFieldType(ArrowFileFormat.CharacterFieldType.FIXED_SIZE_BINARY)
+                        .build()),
+                profile.getFileFormat());
     }
 }

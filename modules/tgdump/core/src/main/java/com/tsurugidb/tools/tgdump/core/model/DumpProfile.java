@@ -145,7 +145,7 @@ public class DumpProfile {
      * This may returns {@code empty} even if {@link #getDescription() non-localized description} exists.
      * </p>
      * @param language the language code for the description
-     * @return the localized profile description, or {@code empty} if it is not sure
+     * @return the localized profile description for the language, or {@code empty} if it is not sure
      */
     public Optional<String> getLocalizedDescription(@Nonnull String language) {
         Objects.requireNonNull(language);

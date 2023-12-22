@@ -13,10 +13,18 @@ class TransactionSettingsTest {
 
     @Test
     void defaults() {
-        var s = new TransactionSettings();
+        var s = TransactionSettings.newBuilder()
+                .build();
         assertEquals(TransactionSettings.DEFAULT_TYPE, s.getType());
         assertEquals(Optional.empty(), s.getLabel());
         assertEquals(TransactionSettings.DEFAULT_ENABLE_READ_AREAS, s.isEnableReadAreas());
+
+        assertEquals(s, new TransactionSettings(), s.toString());
+        assertEquals(
+                SqlRequest.TransactionOption.newBuilder()
+                        .setType(SqlRequest.TransactionType.READ_ONLY)
+                        .build(),
+                s.toProtocolBuffer(List.of()));
     }
 
     @Test
