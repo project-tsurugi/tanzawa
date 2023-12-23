@@ -23,6 +23,16 @@ dependencies {
     testImplementation 'org.slf4j:slf4j-simple:1.7.36'
 }
 
+distributions {
+    main {
+        distributionBaseName = 'tgsql'
+    }
+    shadow {
+        distributionBaseName = 'tgsql'
+        distributionClassifier = 'shadow'
+    }
+}
+
 application {
     applicationName = 'tgsql'
     mainClass = 'com.tsurugidb.console.cli.Main'
@@ -39,14 +49,4 @@ shadowJar {
     archiveBaseName = 'tgsql'
     archiveClassifier = 'all'
     mergeServiceFiles()
-}
-
-distZip {
-    archiveFileName = "tgsql.zip"
-}
-
-distTar {
-    archiveFileName = "tgsql.tar.gz"
-    archiveExtension = 'tar.gz'
-    compression = Compression.GZIP
 }

@@ -23,6 +23,16 @@ dependencies {
     testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
 }
 
+distributions {
+    main {
+        distributionBaseName = 'tgdump'
+    }
+    shadow {
+        distributionBaseName = 'tgdump'
+        distributionClassifier = 'shadow'
+    }
+}
+
 application {
     applicationName = 'tgdump'
     mainClass = 'com.tsurugidb.tools.tgdump.cli.Main'
@@ -37,16 +47,6 @@ shadowJar {
     archiveBaseName = 'tgdump'
     archiveClassifier = 'all'
     mergeServiceFiles()
-}
-
-distZip {
-    archiveFileName = "tgdump.zip"
-}
-
-distTar {
-    archiveFileName = "tgdump.tar.gz"
-    archiveExtension = 'tar.gz'
-    compression = Compression.GZIP
 }
 
 test {

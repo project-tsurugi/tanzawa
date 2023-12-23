@@ -108,3 +108,8 @@ task writeVersion(type: WriteProperties) {
 
 sourceSets.main.output.dir("${project.buildDir}/generated/version")
 processResources.dependsOn writeVersion
+
+tasks.withType(Tar) { task ->
+    task.archiveExtension = 'tar.gz'
+    task.compression = Compression.GZIP
+}
