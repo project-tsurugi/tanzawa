@@ -2,7 +2,7 @@
 
 ## Available Tools
 
-* [tgsql](./modules/tgsql/cli) - Text based SQL client program.
+* [tgsql](./modules/tgsql) - Text based SQL client program.
 * [tgdump](./modules/tgdump) - Table Dump Tool.
 
 ## Requirements
@@ -32,16 +32,12 @@ allprojects { project ->
 ## How to test
 
 ```sh
-./gradle test
+./gradlew test
 ```
 
 ## How to run SQL console CLI
 
-see [modules/tgsql/cli/README.md](modules/tgsql/cli/README.md).
-
-## SQL language
-
-see [docs/grammar-rule.md](docs/grammar-rule.md).
+see [modules/tgsql/README.md](modules/tgsql/README.md).
 
 ## License
 
