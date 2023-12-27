@@ -2,7 +2,33 @@
 
 Tsurugi Table Dump Tool extracts the contents of table data and saves them on files.
 
-## command specification
+## Build and Install
+
+Execute the below command in this directory (`/modules/tgdump`):
+
+```sh
+../../gradlew assemble
+```
+
+This will create the following distribution archives:
+
+* `cli/build/distributions/tgdump-<version>.zip`
+* `cli/build/distributions/tgdump-<version>.tar.gz`
+* `cli/build/distributions/tgdump-<version>-shadow.zip`
+* `cli/build/distributions/tgdump-<version>-shadow.tar.gz`
+
+Each of the archives above contains the following contents:
+
+* `tgdump-<version>(-shadow)/bin/tgdump`
+  * A script for executing the command
+  * Additionally, `tgdump.bat` is included for Windows users
+* `tgdump-<version>(-shadow)/lib/*.jar`
+  * Java libraries used by the command
+  * For the -shadow archives, the above is packaged into a single "Uber JAR" file
+
+Deploy the files mentioned above, and the tgdump command will be available for use.
+
+## Command specification
 
 ```sh
 tgdump <table-name> [<table-name> [...]] --to </path/to/destination-dir> --connection <endpoint-uri> ...

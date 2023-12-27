@@ -3,7 +3,7 @@
 ## Available Tools
 
 * [tgsql](./modules/tgsql/cli) - Text based SQL client program.
-* [tgdump](./modules/tgdump/cli) - Table Dump Tool.
+* [tgdump](./modules/tgdump) - Table Dump Tool.
 
 ## Requirements
 
