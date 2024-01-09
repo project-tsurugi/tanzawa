@@ -1,6 +1,6 @@
-# Tsurugi SQL grammar rule
+# Tsurugi SQL console grammar rule
 
-### Notation
+## Notation
 
 * `<symbol>` - a non-terminal symbol or token
 * `"image"` - a token
@@ -12,7 +12,7 @@
 * `<rule> *` - the rule appears zero or more times
 * `<rule> +` - the rule appears one or more times
 
-### Grammar
+## Grammar
 
 ```bnf
 <script> ::= <statement>+
@@ -96,7 +96,7 @@
                        |  EOF
 ```
 
-### Tokens
+## Tokens
 
 ```bnf
 <whitespace> ::= ( " " | "\t" | "\r" | "\n" )
