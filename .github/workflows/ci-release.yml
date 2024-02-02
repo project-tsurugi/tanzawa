@@ -29,7 +29,7 @@ jobs:
         if: contains(github.ref, '/tags/')
         run: |
           cd modules/tgsql
-          ../../gradlew -i distZip
+          ../../gradlew -i distZip --warning-mode all
           cd -
 
           set -x
