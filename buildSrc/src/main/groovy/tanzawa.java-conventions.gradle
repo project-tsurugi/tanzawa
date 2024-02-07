@@ -54,6 +54,10 @@ spotbugsMain {
             enabled = true
             destination = file("$buildDir/reports/spotbugs/main/spotbugs.xml")
         }
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+        }
     }
 }
 
