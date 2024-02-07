@@ -17,19 +17,19 @@ jobs:
 
     steps:
       - name: Setup_Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create_Release
         if: contains(github.ref, '/tags/')
         run: |
           cd modules/tgsql
-          ../../gradlew -i distZip
+          ../../gradlew -i distZip --warning-mode all
           cd -
 
           set -x

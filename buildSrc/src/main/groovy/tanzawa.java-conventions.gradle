@@ -34,8 +34,9 @@ java {
 }
 
 dependencies {
-    testImplementation(platform('org.junit:junit-bom:5.9.0'))
-    testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation platform('org.junit:junit-bom:5.10.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 checkstyle {
@@ -53,7 +54,12 @@ spotbugsMain {
             enabled = true
             destination = file("$buildDir/reports/spotbugs/main/spotbugs.xml")
         }
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+        }
     }
+    excludeFilter = rootProject.file('buildSrc/src/main/resources/spotbugsExclude.xml')
 }
 
 spotbugsTest.enabled = false
@@ -95,7 +101,7 @@ task showTsubakuroManifest {
 task writeVersion(type: WriteProperties) {
     description 'generate version file to META-INF/tsurugidb/{project.name}.properties'
     inputs.property('Build-Revision', buildRevision)
-    outputFile "${project.buildDir}/generated/version/META-INF/tsurugidb/${project.qualifiedProjectName}.properties"
+    destinationFile = file("${project.buildDir}/generated/version/META-INF/tsurugidb/${project.qualifiedProjectName}.properties")
     properties (
         'Build-Timestamp': buildTimestamp,
         'Build-Revision' : buildRevision,
