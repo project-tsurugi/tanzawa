@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -388,6 +389,18 @@ public class CliArgument {
             return List.of();
         }
         return list.stream().map(String::trim).collect(Collectors.toList());
+    }
+
+    /**
+     * check unknown parameter.
+     *
+     * @throws ParameterException invalid parameter
+     */
+    public void checkUnknownParameter() throws ParameterException {
+        if (this.otherList == null || otherList.isEmpty()) {
+            return; // OK
+        }
+        throw new ParameterException(MessageFormat.format("invalid parameter {0}", otherList));
     }
 
     /**

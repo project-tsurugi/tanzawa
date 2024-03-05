@@ -6,7 +6,6 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.stream.Collectors;
 
-import org.jline.utils.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +61,7 @@ public final class Main {
     public static int execute(String... args) throws Exception {
         var argument = new CliArgument();
         var commander = JCommander.newBuilder() //
-                .programName(Main.class.getName()) //
+                .programName("tgsql") //$NON-NLS-1$
                 .addObject(argument) //
                 .build();
         try (Closeable c0 = () -> ReplJLineTerminal.close()) {
@@ -103,15 +102,6 @@ public final class Main {
                 LOG.error(e.getMessage(), e);
             } else {
                 LOG.error(e.getMessage());
-            }
-
-            String command = commander.getParsedCommand();
-            if (command != null) {
-                var c = commander.getCommands().get(command);
-                if (c != null) {
-                    c.usage();
-                    return 1;
-                }
             }
 
             commander.usage();
@@ -159,7 +149,7 @@ public final class Main {
         try {
             return supplier.get();
         } catch (Exception e) {
-            Log.debug(title + " get error", e);
+            LOG.debug(title + " get error", e);
             return "unknown";
         }
     }
@@ -169,12 +159,14 @@ public final class Main {
             var classList = ServiceClientCollector.collect(false);
             return classList.stream().flatMap(c -> ServiceClientCollector.findServiceMessageVersion(c).stream()).collect(Collectors.joining(", "));
         } catch (Exception e) {
-            Log.debug("getServiceMessageVersion error", e);
+            LOG.debug("getServiceMessageVersion error", e);
             return "N/A";
         }
     }
 
     private static void executeConsole(JCommander commander, CliArgument argument) throws Exception {
+        argument.checkUnknownParameter();
+
         ReplCvKey.registerKey();
 
         var builder = new ConsoleConfigBuilder(argument);
@@ -195,6 +187,7 @@ public final class Main {
         var builder = new ExecConfigBuilder(argument);
         var config = builder.build();
         var statement = builder.getStatement();
+        LOG.debug("exec.statement=[{}]", statement);
 
         try (var reader = new StringReader(statement)) {
             ScriptRunner.execute(() -> reader, config);
@@ -205,7 +198,9 @@ public final class Main {
         var builder = new ScriptConfigBuilder(argument);
         var config = builder.build();
         var script = builder.getScript();
+        LOG.debug("script.script=[{}]", script);
         var encoding = builder.getEncoding();
+        LOG.debug("script.encoding=[{}]", encoding);
 
         try (var reader = Files.newBufferedReader(script, encoding)) {
             ScriptRunner.execute(() -> reader, config);

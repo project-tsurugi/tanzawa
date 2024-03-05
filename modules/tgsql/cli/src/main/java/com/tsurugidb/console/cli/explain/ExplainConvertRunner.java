@@ -33,6 +33,8 @@ public final class ExplainConvertRunner {
      * @throws Exception if exception was occurred
      */
     public static void execute(CliArgument argument) throws Exception {
+        argument.checkUnknownParameter();
+
         var builder = new ExplainConfigBuilder(argument);
         var config = builder.build();
         new ExplainConvertRunner(argument, config).execute();

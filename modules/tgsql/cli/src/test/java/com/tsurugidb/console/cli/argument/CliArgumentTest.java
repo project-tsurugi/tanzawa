@@ -238,6 +238,20 @@ class CliArgumentTest {
     }
 
     @Test
+    void checkUnknownParameter() {
+        {
+            var argument = new CliArgument();
+            argument.checkUnknownParameter();
+        }
+        {
+            var argument = new CliArgument();
+            setList(argument, "otherList", "--zzz", "hoge");
+            var e = assertThrows(ParameterException.class, () -> argument.checkUnknownParameter());
+            assertEquals("invalid parameter [--zzz, hoge]", e.getMessage());
+        }
+    }
+
+    @Test
     void execute() {
         {
             var argument = new CliArgument();
