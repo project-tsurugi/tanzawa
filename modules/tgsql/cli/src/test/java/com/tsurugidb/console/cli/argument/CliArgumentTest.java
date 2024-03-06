@@ -410,10 +410,19 @@ class CliArgumentTest {
 
     @Test
     void script() {
-        var argument = new CliArgument();
-        setList(argument, "otherList", "script.sql", "hoge");
+        {
+            var argument = new CliArgument();
+            setList(argument, "otherList", "script.sql");
 
-        assertEquals("script.sql", argument.getScript());
+            assertEquals("script.sql", argument.getScript());
+        }
+        {
+            var argument = new CliArgument();
+            setList(argument, "otherList", "script.sql", "hoge");
+
+            var e = assertThrows(ParameterException.class, () -> argument.getScript());
+            assertEquals("contains invalid parameter [script.sql, hoge]", e.getMessage());
+        }
     }
 
     @Test

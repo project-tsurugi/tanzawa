@@ -1,6 +1,8 @@
 package com.tsurugidb.console.cli.config;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,6 +10,7 @@ import java.util.EnumSet;
 
 import javax.annotation.Nonnull;
 
+import com.beust.jcommander.ParameterException;
 import com.tsurugidb.console.cli.argument.CliArgument;
 import com.tsurugidb.console.core.config.ScriptCommitMode;
 
@@ -62,6 +65,10 @@ public class ScriptConfigBuilder extends ConfigBuilder {
             if (!Files.exists(script)) {
                 throw new FileNotFoundException(script.toString());
             }
+        } catch (ParameterException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new UncheckedIOException(/* e.getMessage(), */ e);
         } catch (Exception e) {
             throw new RuntimeException("invalid script", e);
         }

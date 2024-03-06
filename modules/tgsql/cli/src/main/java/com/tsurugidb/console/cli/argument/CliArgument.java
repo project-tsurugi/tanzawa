@@ -572,6 +572,9 @@ public class CliArgument {
         if (this.otherList == null || otherList.isEmpty()) {
             throw new ParameterException("specify /path/to/script.sql");
         }
+        if (otherList.size() > 1) {
+            throw new ParameterException(MessageFormat.format("contains invalid parameter {0}", otherList));
+        }
         return otherList.get(0);
     }
 
