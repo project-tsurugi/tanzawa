@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import com.tsurugidb.console.core.executor.report.ScriptReporter;
 import com.tsurugidb.console.core.executor.result.BasicResultProcessor;
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
 import com.tsurugidb.console.core.executor.sql.BasicSqlProcessor;
+import com.tsurugidb.console.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.console.core.model.Statement.Kind;
 import com.tsurugidb.console.core.parser.SqlParser;
@@ -224,7 +226,7 @@ public final class ScriptRunner {
      * @throws InterruptedException if interrupted while establishing connection
      */
     public static void repl(//
-            @Nonnull IoSupplier<? extends List<Statement>> script, //
+            @Nonnull StatementSupplier script, //
             @Nonnull ScriptConfig config, //
             @Nonnull Function<AbstractEngine, Engine> engineWrapper, //
             @Nonnull ResultProcessor resultProcessor, //
@@ -240,6 +242,22 @@ public final class ScriptRunner {
     }
 
     /**
+     * statement supplier.
+     */
+    @FunctionalInterface
+    public interface StatementSupplier {
+        /**
+         * get statement.
+         *
+         * @param config      script configuration
+         * @param transaction transaction
+         * @return list of statement
+         * @throws IOException if I/O error was occurred
+         */
+        List<Statement> get(ScriptConfig config, @Nullable TransactionWrapper transaction) throws IOException;
+    }
+
+    /**
      * Executes REPL.
      *
      * @param script console reader
@@ -249,7 +267,7 @@ public final class ScriptRunner {
      * @throws InterruptedException if interrupted while establishing connection
      */
     public static void repl(//
-            @Nonnull IoSupplier<? extends List<Statement>> script, //
+            @Nonnull StatementSupplier script, //
             @Nonnull Engine engine) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(script);
         Objects.requireNonNull(engine);
@@ -259,7 +277,8 @@ public final class ScriptRunner {
         LOG.info("start repl");
         loop: while (true) {
             try {
-                List<Statement> statementList = script.get();
+                var transaction = engine.getTransaction();
+                List<Statement> statementList = script.get(engine.getConfig(), transaction);
                 if (statementList == null) {
                     LOG.trace("EOF");
                     break;

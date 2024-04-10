@@ -47,7 +47,7 @@ class BasicSqlProcessorTest {
             assertFalse(sql.isTransactionActive());
             sql.startTransaction(SqlRequest.TransactionOption.getDefaultInstance());
             assertTrue(sql.isTransactionActive());
-            assertSame(tx, sql.getTransaction());
+            assertSame(tx, sql.getTransaction().getTransaction());
         }
     }
 
@@ -64,8 +64,7 @@ class BasicSqlProcessorTest {
         };
         try (var sql = new BasicSqlProcessor(client)) {
             sql.startTransaction(SqlRequest.TransactionOption.getDefaultInstance());
-            assertThrows(IllegalStateException.class,
-                    () -> sql.startTransaction(SqlRequest.TransactionOption.getDefaultInstance()));
+            assertThrows(IllegalStateException.class, () -> sql.startTransaction(SqlRequest.TransactionOption.getDefaultInstance()));
         }
     }
 
@@ -152,9 +151,7 @@ class BasicSqlProcessorTest {
         PreparedStatement ps = createPreparedStatement(false);
         Transaction tx = new Transaction() {
             @Override
-            public FutureResponse<ExecuteResult> executeStatement(
-                    PreparedStatement statement,
-                    Collection<? extends SqlRequest.Parameter> parameters) throws IOException {
+            public FutureResponse<ExecuteResult> executeStatement(PreparedStatement statement, Collection<? extends SqlRequest.Parameter> parameters) throws IOException {
                 if (!reached.compareAndSet(false, true)) {
                     throw new AssertionError();
                 }
@@ -167,10 +164,9 @@ class BasicSqlProcessorTest {
             public FutureResponse<Transaction> createTransaction(SqlRequest.TransactionOption option) throws IOException {
                 return FutureResponse.returns(tx);
             }
+
             @Override
-            public FutureResponse<PreparedStatement> prepare(
-                    String source,
-                    Collection<? extends SqlRequest.Placeholder> placeholders) throws IOException {
+            public FutureResponse<PreparedStatement> prepare(String source, Collection<? extends SqlRequest.Placeholder> placeholders) throws IOException {
                 return FutureResponse.returns(ps);
             }
         };
@@ -187,14 +183,11 @@ class BasicSqlProcessorTest {
     @Test
     void execute_w_result() throws Exception {
         var reached = new AtomicBoolean();
-        ResultSet r = Relation.of()
-                .getResultSet(new ResultSetMetadataAdapter(SqlResponse.ResultSetMetadata.getDefaultInstance()));
+        ResultSet r = Relation.of().getResultSet(new ResultSetMetadataAdapter(SqlResponse.ResultSetMetadata.getDefaultInstance()));
         PreparedStatement ps = createPreparedStatement(true);
         Transaction tx = new Transaction() {
             @Override
-            public FutureResponse<ResultSet> executeQuery(
-                    PreparedStatement statement,
-                    Collection<? extends SqlRequest.Parameter> parameters) throws IOException {
+            public FutureResponse<ResultSet> executeQuery(PreparedStatement statement, Collection<? extends SqlRequest.Parameter> parameters) throws IOException {
                 if (!reached.compareAndSet(false, true)) {
                     throw new AssertionError();
                 }
@@ -207,10 +200,9 @@ class BasicSqlProcessorTest {
             public FutureResponse<Transaction> createTransaction(SqlRequest.TransactionOption option) throws IOException {
                 return FutureResponse.returns(tx);
             }
+
             @Override
-            public FutureResponse<PreparedStatement> prepare(
-                    String source,
-                    Collection<? extends SqlRequest.Placeholder> placeholders) throws IOException {
+            public FutureResponse<PreparedStatement> prepare(String source, Collection<? extends SqlRequest.Placeholder> placeholders) throws IOException {
                 return FutureResponse.returns(ps);
             }
         };
@@ -246,19 +238,16 @@ class BasicSqlProcessorTest {
             }
 
             @Override
-            public FutureResponse<PreparedStatement> prepare(
-                    String source,
-                    Collection<? extends Placeholder> placeholders) throws IOException {
+            public FutureResponse<PreparedStatement> prepare(String source, Collection<? extends Placeholder> placeholders) throws IOException {
                 assertNull(preparedSource);
                 preparedSource = source;
                 return FutureResponse.returns(preparedStatement);
             }
 
             @Override
-            public FutureResponse<StatementMetadata> explain(
-                    PreparedStatement statement,
-                    Collection<? extends SqlRequest.Parameter> parameters) throws IOException {
-                assertSame(preparedStatement, statement);;
+            public FutureResponse<StatementMetadata> explain(PreparedStatement statement, Collection<? extends SqlRequest.Parameter> parameters) throws IOException {
+                assertSame(preparedStatement, statement);
+                ;
                 return explain(preparedSource);
             }
         };

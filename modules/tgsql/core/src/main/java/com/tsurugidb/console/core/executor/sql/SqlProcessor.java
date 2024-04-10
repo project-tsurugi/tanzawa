@@ -86,6 +86,14 @@ public interface SqlProcessor extends ServerResource {
     boolean isTransactionActive();
 
     /**
+     * Returns the running transaction.
+     *
+     * @return the running transaction, or {@code null} if there is no active transactions
+     */
+    @Nullable
+    TransactionWrapper getTransaction();
+
+    /**
      * Provides transaction id that is unique to for the duration of the database server's lifetime.
      *
      * @return the id String for this transaction

@@ -25,6 +25,7 @@ import com.tsurugidb.console.core.executor.report.BasicReporter;
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
 import com.tsurugidb.console.core.executor.sql.PreparedStatementResult;
 import com.tsurugidb.console.core.executor.sql.SqlProcessor;
+import com.tsurugidb.console.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.console.core.parser.SqlParser;
@@ -83,6 +84,11 @@ class BasicEngineTest {
 
         @Override
         public boolean isSessionActive() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public TransactionWrapper getTransaction() {
             throw new UnsupportedOperationException();
         }
 

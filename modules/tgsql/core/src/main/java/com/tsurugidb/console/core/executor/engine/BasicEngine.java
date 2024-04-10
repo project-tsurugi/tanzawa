@@ -25,6 +25,7 @@ import com.tsurugidb.console.core.executor.explain.StatementMetadataHandler;
 import com.tsurugidb.console.core.executor.report.ScriptReporter;
 import com.tsurugidb.console.core.executor.result.ResultProcessor;
 import com.tsurugidb.console.core.executor.sql.SqlProcessor;
+import com.tsurugidb.console.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement;
@@ -98,6 +99,11 @@ public class BasicEngine extends AbstractEngine {
     @Override
     public boolean disconnect() throws ServerException, IOException, InterruptedException {
         return sqlProcessor.disconnect();
+    }
+
+    @Override
+    public TransactionWrapper getTransaction() {
+        return sqlProcessor.getTransaction();
     }
 
     @Override

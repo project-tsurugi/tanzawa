@@ -3,9 +3,11 @@ package com.tsurugidb.console.core.executor.engine;
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.tsurugidb.console.core.config.ScriptConfig;
 import com.tsurugidb.console.core.executor.report.ScriptReporter;
+import com.tsurugidb.console.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.console.core.model.Statement;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
@@ -54,6 +56,15 @@ public interface Engine {
      */
     default boolean disconnect() throws ServerException, IOException, InterruptedException {
         return false; // do override
+    }
+
+    /**
+     * Returns the running transaction.
+     *
+     * @return the running transaction, or {@code null} if there is no active transactions
+     */
+    default @Nullable TransactionWrapper getTransaction() {
+        throw new UnsupportedOperationException("do override");
     }
 
     /**

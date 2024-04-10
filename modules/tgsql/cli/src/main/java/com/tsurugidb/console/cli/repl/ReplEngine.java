@@ -7,6 +7,7 @@ import com.tsurugidb.console.core.executor.engine.AbstractEngine;
 import com.tsurugidb.console.core.executor.engine.Engine;
 import com.tsurugidb.console.core.executor.engine.EngineException;
 import com.tsurugidb.console.core.executor.report.ScriptReporter;
+import com.tsurugidb.console.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.console.core.model.CallStatement;
 import com.tsurugidb.console.core.model.CommitStatement;
 import com.tsurugidb.console.core.model.ErroneousStatement;
@@ -48,6 +49,11 @@ public class ReplEngine extends AbstractEngine {
     @Override
     public void connect() throws ServerException, IOException, InterruptedException {
         delegate.connect();
+    }
+
+    @Override
+    public TransactionWrapper getTransaction() {
+        return delegate.getTransaction();
     }
 
     @Override

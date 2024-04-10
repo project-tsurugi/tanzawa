@@ -3,6 +3,7 @@ package com.tsurugidb.console.cli.repl;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -11,8 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.console.cli.repl.jline.ReplJLineParser.ParsedStatement;
+import com.tsurugidb.console.core.ScriptRunner.StatementSupplier;
+import com.tsurugidb.console.core.config.ScriptConfig;
+import com.tsurugidb.console.core.config.ScriptCvKey.ScriptCvKeyPrompt;
+import com.tsurugidb.console.core.config.ScriptPrompt;
 import com.tsurugidb.console.core.exception.ScriptInterruptedException;
-import com.tsurugidb.console.core.executor.IoSupplier;
+import com.tsurugidb.console.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.console.core.model.Region;
 import com.tsurugidb.console.core.model.SimpleStatement;
 import com.tsurugidb.console.core.model.Statement;
@@ -21,7 +26,7 @@ import com.tsurugidb.console.core.model.Statement.Kind;
 /**
  * Tsurugi SQL console repl script.
  */
-public class ReplScript implements IoSupplier<List<Statement>> {
+public class ReplScript implements StatementSupplier {
     private static final Logger LOG = LoggerFactory.getLogger(ReplScript.class);
 
     private static final String PROMPT1 = "tgsql> "; //$NON-NLS-1$
@@ -36,15 +41,17 @@ public class ReplScript implements IoSupplier<List<Statement>> {
      */
     public ReplScript(@Nonnull LineReader lineReader) {
         this.lineReader = lineReader;
-
-        lineReader.setVariable(LineReader.SECONDARY_PROMPT_PATTERN, PROMPT2);
     }
 
     @Override
-    public List<Statement> get() {
+    public List<Statement> get(ScriptConfig config, @Nullable TransactionWrapper transaction) {
+        String prompt2 = getPrompt(config, ReplCvKey.PROMPT2_DEFAULT, ReplCvKey.PROMPT2_TRANSACTION, ReplCvKey.PROMPT2_OCC, ReplCvKey.PROMPT2_LTX, ReplCvKey.PROMPT2_RTX, PROMPT2, transaction);
+        lineReader.setVariable(LineReader.SECONDARY_PROMPT_PATTERN, prompt2);
+
         String text;
         try {
-            text = lineReader.readLine(PROMPT1);
+            String prompt1 = getPrompt(config, ReplCvKey.PROMPT1_DEFAULT, ReplCvKey.PROMPT1_TRANSACTION, ReplCvKey.PROMPT1_OCC, ReplCvKey.PROMPT1_LTX, ReplCvKey.PROMPT1_RTX, PROMPT1, transaction);
+            text = lineReader.readLine(prompt1);
         } catch (UserInterruptException e) {
             throw new ScriptInterruptedException(e);
         } catch (EndOfFileException e) {
@@ -62,5 +69,49 @@ public class ReplScript implements IoSupplier<List<Statement>> {
             return List.of(s);
         }
         throw new AssertionError(line);
+    }
+
+    private String getPrompt(ScriptConfig config, ScriptCvKeyPrompt keyDefault, ScriptCvKeyPrompt keyTx, ScriptCvKeyPrompt keyOcc, ScriptCvKeyPrompt keyLtx, ScriptCvKeyPrompt keyRtx,
+            String defaultPrompt, @Nullable TransactionWrapper transaction) {
+        var variableMap = config.getClientVariableMap();
+
+        ScriptPrompt prompt = null;
+        ScriptCvKeyPrompt key = null;
+        if (transaction != null) {
+            switch (transaction.getOption().getType()) {
+            case SHORT:
+                key = keyOcc;
+                break;
+            case LONG:
+                key = keyLtx;
+                break;
+            case READ_ONLY:
+                key = keyRtx;
+                break;
+            default:
+                break;
+            }
+            if (key != null) {
+                prompt = variableMap.get(key);
+            }
+            if (prompt == null) {
+                key = keyTx;
+                prompt = variableMap.get(key);
+            }
+        }
+        if (prompt == null) {
+            key = keyDefault;
+            prompt = variableMap.get(key);
+            if (prompt == null) {
+                return defaultPrompt;
+            }
+        }
+
+        try {
+            return prompt.getPrompt(config, transaction);
+        } catch (Exception e) {
+            LOG.debug("ReplScript.getPrompt error (key={}, prompt={})", key, prompt, e); //$NON-NLS-1$
+            return defaultPrompt;
+        }
     }
 }

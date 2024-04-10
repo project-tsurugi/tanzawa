@@ -21,7 +21,6 @@ import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
-import com.tsurugidb.tsubakuro.sql.Transaction;
 import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
 
 /**
@@ -33,7 +32,7 @@ public class BasicSqlProcessor implements SqlProcessor {
     private String sessionEndpoint;
     private Session session;
     private SqlClient sqlClient;
-    private Transaction transaction;
+    private TransactionWrapper transaction;
 
     /**
      * Creates a new instance.
@@ -132,15 +131,17 @@ public class BasicSqlProcessor implements SqlProcessor {
         desireInactive();
         LOG.debug("start transaction: {}", option);
         var client = getSqlClient();
-        transaction = client.createTransaction(option).await();
+        var tx = client.createTransaction(option).await();
+        this.transaction = new TransactionWrapper(tx, option);
     }
 
     @Override
     public void commitTransaction(@Nullable SqlRequest.CommitStatus status) throws ServerException, IOException, InterruptedException {
         LOG.debug("start commit: {}", status); //$NON-NLS-1$
         desireActive();
-        try (var t = transaction) {
+        try (var tx = transaction) {
             transaction = null;
+            var t = tx.getTransaction();
             if (status == null) {
                 t.commit().await();
             } else {
@@ -153,8 +154,9 @@ public class BasicSqlProcessor implements SqlProcessor {
     public void rollbackTransaction() throws ServerException, IOException, InterruptedException {
         LOG.debug("start rollback"); //$NON-NLS-1$
         if (isTransactionActive()) {
-            try (var t = transaction) {
+            try (var tx = transaction) {
                 transaction = null;
+                var t = tx.getTransaction();
                 t.rollback().await();
             }
         } else {
@@ -169,13 +171,14 @@ public class BasicSqlProcessor implements SqlProcessor {
         desireActive();
         var client = getSqlClient();
         try (var prepared = client.prepare(statement).await()) {
+            var t = transaction.getTransaction();
             if (prepared.hasResultRecords()) {
                 LOG.debug("start query: '{}'", statement);
-                var result = transaction.executeQuery(prepared).await();
+                var result = t.executeQuery(prepared).await();
                 return new PreparedStatementResult(result);
             }
             LOG.debug("start execute: '{}'", statement);
-            var result = transaction.executeStatement(prepared).await();
+            var result = t.executeStatement(prepared).await();
             return new PreparedStatementResult(result);
         }
     }
@@ -211,7 +214,8 @@ public class BasicSqlProcessor implements SqlProcessor {
         if (!isTransactionActive()) {
             return null;
         }
-        return transaction.getTransactionId();
+        var t = transaction.getTransaction();
+        return t.getTransactionId();
     }
 
     @Override
@@ -219,15 +223,12 @@ public class BasicSqlProcessor implements SqlProcessor {
         if (!isTransactionActive()) {
             return null;
         }
-        return transaction.getSqlServiceException().await();
+        var t = transaction.getTransaction();
+        return t.getSqlServiceException().await();
     }
 
-    /**
-     * Returns the running transaction.
-     *
-     * @return the running transaction, or {@code null} if there is no active transactions
-     */
-    public @Nullable Transaction getTransaction() {
+    @Override
+    public @Nullable TransactionWrapper getTransaction() {
         return transaction;
     }
 
