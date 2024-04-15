@@ -63,6 +63,7 @@ public class BasicSqlProcessor implements SqlProcessor {
 
     protected Session getSession(TgsqlConfig config) throws ServerException, IOException, InterruptedException {
         if (this.session == null) {
+            String applicationName = "tgsql"; //$NON-NLS-1$
             String endpoint = config.getEndpoint();
             if (endpoint == null) {
                 throw new IllegalStateException("specify connection-url");
@@ -73,10 +74,10 @@ public class BasicSqlProcessor implements SqlProcessor {
                 var supplier = config.getCredential();
                 if (supplier != null) {
                     credential = supplier.get();
-                    this.session = SessionBuilder.connect(endpoint).withCredential(credential).create();
+                    this.session = SessionBuilder.connect(endpoint).withApplicationName(applicationName).withCredential(credential).create();
                 } else {
                     var sessionConnector = config.getDefaultCredentialSessionConnector();
-                    var connection = sessionConnector.connect(endpoint);
+                    var connection = sessionConnector.connect(applicationName, endpoint);
                     credential = connection.credential();
                     this.session = connection.session();
                 }

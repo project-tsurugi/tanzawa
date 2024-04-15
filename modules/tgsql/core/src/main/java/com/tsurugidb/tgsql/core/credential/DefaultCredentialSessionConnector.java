@@ -67,18 +67,19 @@ public class DefaultCredentialSessionConnector {
     /**
      * connect.
      *
-     * @param endpoint the end-point URI string
+     * @param applicationName application name
+     * @param endpoint        the end-point URI string
      * @return the established connection session
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws ServerException      if server side error was occurred
      * @throws InterruptedException if interrupted while executing the statement
      */
-    public SessionWithCredential connect(@Nonnull String endpoint) throws IOException, ServerException, InterruptedException {
+    public SessionWithCredential connect(@Nonnull String applicationName, @Nonnull String endpoint) throws IOException, ServerException, InterruptedException {
         List<CredentialGetter> credentialList = List.of(this::getTokenCredential, this::getFileCredential, this::getNullCredential, this::getUserPasswordCredential);
 
         for (var getter : credentialList) {
             var credential = getter.get();
-            var session = connect(endpoint, credential);
+            var session = connect(applicationName, endpoint, credential);
             if (session != null) {
                 return new SessionWithCredential(session, credential);
             }
@@ -87,12 +88,12 @@ public class DefaultCredentialSessionConnector {
         throw new AssertionError();
     }
 
-    protected Session connect(String endpoint, Credential credential) throws IOException, ServerException, InterruptedException {
+    protected Session connect(String applicationName, String endpoint, Credential credential) throws IOException, ServerException, InterruptedException {
         if (credential == null) {
             return null;
         }
         try {
-            return SessionBuilder.connect(endpoint).withCredential(credential).create();
+            return SessionBuilder.connect(endpoint).withApplicationName(applicationName).withCredential(credential).create();
         } catch (CoreServiceException e) {
             if (credential == NullCredential.INSTANCE) {
                 var code = e.getDiagnosticCode();
