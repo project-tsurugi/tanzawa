@@ -14,13 +14,13 @@ Developers can build other SQL scripting tools using following interfaces and cl
   * [BasicResultProcessor] - Prints result sets as JSON lines style
   * [SqlParser] - Splits SQL script into individual SQL statements
 
-[Engine]:src/main/java/com/tsurugidb/console/core/executor/engine/Engine.java
-[SqlProcessor]:src/main/java/com/tsurugidb/console/core/executor/sql/SqlProcessor.java
-[ResultProcessor]:src/main/java/com/tsurugidb/console/core/executor/result/ResultProcessor.java
-[BasicEngine]:src/main/java/com/tsurugidb/console/core/executor/engine/BasicEngine.java
-[BasicSqlProcessor]:src/main/java/com/tsurugidb/console/core/executor/sql/BasicSqlProcessor.java
-[BasicResultProcessor]:src/main/java/com/tsurugidb/console/core/executor/result/BasicResultProcessor.java
-[SqlParser]:src/main/java/com/tsurugidb/console/core/parser/SqlParser.java
+[Engine]:src/main/java/com/tsurugidb/tgsql/core/executor/engine/Engine.java
+[SqlProcessor]:src/main/java/com/tsurugidb/tgsql/core/executor/sql/SqlProcessor.java
+[ResultProcessor]:src/main/java/com/tsurugidb/tgsql/core/executor/result/ResultProcessor.java
+[BasicEngine]:src/main/java/com/tsurugidb/tgsql/core/executor/engine/BasicEngine.java
+[BasicSqlProcessor]:src/main/java/com/tsurugidb/tgsql/core/executor/sql/BasicSqlProcessor.java
+[BasicResultProcessor]:src/main/java/com/tsurugidb/tgsql/core/executor/result/BasicResultProcessor.java
+[SqlParser]:src/main/java/com/tsurugidb/tgsql/core/parser/SqlParser.java
 
 ## Language
 
@@ -30,20 +30,20 @@ see [grammar-rule.md](../../docs/grammar-rule.md).
 
 ### Logger names and levels
 
-* `com.tsurugidb.console.core.ScriptRunner`
+* `com.tsurugidb.tgsql.core.ScriptRunner`
   * `ERROR` - print critical runtime error messages
   * `WARN` - print runtime error messages
   * `INFO` - program start/finish message
   * `DEBUG` - print program parameters
-* `com.tsurugidb.console.core.executor.engine.BasicEngine`
+* `com.tsurugidb.tgsql.core.executor.engine.BasicEngine`
   * `DEBUG` - print engine progress
-* `com.tsurugidb.console.core.executor.sql.BasicSqlProcessor`
+* `com.tsurugidb.tgsql.core.executor.sql.BasicSqlProcessor`
   * `DEBUG` - print actual SQL requests
-* `com.tsurugidb.console.core.executor.engine.ExecutorUtil`
+* `com.tsurugidb.tgsql.core.executor.engine.ExecutorUtil`
   * `WARN` - print warnings
-* `com.tsurugidb.console.core.parser.Segment`
+* `com.tsurugidb.tgsql.core.parser.Segment`
   * `TRACE` - print each tokens
-* `com.tsurugidb.console.core.parser.SegmentAnalyzer`
+* `com.tsurugidb.tgsql.core.parser.SegmentAnalyzer`
   * `DEBUG` - print analyze target
   * `TRACE` - print analyze progress
 

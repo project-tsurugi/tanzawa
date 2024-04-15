@@ -1,4 +1,4 @@
-package com.tsurugidb.console.core.parser;
+package com.tsurugidb.tgsql.core.parser;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
