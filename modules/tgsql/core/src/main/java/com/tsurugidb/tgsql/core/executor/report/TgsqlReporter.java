@@ -26,7 +26,7 @@ import com.tsurugidb.tsubakuro.sql.TableMetadata;
 /**
  * reporter of Tsurugi SQL console.
  */
-public abstract class ScriptReporter {
+public abstract class TgsqlReporter {
 
     /**
      * output information message.

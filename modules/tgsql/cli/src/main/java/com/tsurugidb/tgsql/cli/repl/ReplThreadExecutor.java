@@ -14,7 +14,7 @@ import org.jline.terminal.Terminal.Signal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.tgsql.core.exception.ScriptMessageException;
+import com.tsurugidb.tgsql.core.exception.TgsqlMessageException;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
@@ -106,7 +106,7 @@ public class ReplThreadExecutor implements Closeable {
             long timingEnd = System.nanoTime();
             LOG.trace("{} user cancelled", name, e);
             long time = timingEnd - timingStart;
-            throw new ScriptMessageException(MessageFormat.format("{0} cancelled", name), e, time);
+            throw new TgsqlMessageException(MessageFormat.format("{0} cancelled", name), e, time);
         } catch (ExecutionException e) {
             LOG.debug("{} invoke catch ExecutionException", name, e);
             var c = e.getCause();

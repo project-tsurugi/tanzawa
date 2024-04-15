@@ -20,8 +20,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlResponse;
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
-import com.tsurugidb.tgsql.core.exception.ScriptNoMessageException;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.exception.TgsqlNoMessageException;
 import com.tsurugidb.tgsql.core.executor.explain.StatementMetadataHandler;
 import com.tsurugidb.tgsql.core.executor.report.BasicReporter;
 import com.tsurugidb.tgsql.core.executor.result.ResultProcessor;
@@ -63,7 +63,7 @@ class BasicEngineTest {
         }
 
         @Override
-        public void connect(ScriptConfig config) throws ServerException, IOException, InterruptedException {
+        public void connect(TgsqlConfig config) throws ServerException, IOException, InterruptedException {
             return;
         }
 
@@ -715,7 +715,7 @@ class BasicEngineTest {
                 assertTrue(plan.getNodes().stream().map(PlanNode::getKind).anyMatch(Predicate.isEqual("write")));
             }
         };
-        var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
+        var engine = new BasicEngine(new TgsqlConfig(), sql, rs, reporter);
         var cont = engine.execute(parse("EXPLAIN SELECT 1"));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -743,7 +743,7 @@ class BasicEngineTest {
                 assertTrue(plan.getNodes().stream().map(PlanNode::getKind).anyMatch(Predicate.isEqual("write")));
             }
         };
-        var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
+        var engine = new BasicEngine(new TgsqlConfig(), sql, rs, reporter);
         var cont = engine.execute(parse(String.format("EXPLAIN (%s) SELECT 1", StatementMetadataHandler.KEY_VERBOSE)));
         assertTrue(cont);
         assertTrue(reached.get());
@@ -754,7 +754,7 @@ class BasicEngineTest {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
         var reporter = new BasicReporter();
-        var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
+        var engine = new BasicEngine(new TgsqlConfig(), sql, rs, reporter);
         assertThrows(EngineException.class, () -> engine.execute(parse("EXPLAIN (INVALID_OPTION=TRUE) SELECT 1")));
     }
 
@@ -763,7 +763,7 @@ class BasicEngineTest {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
         var reporter = new BasicReporter();
-        var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
+        var engine = new BasicEngine(new TgsqlConfig(), sql, rs, reporter);
         assertThrows(EngineException.class, () -> engine.execute(parse(String.format("EXPLAIN (%s=NULL) SELECT 1", StatementMetadataHandler.KEY_VERBOSE))));
     }
 
@@ -778,8 +778,8 @@ class BasicEngineTest {
         };
         MockResultProcessor rs = new MockResultProcessor();
         var reporter = new BasicReporter();
-        var engine = new BasicEngine(new ScriptConfig(), sql, rs, reporter);
-        var e = assertThrows(ScriptNoMessageException.class, () -> engine.execute(parse("EXPLAIN SELECT 1")));
+        var engine = new BasicEngine(new TgsqlConfig(), sql, rs, reporter);
+        var e = assertThrows(TgsqlNoMessageException.class, () -> engine.execute(parse("EXPLAIN SELECT 1")));
         assertInstanceOf(EngineException.class, e.getCause());
     }
 
@@ -889,7 +889,7 @@ class BasicEngineTest {
     }
 
     private static BasicEngine newBasicEngine(MockSqlProcessor sql, MockResultProcessor rs) {
-        var config = new ScriptConfig();
+        var config = new TgsqlConfig();
         var reporter = new BasicReporter();
         return new BasicEngine(config, sql, rs, reporter);
     }

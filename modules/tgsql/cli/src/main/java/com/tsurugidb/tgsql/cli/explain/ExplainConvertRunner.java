@@ -9,7 +9,7 @@ import java.util.Optional;
 
 import com.tsurugidb.tgsql.cli.argument.CliArgument;
 import com.tsurugidb.tgsql.cli.config.ExplainConfigBuilder;
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.executor.engine.CommandPath;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tgsql.core.executor.explain.DotOutputHandler;
@@ -41,9 +41,9 @@ public final class ExplainConvertRunner {
     }
 
     private final CliArgument argument;
-    private final ScriptConfig config;
+    private final TgsqlConfig config;
 
-    private ExplainConvertRunner(CliArgument argument, ScriptConfig config) {
+    private ExplainConvertRunner(CliArgument argument, TgsqlConfig config) {
         this.argument = argument;
         this.config = config;
     }

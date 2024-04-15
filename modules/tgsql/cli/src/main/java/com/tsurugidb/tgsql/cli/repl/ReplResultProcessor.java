@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.sql.proto.SqlCommon;
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
-import com.tsurugidb.tgsql.core.config.ScriptCvKey;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.executor.result.ResultProcessor;
 import com.tsurugidb.tgsql.core.executor.result.ResultSetUtil;
 import com.tsurugidb.tsubakuro.exception.ServerException;
@@ -23,16 +23,16 @@ import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 public class ReplResultProcessor implements ResultProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(ReplResultProcessor.class);
 
-    private final ScriptConfig config;
+    private final TgsqlConfig config;
     private final ReplReporter reporter;
 
     /**
      * Creates a new instance.
      *
-     * @param config   script configuration
+     * @param config   tgsql configuration
      * @param reporter ReplReporter
      */
-    public ReplResultProcessor(@Nonnull ScriptConfig config, @Nonnull ReplReporter reporter) {
+    public ReplResultProcessor(@Nonnull TgsqlConfig config, @Nonnull ReplReporter reporter) {
         this.config = config;
         this.reporter = reporter;
     }
@@ -46,7 +46,7 @@ public class ReplResultProcessor implements ResultProcessor {
         }
 
         var clientVariableMap = config.getClientVariableMap();
-        int maxLines = clientVariableMap.get(ScriptCvKey.SELECT_MAX_LINES, -1);
+        int maxLines = clientVariableMap.get(TgsqlCvKey.SELECT_MAX_LINES, -1);
         boolean over = false;
 
         var columnList = new ArrayList<Object>();

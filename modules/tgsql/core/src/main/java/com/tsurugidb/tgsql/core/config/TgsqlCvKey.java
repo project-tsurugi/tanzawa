@@ -10,50 +10,50 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.tsurugidb.tgsql.core.exception.ScriptMessageException;
+import com.tsurugidb.tgsql.core.exception.TgsqlMessageException;
 import com.tsurugidb.tgsql.core.executor.explain.DotOutputHandler;
 
 /**
  * client variable key.
  *
  * @param <T> variable type
- * @see ScriptClientVariableMap
+ * @see TgsqlClientVariableMap
  */
-public abstract class ScriptCvKey<T> {
+public abstract class TgsqlCvKey<T> {
 
     /** select.maxlines . */
-    public static final ScriptCvKeyInt SELECT_MAX_LINES = new ScriptCvKeyInt("select.maxlines"); //$NON-NLS-1$
+    public static final TgsqlCvKeyInt SELECT_MAX_LINES = new TgsqlCvKeyInt("select.maxlines"); //$NON-NLS-1$
     /** sql.timing . */
-    public static final ScriptCvKeyBoolean SQL_TIMING = new ScriptCvKeyBoolean("sql.timing"); //$NON-NLS-1$
+    public static final TgsqlCvKeyBoolean SQL_TIMING = new TgsqlCvKeyBoolean("sql.timing"); //$NON-NLS-1$
     /** auto-commit.when-transaction-started-implicitly . */
-    public static final ScriptCvKeyBoolean AUTO_COMMIT_TX_STARTED_IMPLICITLY = new ScriptCvKeyBoolean("auto-commit.when-transaction-started-implicitly"); //$NON-NLS-1$
+    public static final TgsqlCvKeyBoolean AUTO_COMMIT_TX_STARTED_IMPLICITLY = new TgsqlCvKeyBoolean("auto-commit.when-transaction-started-implicitly"); //$NON-NLS-1$
 
     /** dot.verbose . */
-    public static final ScriptCvKeyBoolean DOT_VERBOSE = new ScriptCvKeyBoolean(DotOutputHandler.KEY_VERBOSE);
+    public static final TgsqlCvKeyBoolean DOT_VERBOSE = new TgsqlCvKeyBoolean(DotOutputHandler.KEY_VERBOSE);
     /** dot.output . */
-    public static final ScriptCvKeyString DOT_OUTPUT = new ScriptCvKeyString(DotOutputHandler.KEY_OUTPUT);
+    public static final TgsqlCvKeyString DOT_OUTPUT = new TgsqlCvKeyString(DotOutputHandler.KEY_OUTPUT);
     /** dot.executable . */
-    public static final ScriptCvKeyString DOT_EXECUTABLE = new ScriptCvKeyString(DotOutputHandler.KEY_EXECUTABLE);
+    public static final TgsqlCvKeyString DOT_EXECUTABLE = new TgsqlCvKeyString(DotOutputHandler.KEY_EXECUTABLE);
     /** dot.graph.* . */
-    public static final ScriptCvKeyString DOT_GRAPH_PREFIX = new ScriptCvKeyString(DotOutputHandler.KEY_GRAPH_PREFIX);
+    public static final TgsqlCvKeyString DOT_GRAPH_PREFIX = new TgsqlCvKeyString(DotOutputHandler.KEY_GRAPH_PREFIX);
     /** dot.node.* . */
-    public static final ScriptCvKeyString DOT_NODE_PREFIX = new ScriptCvKeyString(DotOutputHandler.KEY_NODE_PREFIX);
+    public static final TgsqlCvKeyString DOT_NODE_PREFIX = new TgsqlCvKeyString(DotOutputHandler.KEY_NODE_PREFIX);
     /** dot.edge.* . */
-    public static final ScriptCvKeyString DOT_EDGE_PREFIX = new ScriptCvKeyString(DotOutputHandler.KEY_EDGE_PREFIX);
+    public static final TgsqlCvKeyString DOT_EDGE_PREFIX = new TgsqlCvKeyString(DotOutputHandler.KEY_EDGE_PREFIX);
 
     //
 
     /**
      * client variable key for String.
      */
-    public static class ScriptCvKeyString extends ScriptCvKey<String> {
+    public static class TgsqlCvKeyString extends TgsqlCvKey<String> {
 
         /**
          * Creates a new instance.
          *
          * @param name variable name
          */
-        public ScriptCvKeyString(String name) {
+        public TgsqlCvKeyString(String name) {
             super(name);
         }
 
@@ -66,14 +66,14 @@ public abstract class ScriptCvKey<T> {
     /**
      * client variable key for Integer.
      */
-    public static class ScriptCvKeyInt extends ScriptCvKey<Integer> {
+    public static class TgsqlCvKeyInt extends TgsqlCvKey<Integer> {
 
         /**
          * Creates a new instance.
          *
          * @param name variable name
          */
-        public ScriptCvKeyInt(String name) {
+        public TgsqlCvKeyInt(String name) {
             super(name);
         }
 
@@ -82,7 +82,7 @@ public abstract class ScriptCvKey<T> {
             try {
                 return Integer.valueOf(s.trim());
             } catch (NumberFormatException e) {
-                throw new ScriptMessageException(MessageFormat.format("not integer. key={0}, value={1}", name, s), e);
+                throw new TgsqlMessageException(MessageFormat.format("not integer. key={0}, value={1}", name, s), e);
             }
         }
     }
@@ -90,14 +90,14 @@ public abstract class ScriptCvKey<T> {
     /**
      * client variable key for Boolean.
      */
-    public static class ScriptCvKeyBoolean extends ScriptCvKey<Boolean> {
+    public static class TgsqlCvKeyBoolean extends TgsqlCvKey<Boolean> {
 
         /**
          * Creates a new instance.
          *
          * @param name variable name
          */
-        public ScriptCvKeyBoolean(String name) {
+        public TgsqlCvKeyBoolean(String name) {
             super(name);
         }
 
@@ -130,46 +130,46 @@ public abstract class ScriptCvKey<T> {
     /**
      * client variable key for Color.
      */
-    public static class ScriptCvKeyColor extends ScriptCvKey<ScriptColor> {
+    public static class TgsqlCvKeyColor extends TgsqlCvKey<TgsqlColor> {
 
         /**
          * Creates a new instance.
          *
          * @param name variable name
          */
-        public ScriptCvKeyColor(String name) {
+        public TgsqlCvKeyColor(String name) {
             super(name);
         }
 
         @Override
-        public ScriptColor convertValue(@Nonnull String s) {
-            return ScriptColor.parse(s);
+        public TgsqlColor convertValue(@Nonnull String s) {
+            return TgsqlColor.parse(s);
         }
     }
 
     /**
      * client variable key for Prompt.
      */
-    public static class ScriptCvKeyPrompt extends ScriptCvKey<ScriptPrompt> {
+    public static class TgsqlCvKeyPrompt extends TgsqlCvKey<TgsqlPrompt> {
 
         /**
          * Creates a new instance.
          *
          * @param name variable name
          */
-        public ScriptCvKeyPrompt(String name) {
+        public TgsqlCvKeyPrompt(String name) {
             super(name);
         }
 
         @Override
-        public ScriptPrompt convertValue(String s) {
-            return ScriptPrompt.create(s);
+        public TgsqlPrompt convertValue(String s) {
+            return TgsqlPrompt.create(s);
         }
     }
 
-    private static final Map<String, ScriptCvKey<?>> KEY_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, TgsqlCvKey<?>> KEY_MAP = new ConcurrentHashMap<>();
     static {
-        registerKey(ScriptCvKey.class);
+        registerKey(TgsqlCvKey.class);
     }
 
     /**
@@ -179,9 +179,9 @@ public abstract class ScriptCvKey<T> {
      */
     public static void registerKey(Class<?> clazz) {
         for (var field : clazz.getFields()) {
-            if (Modifier.isStatic(field.getModifiers()) && ScriptCvKey.class.isAssignableFrom(field.getType())) {
+            if (Modifier.isStatic(field.getModifiers()) && TgsqlCvKey.class.isAssignableFrom(field.getType())) {
                 try {
-                    var key = ScriptCvKey.class.cast(field.get(null));
+                    var key = TgsqlCvKey.class.cast(field.get(null));
                     KEY_MAP.put(key.toString(), key);
                 } catch (Exception e) {
                     throw new InternalError(e);
@@ -206,7 +206,7 @@ public abstract class ScriptCvKey<T> {
      * @return key
      */
     @Nullable
-    public static ScriptCvKey<?> find(String name) {
+    public static TgsqlCvKey<?> find(String name) {
         return KEY_MAP.get(name);
     }
 
@@ -215,7 +215,7 @@ public abstract class ScriptCvKey<T> {
     /** variable name. */
     protected final String name;
 
-    protected ScriptCvKey(String name) {
+    protected TgsqlCvKey(String name) {
         this.name = name;
     }
 

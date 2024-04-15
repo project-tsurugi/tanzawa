@@ -8,11 +8,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
-import com.tsurugidb.tgsql.core.config.ScriptCvKey;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
-import com.tsurugidb.tgsql.core.executor.report.ScriptReporter;
+import com.tsurugidb.tgsql.core.executor.report.TgsqlReporter;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
@@ -38,7 +38,7 @@ public class SetCommand extends SpecialCommand {
     }
 
     protected static void collectCompleterCandidate(List<CompleterCandidateWords> result, List<String> prefixList) {
-        var keys = ScriptCvKey.getKeyNames();
+        var keys = TgsqlCvKey.getKeyNames();
         for (String name : keys) {
             var candidate = new CompleterCandidateWords(name.endsWith("."));
             candidate.add(prefixList);
@@ -49,7 +49,7 @@ public class SetCommand extends SpecialCommand {
     }
 
     @Override
-    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(ScriptConfig config, String[] inputWords) {
+    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(TgsqlConfig config, String[] inputWords) {
         if (inputWords.length != 2) {
             return List.of();
         }
@@ -57,7 +57,7 @@ public class SetCommand extends SpecialCommand {
         return getDynamicCompleterCandidateList(config, List.of(COMMAND));
     }
 
-    protected static List<CompleterCandidateWords> getDynamicCompleterCandidateList(ScriptConfig config, List<String> prefixList) {
+    protected static List<CompleterCandidateWords> getDynamicCompleterCandidateList(TgsqlConfig config, List<String> prefixList) {
         var clientVariableMap = config.getClientVariableMap();
         var result = new ArrayList<CompleterCandidateWords>(clientVariableMap.size());
         for (var entry : clientVariableMap.entrySet()) {
@@ -124,7 +124,7 @@ public class SetCommand extends SpecialCommand {
         return true;
     }
 
-    protected static void showClientVariable(String key, Object value, ScriptReporter reporter) {
+    protected static void showClientVariable(String key, Object value, TgsqlReporter reporter) {
         String v = String.valueOf(value);
         var message = MessageFormat.format("{0}={1}", key, v); //$NON-NLS-1$
         reporter.info(message);

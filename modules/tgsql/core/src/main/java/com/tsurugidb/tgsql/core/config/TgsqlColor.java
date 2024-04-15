@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 /**
  * color.
  */
-public final class ScriptColor {
-    private static final Logger LOG = LoggerFactory.getLogger(ScriptColor.class);
+public final class TgsqlColor {
+    private static final Logger LOG = LoggerFactory.getLogger(TgsqlColor.class);
 
     /**
      * parse color.
@@ -17,7 +17,7 @@ public final class ScriptColor {
      * @param s string
      * @return color
      */
-    public static ScriptColor parse(String s) {
+    public static TgsqlColor parse(String s) {
         try {
             if (Integer.parseInt(s) < 0) {
                 return null;
@@ -34,7 +34,7 @@ public final class ScriptColor {
             int r = Integer.parseInt(t.substring(0, 2), 16);
             int g = Integer.parseInt(t.substring(2, 4), 16);
             int b = Integer.parseInt(t.substring(4, 6), 16);
-            return new ScriptColor(r, g, b);
+            return new TgsqlColor(r, g, b);
         } catch (Exception e) {
             LOG.debug("parse error. [{}]", t, e);
             String message = MessageFormat.format("color parse error. [{0}] {1}", s, e.getMessage());
@@ -46,7 +46,7 @@ public final class ScriptColor {
     private final int green;
     private final int blue;
 
-    private ScriptColor(int red, int green, int blue) {
+    private TgsqlColor(int red, int green, int blue) {
         this.red = red;
         this.green = green;
         this.blue = blue;

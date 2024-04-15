@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.sql.proto.SqlRequest;
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.model.Region;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.common.Session;
@@ -52,7 +52,7 @@ public class BasicSqlProcessor implements SqlProcessor {
     }
 
     @Override
-    public void connect(ScriptConfig config) throws ServerException, IOException, InterruptedException {
+    public void connect(TgsqlConfig config) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(config);
 
         if (this.sqlClient != null) {
@@ -61,7 +61,7 @@ public class BasicSqlProcessor implements SqlProcessor {
         this.sqlClient = SqlClient.attach(getSession(config));
     }
 
-    protected Session getSession(ScriptConfig config) throws ServerException, IOException, InterruptedException {
+    protected Session getSession(TgsqlConfig config) throws ServerException, IOException, InterruptedException {
         if (this.session == null) {
             String endpoint = config.getEndpoint();
             if (endpoint == null) {

@@ -13,27 +13,27 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.tgsql.core.config.ScriptCommitMode;
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
-import com.tsurugidb.tgsql.core.config.ScriptCvKey;
-import com.tsurugidb.tgsql.core.exception.ScriptNoMessageException;
+import com.tsurugidb.tgsql.core.config.TgsqlCommitMode;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
+import com.tsurugidb.tgsql.core.exception.TgsqlNoMessageException;
 import com.tsurugidb.tgsql.core.executor.engine.command.SpecialCommand;
 import com.tsurugidb.tgsql.core.executor.explain.DotOutputHandler;
 import com.tsurugidb.tgsql.core.executor.explain.OptionHandler;
 import com.tsurugidb.tgsql.core.executor.explain.PlanGraphOutputHandler;
 import com.tsurugidb.tgsql.core.executor.explain.StatementMetadataHandler;
-import com.tsurugidb.tgsql.core.executor.report.ScriptReporter;
+import com.tsurugidb.tgsql.core.executor.report.TgsqlReporter;
 import com.tsurugidb.tgsql.core.executor.result.ResultProcessor;
 import com.tsurugidb.tgsql.core.executor.sql.SqlProcessor;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.tgsql.core.model.CallStatement;
 import com.tsurugidb.tgsql.core.model.CommitStatement;
 import com.tsurugidb.tgsql.core.model.ErroneousStatement;
+import com.tsurugidb.tgsql.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.tgsql.core.model.ExplainStatement;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
 import com.tsurugidb.tgsql.core.model.StartTransactionStatement;
 import com.tsurugidb.tgsql.core.model.Statement;
-import com.tsurugidb.tgsql.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -45,23 +45,23 @@ public class BasicEngine extends AbstractEngine {
 
     static final Logger LOG = LoggerFactory.getLogger(BasicEngine.class);
 
-    private final ScriptConfig config;
+    private final TgsqlConfig config;
 
     private final SqlProcessor sqlProcessor;
 
     private final ResultProcessor resultSetProcessor;
 
-    private final ScriptReporter reporter;
+    private final TgsqlReporter reporter;
 
     /**
      * Creates a new instance.
      *
-     * @param config             script configuration
+     * @param config             tgsql configuration
      * @param sqlProcessor       the SQL processor
      * @param resultSetProcessor the result set processor
      * @param reporter           reporter
      */
-    public BasicEngine(@Nonnull ScriptConfig config, @Nonnull SqlProcessor sqlProcessor, @Nonnull ResultProcessor resultSetProcessor, @Nonnull ScriptReporter reporter) {
+    public BasicEngine(@Nonnull TgsqlConfig config, @Nonnull SqlProcessor sqlProcessor, @Nonnull ResultProcessor resultSetProcessor, @Nonnull TgsqlReporter reporter) {
         Objects.requireNonNull(config);
         Objects.requireNonNull(sqlProcessor);
         Objects.requireNonNull(resultSetProcessor);
@@ -73,7 +73,7 @@ public class BasicEngine extends AbstractEngine {
     }
 
     @Override
-    public ScriptConfig getConfig() {
+    public TgsqlConfig getConfig() {
         return this.config;
     }
 
@@ -87,7 +87,7 @@ public class BasicEngine extends AbstractEngine {
     }
 
     @Override
-    public ScriptReporter getReporter() {
+    public TgsqlReporter getReporter() {
         return this.reporter;
     }
 
@@ -156,11 +156,11 @@ public class BasicEngine extends AbstractEngine {
 
     private boolean isAutoCommit(boolean transactionSatrtedImplicitly) {
         if (transactionSatrtedImplicitly) {
-            if (config.getClientVariableMap().get(ScriptCvKey.AUTO_COMMIT_TX_STARTED_IMPLICITLY, true)) {
+            if (config.getClientVariableMap().get(TgsqlCvKey.AUTO_COMMIT_TX_STARTED_IMPLICITLY, true)) {
                 return true;
             }
         }
-        if (config.getCommitMode() == ScriptCommitMode.AUTO_COMMIT) {
+        if (config.getCommitMode() == TgsqlCommitMode.AUTO_COMMIT) {
             return true;
         }
         return false;
@@ -434,7 +434,7 @@ public class BasicEngine extends AbstractEngine {
         } catch (ServerException e) {
             reporter.warn(e);
             reportTiming(timingStart, timingEnd.time);
-            throw new ScriptNoMessageException(e);
+            throw new TgsqlNoMessageException(e);
         } catch (Exception e) {
             for (var c = e.getCause(); c != null; c = c.getCause()) {
                 if (c instanceof InterruptedException) {
@@ -448,7 +448,7 @@ public class BasicEngine extends AbstractEngine {
             }
             reporter.warn(message);
             reportTiming(timingStart, timingEnd.time);
-            throw new ScriptNoMessageException(e);
+            throw new TgsqlNoMessageException(e);
         }
         reportTiming(timingStart, timingEnd.time);
     }
@@ -459,7 +459,7 @@ public class BasicEngine extends AbstractEngine {
         }
 
         var clientVariableMap = config.getClientVariableMap();
-        boolean timing = clientVariableMap.get(ScriptCvKey.SQL_TIMING, false);
+        boolean timing = clientVariableMap.get(TgsqlCvKey.SQL_TIMING, false);
         if (timing) {
             reporter.reportTiming(timingEnd - timingStart);
         }

@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tgsql.core.model.ErroneousStatement;
@@ -89,7 +89,7 @@ public class ShowCommand extends SpecialCommand {
     }
 
     @Override
-    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(ScriptConfig config, String[] inputWords) {
+    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(TgsqlConfig config, String[] inputWords) {
         if (inputWords.length != 3) {
             return List.of();
         }

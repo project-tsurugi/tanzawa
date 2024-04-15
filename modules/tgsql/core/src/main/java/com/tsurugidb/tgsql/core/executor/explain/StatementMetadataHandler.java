@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 
 import com.tsurugidb.tgsql.core.executor.engine.EngineConfigurationException;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
-import com.tsurugidb.tgsql.core.executor.report.ScriptReporter;
+import com.tsurugidb.tgsql.core.executor.report.TgsqlReporter;
 import com.tsurugidb.tgsql.core.model.ErroneousStatement;
 import com.tsurugidb.tgsql.core.model.Regioned;
 import com.tsurugidb.tgsql.core.model.Value;
@@ -107,7 +107,7 @@ public class StatementMetadataHandler implements OptionHandler {
      * @throws EngineException if error was occurred while processing the metadata
      */
     public PlanGraph handle(
-            @Nonnull ScriptReporter reporter,
+            @Nonnull TgsqlReporter reporter,
             @Nonnull StatementMetadata metadata) throws EngineException {
         Objects.requireNonNull(reporter);
         Objects.requireNonNull(metadata);
@@ -133,7 +133,7 @@ public class StatementMetadataHandler implements OptionHandler {
         return graph;
     }
 
-    private void dump(ScriptReporter reporter, StatementMetadata metadata) throws IOException {
+    private void dump(TgsqlReporter reporter, StatementMetadata metadata) throws IOException {
         assert dumpOutput != null;
         Util.prepareParentDirectory(dumpOutput);
         Files.writeString(dumpOutput, metadata.getContents(), StandardCharsets.UTF_8);

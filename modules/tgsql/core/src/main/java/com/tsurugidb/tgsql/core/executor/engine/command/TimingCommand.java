@@ -7,7 +7,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.tgsql.core.config.ScriptCvKey;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
@@ -44,13 +44,13 @@ public class TimingCommand extends SpecialCommand {
         boolean value;
         if (option == null) {
             LOG.debug("timing"); //$NON-NLS-1$
-            value = !clientVariableMap.get(ScriptCvKey.SQL_TIMING, false);
+            value = !clientVariableMap.get(TgsqlCvKey.SQL_TIMING, false);
         } else {
             LOG.debug("timing {}", option); //$NON-NLS-1$
-            value = ScriptCvKey.SQL_TIMING.convertValue(option);
+            value = TgsqlCvKey.SQL_TIMING.convertValue(option);
         }
 
-        clientVariableMap.put(ScriptCvKey.SQL_TIMING, value);
+        clientVariableMap.put(TgsqlCvKey.SQL_TIMING, value);
 
         var message = MessageFormat.format("Timing is {0}.", value ? "on" : "off"); //$NON-NLS-1$
         var reporter = engine.getReporter();

@@ -17,9 +17,9 @@ import com.tsurugidb.tgsql.core.executor.report.HistoryEntry;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 
 /**
- * SQL scripts configuration.
+ * tgsql configuration.
  */
-public class ScriptConfig {
+public class TgsqlConfig {
 
     private String endpoint;
 
@@ -29,10 +29,10 @@ public class ScriptConfig {
     private SqlRequest.TransactionOption transactionOption;
     private Map<String, String> propertyMap;
 
-    private ScriptCommitMode commitMode;
+    private TgsqlCommitMode commitMode;
     private CommitStatus commitStatus;
 
-    private final ScriptClientVariableMap clientVariableMap = new ScriptClientVariableMap();
+    private final TgsqlClientVariableMap clientVariableMap = new TgsqlClientVariableMap();
 
     private IntFunction<Iterator<HistoryEntry>> historySupplier;
 
@@ -133,7 +133,7 @@ public class ScriptConfig {
      *
      * @param commitMode commit mode
      */
-    public void setCommitMode(@Nonnull ScriptCommitMode commitMode) {
+    public void setCommitMode(@Nonnull TgsqlCommitMode commitMode) {
         Objects.requireNonNull(commitMode);
         this.commitMode = commitMode;
     }
@@ -143,7 +143,7 @@ public class ScriptConfig {
      *
      * @return commit mode
      */
-    public @Nonnull ScriptCommitMode getCommitMode() {
+    public @Nonnull TgsqlCommitMode getCommitMode() {
         return this.commitMode;
     }
 
@@ -170,7 +170,7 @@ public class ScriptConfig {
      *
      * @return client variable
      */
-    public @Nonnull ScriptClientVariableMap getClientVariableMap() {
+    public @Nonnull TgsqlClientVariableMap getClientVariableMap() {
         return this.clientVariableMap;
     }
 

@@ -19,17 +19,17 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
-import com.tsurugidb.tgsql.core.config.ScriptCvKey;
-import com.tsurugidb.tgsql.core.exception.ScriptInterruptedException;
-import com.tsurugidb.tgsql.core.exception.ScriptMessageException;
-import com.tsurugidb.tgsql.core.exception.ScriptNoMessageException;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
+import com.tsurugidb.tgsql.core.exception.TgsqlInterruptedException;
+import com.tsurugidb.tgsql.core.exception.TgsqlMessageException;
+import com.tsurugidb.tgsql.core.exception.TgsqlNoMessageException;
 import com.tsurugidb.tgsql.core.executor.IoSupplier;
 import com.tsurugidb.tgsql.core.executor.engine.AbstractEngine;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.Engine;
 import com.tsurugidb.tgsql.core.executor.report.BasicReporter;
-import com.tsurugidb.tgsql.core.executor.report.ScriptReporter;
+import com.tsurugidb.tgsql.core.executor.report.TgsqlReporter;
 import com.tsurugidb.tgsql.core.executor.result.BasicResultProcessor;
 import com.tsurugidb.tgsql.core.executor.result.ResultProcessor;
 import com.tsurugidb.tgsql.core.executor.sql.BasicSqlProcessor;
@@ -44,9 +44,9 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 /**
  * Executes SQL scripts.
  */
-public final class ScriptRunner {
+public final class TgsqlRunner {
 
-    static final Logger LOG = LoggerFactory.getLogger(ScriptRunner.class);
+    static final Logger LOG = LoggerFactory.getLogger(TgsqlRunner.class);
 
     private static final String NAME_STANDARD_INPUT = "-"; //$NON-NLS-1$
 
@@ -66,7 +66,7 @@ public final class ScriptRunner {
         if (args.length != 2) {
             throw new IllegalArgumentException(MessageFormat.format(//
                     "usage: java {0} </path/to/script.sql> <connection-uri>", //
-                    ScriptRunner.class.getName()));
+                    TgsqlRunner.class.getName()));
         }
         LOG.debug("script: {}", args[0]); //$NON-NLS-1$
         LOG.debug("endpoint: {}", args[1]); //$NON-NLS-1$
@@ -98,7 +98,7 @@ public final class ScriptRunner {
         Objects.requireNonNull(endpoint);
         Objects.requireNonNull(credential);
 
-        var config = new ScriptConfig();
+        var config = new TgsqlConfig();
         config.setEndpoint(endpoint);
         config.setCredential(() -> credential);
 
@@ -109,7 +109,7 @@ public final class ScriptRunner {
      * Executes the script using basic implementation.
      *
      * @param script the script file
-     * @param config script configuration
+     * @param config tgsql configuration
      * @return {@code true} if successfully completed, {@code false} otherwise
      * @throws ServerException      if server side error was occurred
      * @throws IOException          if I/O error was occurred while establishing connection
@@ -117,7 +117,7 @@ public final class ScriptRunner {
      */
     public static boolean execute(//
             @Nonnull String script, //
-            @Nonnull ScriptConfig config) throws ServerException, IOException, InterruptedException {
+            @Nonnull TgsqlConfig config) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(script);
         Objects.requireNonNull(config);
         return execute(toReaderSupplier(script), config);
@@ -127,7 +127,7 @@ public final class ScriptRunner {
      * Executes the script using basic implementation.
      *
      * @param script the script file
-     * @param config script configuration
+     * @param config tgsql configuration
      * @return {@code true} if successfully completed, {@code false} otherwise
      * @throws ServerException      if server side error was occurred
      * @throws IOException          if I/O error was occurred while establishing connection
@@ -135,7 +135,7 @@ public final class ScriptRunner {
      */
     public static boolean execute(//
             @Nonnull IoSupplier<? extends Reader> script, //
-            @Nonnull ScriptConfig config) throws ServerException, IOException, InterruptedException {
+            @Nonnull TgsqlConfig config) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(script);
         Objects.requireNonNull(config);
 
@@ -217,7 +217,7 @@ public final class ScriptRunner {
      * Executes REPL.
      *
      * @param script          console reader
-     * @param config          script configuration
+     * @param config          tgsql configuration
      * @param engineWrapper   the statement executor
      * @param resultProcessor result processor
      * @param reporter        reporter
@@ -227,10 +227,10 @@ public final class ScriptRunner {
      */
     public static void repl(//
             @Nonnull StatementSupplier script, //
-            @Nonnull ScriptConfig config, //
+            @Nonnull TgsqlConfig config, //
             @Nonnull Function<AbstractEngine, Engine> engineWrapper, //
             @Nonnull ResultProcessor resultProcessor, //
-            @Nonnull ScriptReporter reporter) throws ServerException, IOException, InterruptedException {
+            @Nonnull TgsqlReporter reporter) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(config);
         Objects.requireNonNull(script);
         Objects.requireNonNull(resultProcessor);
@@ -249,12 +249,12 @@ public final class ScriptRunner {
         /**
          * get statement.
          *
-         * @param config      script configuration
+         * @param config      tgsql configuration
          * @param transaction transaction
          * @return list of statement
          * @throws IOException if I/O error was occurred
          */
-        List<Statement> get(ScriptConfig config, @Nullable TransactionWrapper transaction) throws IOException;
+        List<Statement> get(TgsqlConfig config, @Nullable TransactionWrapper transaction) throws IOException;
     }
 
     /**
@@ -295,21 +295,21 @@ public final class ScriptRunner {
                         break loop;
                     }
                 }
-            } catch (ScriptInterruptedException e) {
+            } catch (TgsqlInterruptedException e) {
                 LOG.trace("user interrupted", e);
-            } catch (ScriptMessageException e) {
+            } catch (TgsqlMessageException e) {
                 LOG.trace("message exception", e);
                 var reporter = engine.getReporter();
                 reporter.warn(e.getMessage());
                 long time = e.getTimingTime();
                 if (time != 0) {
                     var clientVariableMap = engine.getConfig().getClientVariableMap();
-                    boolean timing = clientVariableMap.get(ScriptCvKey.SQL_TIMING, false);
+                    boolean timing = clientVariableMap.get(TgsqlCvKey.SQL_TIMING, false);
                     if (timing) {
                         reporter.reportTiming(time);
                     }
                 }
-            } catch (ScriptNoMessageException e) {
+            } catch (TgsqlNoMessageException e) {
                 LOG.trace("no message exception", e);
             } catch (ServerException e) {
                 if (LOG.isDebugEnabled()) {
@@ -339,7 +339,7 @@ public final class ScriptRunner {
         }
     }
 
-    private ScriptRunner() {
+    private TgsqlRunner() {
         throw new AssertionError();
     }
 }

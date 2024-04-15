@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 /**
  * client variable map.
  */
-public class ScriptClientVariableMap {
+public class TgsqlClientVariableMap {
 
     private final Map<String, Object> variableMap = new TreeMap<>();
 
@@ -34,7 +34,7 @@ public class ScriptClientVariableMap {
      * @return converted value
      */
     public Object put(@Nonnull String key, @Nullable String value) {
-        var cvKey = ScriptCvKey.find(key);
+        var cvKey = TgsqlCvKey.find(key);
         if (cvKey != null) {
             return put(cvKey, value);
         } else {
@@ -51,7 +51,7 @@ public class ScriptClientVariableMap {
      * @param value value to be associated with the specified key
      * @return converted value
      */
-    public <T> T put(@Nonnull ScriptCvKey<T> key, @Nullable String value) {
+    public <T> T put(@Nonnull TgsqlCvKey<T> key, @Nullable String value) {
         T converted = (value != null) ? key.convertValue(value) : null;
         if (converted == null) {
             variableMap.remove(key.toString());
@@ -68,7 +68,7 @@ public class ScriptClientVariableMap {
      * @param value value to be associated with the specified key
      * @return value
      */
-    public <T> T put(@Nonnull ScriptCvKey<T> key, @Nullable T value) {
+    public <T> T put(@Nonnull TgsqlCvKey<T> key, @Nullable T value) {
         variableMap.put(key.toString(), value);
         return value;
     }
@@ -81,7 +81,7 @@ public class ScriptClientVariableMap {
      * @return the value to which the specified key is mapped, or null if this map contains no mapping for the key
      */
     @Nullable
-    public <T> T get(@Nonnull ScriptCvKey<T> key) {
+    public <T> T get(@Nonnull TgsqlCvKey<T> key) {
         var obj = variableMap.get(key.toString());
         return key.castValue(obj);
     }
@@ -95,7 +95,7 @@ public class ScriptClientVariableMap {
      * @return the value to which the specified key is mapped, or null if this map contains no mapping for the key
      */
     @Nullable
-    public <T> T get(@Nonnull ScriptCvKey<T> key, T defaultValue) {
+    public <T> T get(@Nonnull TgsqlCvKey<T> key, T defaultValue) {
         var value = get(key);
         return (value != null) ? value : defaultValue;
     }

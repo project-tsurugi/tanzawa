@@ -4,7 +4,7 @@ package com.tsurugidb.tgsql.core.exception;
  * script message exception.
  */
 @SuppressWarnings("serial")
-public class ScriptMessageException extends RuntimeException {
+public class TgsqlMessageException extends RuntimeException {
 
     private long timingTime;
 
@@ -13,7 +13,7 @@ public class ScriptMessageException extends RuntimeException {
      *
      * @param message the detail message
      */
-    public ScriptMessageException(String message) {
+    public TgsqlMessageException(String message) {
         super(message);
     }
 
@@ -23,7 +23,7 @@ public class ScriptMessageException extends RuntimeException {
      * @param message the detail message
      * @param cause   the cause
      */
-    public ScriptMessageException(String message, Throwable cause) {
+    public TgsqlMessageException(String message, Throwable cause) {
         super(message, cause);
     }
 
@@ -34,7 +34,7 @@ public class ScriptMessageException extends RuntimeException {
      * @param cause   the cause
      * @param time    time
      */
-    public ScriptMessageException(String message, Throwable cause, long time) {
+    public TgsqlMessageException(String message, Throwable cause, long time) {
         super(message, cause);
         this.timingTime = time;
     }

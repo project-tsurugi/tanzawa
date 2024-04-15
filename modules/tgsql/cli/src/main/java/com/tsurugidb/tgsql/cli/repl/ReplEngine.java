@@ -2,11 +2,11 @@ package com.tsurugidb.tgsql.cli.repl;
 
 import java.io.IOException;
 
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.executor.engine.AbstractEngine;
 import com.tsurugidb.tgsql.core.executor.engine.Engine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
-import com.tsurugidb.tgsql.core.executor.report.ScriptReporter;
+import com.tsurugidb.tgsql.core.executor.report.TgsqlReporter;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.tgsql.core.model.CallStatement;
 import com.tsurugidb.tgsql.core.model.CommitStatement;
@@ -37,12 +37,12 @@ public class ReplEngine extends AbstractEngine {
     }
 
     @Override
-    public ScriptConfig getConfig() {
+    public TgsqlConfig getConfig() {
         return delegate.getConfig();
     }
 
     @Override
-    public ScriptReporter getReporter() {
+    public TgsqlReporter getReporter() {
         return delegate.getReporter();
     }
 

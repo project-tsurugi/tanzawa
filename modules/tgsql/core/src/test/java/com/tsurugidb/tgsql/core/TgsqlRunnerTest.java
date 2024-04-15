@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.executor.IoSupplier;
 import com.tsurugidb.tgsql.core.executor.engine.Engine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
@@ -19,15 +19,15 @@ import com.tsurugidb.tgsql.core.model.ErroneousStatement;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
 import com.tsurugidb.tgsql.core.model.Statement;
 
-class ScriptRunnerTest {
+class TgsqlRunnerTest {
 
     static class Recorder implements Engine {
 
-        private final ScriptConfig config = new ScriptConfig();
+        private final TgsqlConfig config = new TgsqlConfig();
         final List<Statement> statements = new ArrayList<>();
 
         @Override
-        public ScriptConfig getConfig() {
+        public TgsqlConfig getConfig() {
             return this.config;
         }
 
@@ -54,7 +54,7 @@ class ScriptRunnerTest {
     @Test
     void simple() throws Exception {
         Recorder recorder = new Recorder();
-        var r = ScriptRunner.execute(script("SELECT * FROM T"), recorder);
+        var r = TgsqlRunner.execute(script("SELECT * FROM T"), recorder);
         assertTrue(r);
         assertEquals(1, recorder.statements.size());
         assertEquals("SELECT * FROM T", recorder.text(Statement.Kind.GENERIC, 0));
@@ -62,11 +62,11 @@ class ScriptRunnerTest {
 
     @Test
     void raise() throws Exception {
-        var r = ScriptRunner.execute(script("SELECT * FROM T"), new Engine() {
-            private final ScriptConfig config = new ScriptConfig();
+        var r = TgsqlRunner.execute(script("SELECT * FROM T"), new Engine() {
+            private final TgsqlConfig config = new TgsqlConfig();
 
             @Override
-            public ScriptConfig getConfig() {
+            public TgsqlConfig getConfig() {
                 return config;
             }
 
@@ -81,7 +81,7 @@ class ScriptRunnerTest {
     @Test
     void special() throws Exception {
         Recorder recorder = new Recorder();
-        var r = ScriptRunner.execute(script("\\exit", "!!!"), recorder);
+        var r = TgsqlRunner.execute(script("\\exit", "!!!"), recorder);
         assertTrue(r);
         assertEquals(1, recorder.statements.size());
         assertEquals("\\exit", recorder.text(Statement.Kind.SPECIAL, 0));
@@ -90,7 +90,7 @@ class ScriptRunnerTest {
     @Test
     void erroneous() throws Exception {
         Recorder recorder = new Recorder();
-        var r = ScriptRunner.execute(script("COMMIT UNKNOWN"), recorder);
+        var r = TgsqlRunner.execute(script("COMMIT UNKNOWN"), recorder);
         assertTrue(r);
         assertEquals(1, recorder.statements.size());
         assertEquals("COMMIT UNKNOWN", recorder.text(Statement.Kind.ERRONEOUS, 0));

@@ -4,13 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import com.tsurugidb.tgsql.core.config.ScriptCvKey.ScriptCvKeyBoolean;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey.TgsqlCvKeyBoolean;
 
-class ScriptCvKeyBooleanTest {
+class TgsqlCvKeyBooleanTest {
 
     @Test
     void convertValue() {
-        var key = new ScriptCvKeyBoolean("test");
+        var key = new TgsqlCvKeyBoolean("test");
         assertEquals(Boolean.FALSE, key.convertValue(""));
         assertEquals(Boolean.FALSE, key.convertValue(" "));
 

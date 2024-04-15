@@ -10,19 +10,19 @@ import org.jline.terminal.Terminal;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
-import com.tsurugidb.tgsql.core.config.ScriptColor;
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
-import com.tsurugidb.tgsql.core.config.ScriptCvKey.ScriptCvKeyColor;
-import com.tsurugidb.tgsql.core.executor.report.ScriptReporter;
+import com.tsurugidb.tgsql.core.config.TgsqlColor;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey.TgsqlCvKeyColor;
+import com.tsurugidb.tgsql.core.executor.report.TgsqlReporter;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 
 /**
  * Tsurugi SQL console repl Reporter.
  */
-public class ReplReporter extends ScriptReporter {
+public class ReplReporter extends TgsqlReporter {
 
     private final Terminal terminal;
-    private final ScriptConfig config;
+    private final TgsqlConfig config;
 
     /**
      * Creates a new instance.
@@ -30,7 +30,7 @@ public class ReplReporter extends ScriptReporter {
      * @param terminal JLine Terminal
      * @param config   SQL scripts configuration
      */
-    public ReplReporter(@Nonnull Terminal terminal, @Nonnull ScriptConfig config) {
+    public ReplReporter(@Nonnull Terminal terminal, @Nonnull TgsqlConfig config) {
         this.terminal = Objects.requireNonNull(terminal);
         this.config = Objects.requireNonNull(config);
     }
@@ -53,8 +53,8 @@ public class ReplReporter extends ScriptReporter {
         return color(ReplCvKey.CONSOLE_IMPLICIT_COLOR, 0xc0_c0_00);
     }
 
-    protected int color(ScriptCvKeyColor key, int defaultColor) {
-        ScriptColor color = config.getClientVariableMap().get(key);
+    protected int color(TgsqlCvKeyColor key, int defaultColor) {
+        TgsqlColor color = config.getClientVariableMap().get(key);
         if (color == null) {
             return defaultColor;
         }

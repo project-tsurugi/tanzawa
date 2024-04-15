@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
@@ -65,7 +65,7 @@ public class ConnectCommand extends SpecialCommand {
             new CandidateOption("default", true)); //$NON-NLS-1$
 
     @Override
-    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(ScriptConfig config, String[] inputWords) {
+    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(TgsqlConfig config, String[] inputWords) {
         switch (inputWords.length) {
         case 2:
             return CANDIDATE_OPTION_LIST.stream().map(s -> new CompleterCandidateWords(COMMAND, s.option(), s.end())).collect(Collectors.toList());
@@ -117,7 +117,7 @@ public class ConnectCommand extends SpecialCommand {
         List<Supplier<Credential>> credentialList = new ArrayList<>();
     }
 
-    ConnectOption parseOption(ScriptConfig config, SpecialStatement statement) {
+    ConnectOption parseOption(TgsqlConfig config, SpecialStatement statement) {
         var option = new ConnectOption();
         int size = statement.getCommandOptions().size();
         for (int i = 0; i < size; i++) {

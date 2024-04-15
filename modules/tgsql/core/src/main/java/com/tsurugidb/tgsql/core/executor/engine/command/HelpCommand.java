@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tgsql.core.executor.engine.HelpMessage;
-import com.tsurugidb.tgsql.core.executor.report.ScriptReporter;
+import com.tsurugidb.tgsql.core.executor.report.TgsqlReporter;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
@@ -94,7 +94,7 @@ public class HelpCommand extends SpecialCommand {
      * @param commandName target command name
      * @param reporter    reporter
      */
-    public static void printHelp(String commandName, ScriptReporter reporter) {
+    public static void printHelp(String commandName, TgsqlReporter reporter) {
         List<String> message = HELP_MESSAGE.findForSpecialCommand(commandName);
         reporter.reportHelp(message);
     }

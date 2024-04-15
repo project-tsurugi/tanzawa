@@ -25,7 +25,7 @@ import com.tsurugidb.tgsql.cli.repl.ReplThreadExecutor;
 import com.tsurugidb.tgsql.cli.repl.jline.ReplJLineHistory;
 import com.tsurugidb.tgsql.cli.repl.jline.ReplJLineReader;
 import com.tsurugidb.tgsql.cli.repl.jline.ReplJLineTerminal;
-import com.tsurugidb.tgsql.core.ScriptRunner;
+import com.tsurugidb.tgsql.core.TgsqlRunner;
 import com.tsurugidb.tools.common.util.LibraryVersion;
 import com.tsurugidb.tsubakuro.client.ServiceClientCollector;
 import com.tsurugidb.tsubakuro.util.TsubakuroVersion;
@@ -179,7 +179,7 @@ public final class Main {
         var reporter = new ReplReporter(terminal, config);
         try (var executor = new ReplThreadExecutor("SQL engine", terminal); //
                 var resultProcessor = new ReplResultProcessor(config, reporter)) {
-            ScriptRunner.repl(script, config, engine -> new ReplEngine(engine, executor), resultProcessor, reporter);
+            TgsqlRunner.repl(script, config, engine -> new ReplEngine(engine, executor), resultProcessor, reporter);
         }
     }
 
@@ -190,7 +190,7 @@ public final class Main {
         LOG.debug("exec.statement=[{}]", statement);
 
         try (var reader = new StringReader(statement)) {
-            ScriptRunner.execute(() -> reader, config);
+            TgsqlRunner.execute(() -> reader, config);
         }
     }
 
@@ -203,7 +203,7 @@ public final class Main {
         LOG.debug("script.encoding=[{}]", encoding);
 
         try (var reader = Files.newBufferedReader(script, encoding)) {
-            ScriptRunner.execute(() -> reader, config);
+            TgsqlRunner.execute(() -> reader, config);
         }
     }
 

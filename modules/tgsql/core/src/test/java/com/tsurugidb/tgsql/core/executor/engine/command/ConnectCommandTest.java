@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.credential.DefaultCredentialSessionConnector;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
 import com.tsurugidb.tgsql.core.parser.SqlParser;
@@ -24,7 +24,7 @@ import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredent
 
 class ConnectCommandTest {
 
-    private static final ScriptConfig config = new ScriptConfig();
+    private static final TgsqlConfig config = new TgsqlConfig();
     static {
         config.setDefaultCredentialSessionConnector(new DefaultCredentialSessionConnector() {
 

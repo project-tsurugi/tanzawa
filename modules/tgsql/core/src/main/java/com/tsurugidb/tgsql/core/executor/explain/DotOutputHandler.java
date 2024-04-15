@@ -22,11 +22,11 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.tgsql.core.config.ScriptClientVariableMap;
+import com.tsurugidb.tgsql.core.config.TgsqlClientVariableMap;
 import com.tsurugidb.tgsql.core.executor.engine.CommandPath;
 import com.tsurugidb.tgsql.core.executor.engine.EngineConfigurationException;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
-import com.tsurugidb.tgsql.core.executor.report.ScriptReporter;
+import com.tsurugidb.tgsql.core.executor.report.TgsqlReporter;
 import com.tsurugidb.tgsql.core.model.ErroneousStatement;
 import com.tsurugidb.tgsql.core.model.Region;
 import com.tsurugidb.tgsql.core.model.Regioned;
@@ -90,7 +90,7 @@ public class DotOutputHandler implements PlanGraphOutputHandler {
     private static final PlanGraphOutputHandler NULL_OUTPUT_HANDLER = new PlanGraphOutputHandler() {
 
         @Override
-        public void handle(ScriptReporter reporter, PlanGraph graph) {
+        public void handle(TgsqlReporter reporter, PlanGraph graph) {
             return;
         }
 
@@ -133,7 +133,7 @@ public class DotOutputHandler implements PlanGraphOutputHandler {
     static Map<Regioned<String>, Optional<Regioned<Value>>> extendOptions(//
             @Nonnull Map<Regioned<String>, Optional<Regioned<Value>>> options, //
             @Nonnull Map<String, String> map) {
-        var clientVariableMap = new ScriptClientVariableMap();
+        var clientVariableMap = new TgsqlClientVariableMap();
         clientVariableMap.putAll(map);
         return extendOptions(options, clientVariableMap);
     }
@@ -147,7 +147,7 @@ public class DotOutputHandler implements PlanGraphOutputHandler {
      */
     public static Map<Regioned<String>, Optional<Regioned<Value>>> extendOptions(//
             @Nonnull Map<Regioned<String>, Optional<Regioned<Value>>> options, //
-            @Nonnull ScriptClientVariableMap clientVariableMap) {
+            @Nonnull TgsqlClientVariableMap clientVariableMap) {
         Objects.requireNonNull(options);
         Objects.requireNonNull(clientVariableMap);
 
@@ -264,7 +264,7 @@ public class DotOutputHandler implements PlanGraphOutputHandler {
     }
 
     @Override
-    public void handle(@Nonnull ScriptReporter reporter, @Nonnull PlanGraph graph) throws EngineException, InterruptedException {
+    public void handle(@Nonnull TgsqlReporter reporter, @Nonnull PlanGraph graph) throws EngineException, InterruptedException {
         Objects.requireNonNull(reporter);
         Objects.requireNonNull(graph);
         LOG.trace("generating DOT script"); //$NON-NLS-1$
@@ -283,7 +283,7 @@ public class DotOutputHandler implements PlanGraphOutputHandler {
         }
     }
 
-    private void dump(ScriptReporter reporter, StringBuilder buf) throws IOException, InterruptedException {
+    private void dump(TgsqlReporter reporter, StringBuilder buf) throws IOException, InterruptedException {
         var extension = findExtension(output).orElse(null);
         Util.prepareParentDirectory(output);
         if (dotExecutable == null || extension == null) {

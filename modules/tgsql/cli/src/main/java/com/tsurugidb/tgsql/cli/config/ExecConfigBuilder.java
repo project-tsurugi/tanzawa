@@ -5,7 +5,7 @@ import java.util.EnumSet;
 import javax.annotation.Nonnull;
 
 import com.tsurugidb.tgsql.cli.argument.CliArgument;
-import com.tsurugidb.tgsql.core.config.ScriptCommitMode;
+import com.tsurugidb.tgsql.core.config.TgsqlCommitMode;
 
 /**
  * ConfigBuilder for exec.
@@ -25,8 +25,8 @@ public class ExecConfigBuilder extends ConfigBuilder {
 
     @Override
     protected void buildSub() {
-        fillCommitMode(EnumSet.of(ScriptCommitMode.COMMIT, ScriptCommitMode.NO_COMMIT), //
-                ScriptCommitMode.COMMIT);
+        fillCommitMode(EnumSet.of(TgsqlCommitMode.COMMIT, TgsqlCommitMode.NO_COMMIT), //
+                TgsqlCommitMode.COMMIT);
 
         fillStatement();
     }

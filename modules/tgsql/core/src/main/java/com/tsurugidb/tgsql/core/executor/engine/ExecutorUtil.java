@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.sql.proto.SqlRequest;
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.model.CommitStatement;
 import com.tsurugidb.tgsql.core.model.Regioned;
 import com.tsurugidb.tgsql.core.model.StartTransactionStatement;
@@ -29,11 +29,11 @@ public final class ExecutorUtil {
      * Extracts transaction option from the {@link StartTransactionStatement}.
      *
      * @param statement the extraction target statement
-     * @param config    script configuration
+     * @param config    tgsql configuration
      * @return the extracted option
      * @throws EngineException if error occurred in engine itself
      */
-    public static SqlRequest.TransactionOption toTransactionOption(@Nonnull StartTransactionStatement statement, ScriptConfig config) throws EngineException {
+    public static SqlRequest.TransactionOption toTransactionOption(@Nonnull StartTransactionStatement statement, TgsqlConfig config) throws EngineException {
         Objects.requireNonNull(statement);
         var options = SqlRequest.TransactionOption.newBuilder();
         computeTransactionType(statement).ifPresent(options::setType);

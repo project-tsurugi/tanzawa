@@ -12,11 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.tgsql.cli.repl.jline.ReplJLineParser.ParsedStatement;
-import com.tsurugidb.tgsql.core.ScriptRunner.StatementSupplier;
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
-import com.tsurugidb.tgsql.core.config.ScriptPrompt;
-import com.tsurugidb.tgsql.core.config.ScriptCvKey.ScriptCvKeyPrompt;
-import com.tsurugidb.tgsql.core.exception.ScriptInterruptedException;
+import com.tsurugidb.tgsql.core.TgsqlRunner.StatementSupplier;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlPrompt;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey.TgsqlCvKeyPrompt;
+import com.tsurugidb.tgsql.core.exception.TgsqlInterruptedException;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.tgsql.core.model.Region;
 import com.tsurugidb.tgsql.core.model.SimpleStatement;
@@ -44,7 +44,7 @@ public class ReplScript implements StatementSupplier {
     }
 
     @Override
-    public List<Statement> get(ScriptConfig config, @Nullable TransactionWrapper transaction) {
+    public List<Statement> get(TgsqlConfig config, @Nullable TransactionWrapper transaction) {
         String prompt2 = getPrompt(config, ReplCvKey.PROMPT2_DEFAULT, ReplCvKey.PROMPT2_TRANSACTION, ReplCvKey.PROMPT2_OCC, ReplCvKey.PROMPT2_LTX, ReplCvKey.PROMPT2_RTX, PROMPT2, transaction);
         lineReader.setVariable(LineReader.SECONDARY_PROMPT_PATTERN, prompt2);
 
@@ -53,7 +53,7 @@ public class ReplScript implements StatementSupplier {
             String prompt1 = getPrompt(config, ReplCvKey.PROMPT1_DEFAULT, ReplCvKey.PROMPT1_TRANSACTION, ReplCvKey.PROMPT1_OCC, ReplCvKey.PROMPT1_LTX, ReplCvKey.PROMPT1_RTX, PROMPT1, transaction);
             text = lineReader.readLine(prompt1);
         } catch (UserInterruptException e) {
-            throw new ScriptInterruptedException(e);
+            throw new TgsqlInterruptedException(e);
         } catch (EndOfFileException e) {
             LOG.trace("EndOfFileException", e); //$NON-NLS-1$
             return null;
@@ -71,12 +71,12 @@ public class ReplScript implements StatementSupplier {
         throw new AssertionError(line);
     }
 
-    private String getPrompt(ScriptConfig config, ScriptCvKeyPrompt keyDefault, ScriptCvKeyPrompt keyTx, ScriptCvKeyPrompt keyOcc, ScriptCvKeyPrompt keyLtx, ScriptCvKeyPrompt keyRtx,
+    private String getPrompt(TgsqlConfig config, TgsqlCvKeyPrompt keyDefault, TgsqlCvKeyPrompt keyTx, TgsqlCvKeyPrompt keyOcc, TgsqlCvKeyPrompt keyLtx, TgsqlCvKeyPrompt keyRtx,
             String defaultPrompt, @Nullable TransactionWrapper transaction) {
         var variableMap = config.getClientVariableMap();
 
-        ScriptPrompt prompt = null;
-        ScriptCvKeyPrompt key = null;
+        TgsqlPrompt prompt = null;
+        TgsqlCvKeyPrompt key = null;
         if (transaction != null) {
             switch (transaction.getOption().getType()) {
             case SHORT:

@@ -4,7 +4,7 @@ import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 
 import com.tsurugidb.tgsql.cli.config.CliEnvironment;
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 
 /**
  * Tsurugi SQL console JLine LineReader.
@@ -16,10 +16,10 @@ public final class ReplJLineReader {
     /**
      * Creates a new instance.
      *
-     * @param config script configuration
+     * @param config tgsql configuration
      * @return LineReader
      */
-    public static LineReader createReader(ScriptConfig config) {
+    public static LineReader createReader(TgsqlConfig config) {
         var terminal = ReplJLineTerminal.getTerminal();
         var completer = new ReplJLineCompleter(config);
         var parser = new ReplJLineParser();

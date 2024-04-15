@@ -3,7 +3,7 @@ package com.tsurugidb.tgsql.core.config;
 /**
  * Commit mode.
  */
-public enum ScriptCommitMode {
+public enum TgsqlCommitMode {
     /** commit every statement. */
     AUTO_COMMIT,
     /** commit only if user explicitly specify a COMMIT statement. */

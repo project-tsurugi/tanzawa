@@ -17,8 +17,8 @@ import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 /**
  * prompt.
  */
-public class ScriptPrompt {
-    private static final Logger LOG = LoggerFactory.getLogger(ScriptPrompt.class);
+public class TgsqlPrompt {
+    private static final Logger LOG = LoggerFactory.getLogger(TgsqlPrompt.class);
 
     /**
      * Creates a new instance.
@@ -26,7 +26,7 @@ public class ScriptPrompt {
      * @param format prompt format
      * @return prompt
      */
-    public static @Nullable ScriptPrompt create(String format) {
+    public static @Nullable TgsqlPrompt create(String format) {
         if (format.isEmpty()) {
             return null;
         }
@@ -34,7 +34,7 @@ public class ScriptPrompt {
         var pattern = Pattern.compile("(" + Pattern.quote("{{") + ")|(" + Pattern.quote("}}") + ")|\\{([^{}]*)\\}");
         var matcher = pattern.matcher(format);
 
-        var elementList = new ArrayList<ScriptPromptElement>();
+        var elementList = new ArrayList<TgsqlPromptElement>();
 
         int index = 0;
         var sb = new StringBuilder();
@@ -55,10 +55,10 @@ public class ScriptPrompt {
         addSbToList(format, index, format.length(), sb, elementList);
 
         if (elementList.isEmpty()) {
-            elementList.add(ScriptPromptElement.text(format));
+            elementList.add(TgsqlPromptElement.text(format));
         }
 
-        return new ScriptPrompt(format, elementList);
+        return new TgsqlPrompt(format, elementList);
     }
 
     private static int appendSb(String format, int index, Matcher matcher, int group, StringBuilder sb, String text) {
@@ -78,7 +78,7 @@ public class ScriptPrompt {
         return end;
     }
 
-    private static int addList(String format, int index, Matcher matcher, int group, StringBuilder sb, List<ScriptPromptElement> elementList) {
+    private static int addList(String format, int index, Matcher matcher, int group, StringBuilder sb, List<TgsqlPromptElement> elementList) {
         int start = matcher.start(group) - 1;
         int end = matcher.end(group) + 1;
         addSbToList(format, index, start, sb, elementList);
@@ -90,7 +90,7 @@ public class ScriptPrompt {
         return end;
     }
 
-    private static void addSbToList(String format, int index, int start, StringBuilder sb, List<ScriptPromptElement> elementList) {
+    private static void addSbToList(String format, int index, int start, StringBuilder sb, List<TgsqlPromptElement> elementList) {
         if (index < start) {
             String s = format.substring(index, start);
             sb.append(s);
@@ -98,7 +98,7 @@ public class ScriptPrompt {
 
         if (sb.length() != 0) {
             String s = escape(sb);
-            elementList.add(ScriptPromptElement.text(s));
+            elementList.add(TgsqlPromptElement.text(s));
             sb.setLength(0);
         }
     }
@@ -107,7 +107,7 @@ public class ScriptPrompt {
         return sb.toString().replace("\\t", "\t").replace("\\r", "\r").replace("\\n", "\n");
     }
 
-    private static ScriptPromptElement parseElement(String text) {
+    private static TgsqlPromptElement parseElement(String text) {
         String target, field;
         {
             int n = text.indexOf('.');
@@ -122,32 +122,32 @@ public class ScriptPrompt {
 
         switch (target) {
         case "endpoint":
-            return ScriptPrompt::getEndpoint;
+            return TgsqlPrompt::getEndpoint;
         case "tx":
             switch (field) {
             case "id":
-                return ScriptPrompt::getTransactionId;
+                return TgsqlPrompt::getTransactionId;
             case "option":
-                return ScriptPrompt::getTxOption;
+                return TgsqlPrompt::getTxOption;
             case "type":
-                return ScriptPrompt::getTxType;
+                return TgsqlPrompt::getTxType;
             case "label":
-                return ScriptPrompt::getTxLabel;
+                return TgsqlPrompt::getTxLabel;
             case "includeddl":
             case "includedefinition":
             case "includedefinitions":
-                return ScriptPrompt::getTxIncludeDdl;
+                return TgsqlPrompt::getTxIncludeDdl;
             case "wp":
             case "writepreserve":
-                return ScriptPrompt::getTxWritePreserve;
+                return TgsqlPrompt::getTxWritePreserve;
             case "ira":
             case "inclusivereadarea":
-                return ScriptPrompt::getTxInclusiveReadArea;
+                return TgsqlPrompt::getTxInclusiveReadArea;
             case "era":
             case "exclusivereadarea":
-                return ScriptPrompt::getTxExclusiveReadArea;
+                return TgsqlPrompt::getTxExclusiveReadArea;
             case "priority":
-                return ScriptPrompt::getTxPriority;
+                return TgsqlPrompt::getTxPriority;
             default:
                 break;
             }
@@ -158,14 +158,14 @@ public class ScriptPrompt {
 
         LOG.trace("unsupported prompt.parseElement. text=[{}]", text);
         String s = "{" + target + "." + field + "}";
-        return ScriptPromptElement.text(s);
+        return TgsqlPromptElement.text(s);
     }
 
     /**
      * prompt element.
      */
     @FunctionalInterface
-    protected interface ScriptPromptElement {
+    protected interface TgsqlPromptElement {
 
         /**
          * Creates a text prompt.
@@ -173,25 +173,25 @@ public class ScriptPrompt {
          * @param text text
          * @return prompt element for text
          */
-        static ScriptPromptElement text(String text) {
+        static TgsqlPromptElement text(String text) {
             return (config, transaction) -> text;
         }
 
         /**
          * get prompt.
          *
-         * @param config      script configuration
+         * @param config      tgsql configuration
          * @param transaction transaction
          * @return prompt text
          */
-        String get(ScriptConfig config, TransactionWrapper transaction);
+        String get(TgsqlConfig config, TransactionWrapper transaction);
     }
 
-    static String getEndpoint(ScriptConfig config, TransactionWrapper transaction) {
+    static String getEndpoint(TgsqlConfig config, TransactionWrapper transaction) {
         return config.getEndpoint();
     }
 
-    static String getTransactionId(ScriptConfig config, TransactionWrapper transaction) {
+    static String getTransactionId(TgsqlConfig config, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -200,7 +200,7 @@ public class ScriptPrompt {
         return tx.getTransactionId();
     }
 
-    static String getTxOption(ScriptConfig config, TransactionWrapper transaction) {
+    static String getTxOption(TgsqlConfig config, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -210,7 +210,7 @@ public class ScriptPrompt {
         return util.toString(option);
     }
 
-    static String getTxType(ScriptConfig config, TransactionWrapper transaction) {
+    static String getTxType(TgsqlConfig config, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -221,7 +221,7 @@ public class ScriptPrompt {
         return util.toString(type);
     }
 
-    static String getTxLabel(ScriptConfig config, TransactionWrapper transaction) {
+    static String getTxLabel(TgsqlConfig config, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -234,7 +234,7 @@ public class ScriptPrompt {
         return label;
     }
 
-    static String getTxIncludeDdl(ScriptConfig config, TransactionWrapper transaction) {
+    static String getTxIncludeDdl(TgsqlConfig config, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -244,7 +244,7 @@ public class ScriptPrompt {
         return Boolean.toString(includeDdl);
     }
 
-    static String getTxWritePreserve(ScriptConfig config, TransactionWrapper transaction) {
+    static String getTxWritePreserve(TgsqlConfig config, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -255,7 +255,7 @@ public class ScriptPrompt {
         return util.toStringWp(list);
     }
 
-    static String getTxInclusiveReadArea(ScriptConfig config, TransactionWrapper transaction) {
+    static String getTxInclusiveReadArea(TgsqlConfig config, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -266,7 +266,7 @@ public class ScriptPrompt {
         return util.toStringRa(list);
     }
 
-    static String getTxExclusiveReadArea(ScriptConfig config, TransactionWrapper transaction) {
+    static String getTxExclusiveReadArea(TgsqlConfig config, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -277,7 +277,7 @@ public class ScriptPrompt {
         return util.toStringRa(list);
     }
 
-    static String getTxPriority(ScriptConfig config, TransactionWrapper transaction) {
+    static String getTxPriority(TgsqlConfig config, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -289,7 +289,7 @@ public class ScriptPrompt {
     }
 
     private final String format;
-    private final List<ScriptPromptElement> elementList;
+    private final List<TgsqlPromptElement> elementList;
 
     /**
      * Creates a new instance.
@@ -297,7 +297,7 @@ public class ScriptPrompt {
      * @param format      prompt format
      * @param elementList list of prompt element
      */
-    public ScriptPrompt(String format, List<ScriptPromptElement> elementList) {
+    public TgsqlPrompt(String format, List<TgsqlPromptElement> elementList) {
         this.format = format;
         this.elementList = elementList;
     }
@@ -305,11 +305,11 @@ public class ScriptPrompt {
     /**
      * get prompt.
      *
-     * @param config      script configuration
+     * @param config      tgsql configuration
      * @param transaction transaction
      * @return prompt
      */
-    public String getPrompt(ScriptConfig config, TransactionWrapper transaction) {
+    public String getPrompt(TgsqlConfig config, TransactionWrapper transaction) {
         if (elementList.size() == 1) {
             var element = elementList.get(0);
             return element.get(config, transaction);

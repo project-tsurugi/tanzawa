@@ -6,7 +6,7 @@ import java.text.MessageFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.tgsql.core.exception.ScriptMessageException;
+import com.tsurugidb.tgsql.core.exception.TgsqlMessageException;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
@@ -44,7 +44,7 @@ public class HistoryCommand extends SpecialCommand {
         try {
             return Integer.parseInt(option);
         } catch (NumberFormatException e) {
-            throw new ScriptMessageException(MessageFormat.format("not integer. option={0}", option), e);
+            throw new TgsqlMessageException(MessageFormat.format("not integer. option={0}", option), e);
         }
     }
 }

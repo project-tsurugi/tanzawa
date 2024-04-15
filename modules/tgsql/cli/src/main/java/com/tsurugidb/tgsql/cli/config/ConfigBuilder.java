@@ -27,9 +27,9 @@ import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 import com.tsurugidb.tgsql.cli.argument.CliArgument;
 import com.tsurugidb.tgsql.cli.argument.CliArgument.TransactionEnum;
 import com.tsurugidb.tgsql.cli.repl.ReplDefaultCredentialSessionConnector;
-import com.tsurugidb.tgsql.core.config.ScriptClientVariableMap;
-import com.tsurugidb.tgsql.core.config.ScriptCommitMode;
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlClientVariableMap;
+import com.tsurugidb.tgsql.core.config.TgsqlCommitMode;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.credential.DefaultCredentialSessionConnector;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 
@@ -40,7 +40,7 @@ public abstract class ConfigBuilder {
     /** logger. */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final ScriptConfig config = new ScriptConfig();
+    private final TgsqlConfig config = new TgsqlConfig();
     /** argument. */
     protected final CliArgument argument;
 
@@ -56,9 +56,9 @@ public abstract class ConfigBuilder {
     /**
      * create configuration.
      *
-     * @return script configuration
+     * @return tgsql configuration
      */
-    public ScriptConfig build() {
+    public TgsqlConfig build() {
         fillEndpoint();
         fillTransactionOption();
         fillProperty();
@@ -161,17 +161,17 @@ public abstract class ConfigBuilder {
         clientVariableMap.putAll(variable);
     }
 
-    protected void fillClientVariableDefault(ScriptClientVariableMap clientVariableMap) {
+    protected void fillClientVariableDefault(TgsqlClientVariableMap clientVariableMap) {
         // do override
     }
 
-    protected void fillClientVariableFromUserHomeFile(ScriptClientVariableMap clientVariableMap) {
+    protected void fillClientVariableFromUserHomeFile(TgsqlClientVariableMap clientVariableMap) {
         CliEnvironment.findUserHomeClientVariablePath().ifPresent(path -> {
             fillClientVariableFromFile(clientVariableMap, path, true);
         });
     }
 
-    protected void fillClientVariableFromArgumentFile(ScriptClientVariableMap clientVariableMap) {
+    protected void fillClientVariableFromArgumentFile(TgsqlClientVariableMap clientVariableMap) {
         String file = argument.getClientVariableFile();
         if (file != null) {
             var path = Path.of(file);
@@ -179,7 +179,7 @@ public abstract class ConfigBuilder {
         }
     }
 
-    protected void fillClientVariableFromFile(ScriptClientVariableMap clientVariableMap, Path file, boolean ignoreError) {
+    protected void fillClientVariableFromFile(TgsqlClientVariableMap clientVariableMap, Path file, boolean ignoreError) {
         if (ignoreError) {
             if (!Files.isRegularFile(file)) {
                 Log.debug("{} is not regular file. ignore", file);
@@ -214,15 +214,15 @@ public abstract class ConfigBuilder {
 
     protected abstract void buildSub();
 
-    protected void fillCommitMode(Set<ScriptCommitMode> availableList, ScriptCommitMode defaultMode) {
-        var list = new ArrayList<ScriptCommitMode>();
+    protected void fillCommitMode(Set<TgsqlCommitMode> availableList, TgsqlCommitMode defaultMode) {
+        var list = new ArrayList<TgsqlCommitMode>();
         boolean error = false;
-        error |= computeCommitMode(list, availableList, ScriptCommitMode.AUTO_COMMIT, argument.getAutoCommit());
-        error |= computeCommitMode(list, availableList, ScriptCommitMode.NO_AUTO_COMMIT, argument.getNoAutoCommit());
-        error |= computeCommitMode(list, availableList, ScriptCommitMode.COMMIT, argument.getCommit());
-        error |= computeCommitMode(list, availableList, ScriptCommitMode.NO_COMMIT, argument.getNoCommit());
+        error |= computeCommitMode(list, availableList, TgsqlCommitMode.AUTO_COMMIT, argument.getAutoCommit());
+        error |= computeCommitMode(list, availableList, TgsqlCommitMode.NO_AUTO_COMMIT, argument.getNoAutoCommit());
+        error |= computeCommitMode(list, availableList, TgsqlCommitMode.COMMIT, argument.getCommit());
+        error |= computeCommitMode(list, availableList, TgsqlCommitMode.NO_COMMIT, argument.getNoCommit());
 
-        ScriptCommitMode commitMode;
+        TgsqlCommitMode commitMode;
         switch (list.size()) {
         case 0:
             commitMode = defaultMode;
@@ -243,7 +243,7 @@ public abstract class ConfigBuilder {
         config.setCommitMode(commitMode);
     }
 
-    private boolean computeCommitMode(List<ScriptCommitMode> list, Set<ScriptCommitMode> availableList, ScriptCommitMode mode, boolean b) {
+    private boolean computeCommitMode(List<TgsqlCommitMode> list, Set<TgsqlCommitMode> availableList, TgsqlCommitMode mode, boolean b) {
         if (b) {
             if (availableList.contains(mode)) {
                 list.add(mode);

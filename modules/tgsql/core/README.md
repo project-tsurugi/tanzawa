@@ -30,7 +30,7 @@ see [grammar-rule.md](../../docs/grammar-rule.md).
 
 ### Logger names and levels
 
-* `com.tsurugidb.tgsql.core.ScriptRunner`
+* `com.tsurugidb.tgsql.core.TgsqlRunner`
   * `ERROR` - print critical runtime error messages
   * `WARN` - print runtime error messages
   * `INFO` - program start/finish message

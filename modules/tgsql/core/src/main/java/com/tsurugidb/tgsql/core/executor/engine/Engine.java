@@ -5,8 +5,8 @@ import java.io.IOException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
-import com.tsurugidb.tgsql.core.executor.report.ScriptReporter;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.executor.report.TgsqlReporter;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.tgsql.core.model.Statement;
 import com.tsurugidb.tsubakuro.exception.ServerException;
@@ -18,20 +18,20 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 public interface Engine {
 
     /**
-     * get script configuration.
+     * get tgsql configuration.
      *
-     * @return script configuration
+     * @return tgsql configuration
      */
-    default ScriptConfig getConfig() {
+    default TgsqlConfig getConfig() {
         throw new UnsupportedOperationException("do override");
     }
 
     /**
      * get reporter.
      *
-     * @return script reporter
+     * @return tgsql reporter
      */
-    default ScriptReporter getReporter() {
+    default TgsqlReporter getReporter() {
         throw new UnsupportedOperationException("do override");
     }
 

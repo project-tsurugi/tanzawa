@@ -12,13 +12,13 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tgsql.core.model.ErroneousStatement;
+import com.tsurugidb.tgsql.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.tgsql.core.model.Regioned;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
-import com.tsurugidb.tgsql.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 /**
@@ -209,11 +209,11 @@ public abstract class SpecialCommand {
     /**
      * get completer candidates.
      *
-     * @param config     script configuration
+     * @param config     tgsql configuration
      * @param inputWords input words
      * @return candidates
      */
-    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(ScriptConfig config, String[] inputWords) {
+    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(TgsqlConfig config, String[] inputWords) {
         return List.of();
     }
 

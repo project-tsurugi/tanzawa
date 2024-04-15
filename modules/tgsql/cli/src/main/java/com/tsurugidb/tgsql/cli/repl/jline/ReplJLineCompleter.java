@@ -8,7 +8,7 @@ import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
-import com.tsurugidb.tgsql.core.config.ScriptConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.executor.engine.command.SpecialCommand;
 
 /**
@@ -16,14 +16,14 @@ import com.tsurugidb.tgsql.core.executor.engine.command.SpecialCommand;
  */
 public class ReplJLineCompleter implements Completer {
 
-    private final ScriptConfig config;
+    private final TgsqlConfig config;
 
     /**
      * Creates a new instance.
      *
-     * @param config script configuration
+     * @param config tgsql configuration
      */
-    public ReplJLineCompleter(ScriptConfig config) {
+    public ReplJLineCompleter(TgsqlConfig config) {
         this.config = config;
     }
 

@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
 
 import com.beust.jcommander.ParameterException;
 import com.tsurugidb.tgsql.cli.argument.CliArgument;
-import com.tsurugidb.tgsql.core.config.ScriptCommitMode;
+import com.tsurugidb.tgsql.core.config.TgsqlCommitMode;
 
 /**
  * ConfigBuilder for script.
@@ -33,8 +33,8 @@ public class ScriptConfigBuilder extends ConfigBuilder {
 
     @Override
     protected void buildSub() {
-        fillCommitMode(EnumSet.of(ScriptCommitMode.AUTO_COMMIT, ScriptCommitMode.NO_AUTO_COMMIT, ScriptCommitMode.COMMIT, ScriptCommitMode.NO_COMMIT), //
-                ScriptCommitMode.COMMIT);
+        fillCommitMode(EnumSet.of(TgsqlCommitMode.AUTO_COMMIT, TgsqlCommitMode.NO_AUTO_COMMIT, TgsqlCommitMode.COMMIT, TgsqlCommitMode.NO_COMMIT), //
+                TgsqlCommitMode.COMMIT);
 
         fillEncoding();
         fillScript();

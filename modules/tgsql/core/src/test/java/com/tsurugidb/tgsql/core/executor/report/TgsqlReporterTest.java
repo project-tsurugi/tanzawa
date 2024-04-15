@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import com.tsurugidb.tsubakuro.sql.CounterType;
 
-class ScriptReporterTest {
+class TgsqlReporterTest {
 
-    private static final ScriptReporter REPORTER = new ScriptReporter() {
+    private static final TgsqlReporter REPORTER = new TgsqlReporter() {
 
         @Override
         public void warn(String message) {
