@@ -25,6 +25,7 @@ import com.tsurugidb.tgsql.cli.repl.ReplThreadExecutor;
 import com.tsurugidb.tgsql.cli.repl.jline.ReplJLineHistory;
 import com.tsurugidb.tgsql.cli.repl.jline.ReplJLineReader;
 import com.tsurugidb.tgsql.cli.repl.jline.ReplJLineTerminal;
+import com.tsurugidb.tgsql.core.TgsqlConstants;
 import com.tsurugidb.tgsql.core.TgsqlRunner;
 import com.tsurugidb.tools.common.util.LibraryVersion;
 import com.tsurugidb.tsubakuro.client.ServiceClientCollector;
@@ -61,7 +62,7 @@ public final class Main {
     public static int execute(String... args) throws Exception {
         var argument = new CliArgument();
         var commander = JCommander.newBuilder() //
-                .programName("tgsql") //$NON-NLS-1$
+                .programName(TgsqlConstants.APPLICATION_NAME) //
                 .addObject(argument) //
                 .build();
         try (Closeable c0 = () -> ReplJLineTerminal.close()) {

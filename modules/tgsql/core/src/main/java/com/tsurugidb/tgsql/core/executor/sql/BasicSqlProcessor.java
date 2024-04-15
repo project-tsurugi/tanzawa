@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.sql.proto.SqlRequest;
+import com.tsurugidb.tgsql.core.TgsqlConstants;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.model.Region;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
@@ -63,7 +64,7 @@ public class BasicSqlProcessor implements SqlProcessor {
 
     protected Session getSession(TgsqlConfig config) throws ServerException, IOException, InterruptedException {
         if (this.session == null) {
-            String applicationName = "tgsql"; //$NON-NLS-1$
+            String applicationName = TgsqlConstants.APPLICATION_NAME;
             String endpoint = config.getEndpoint();
             if (endpoint == null) {
                 throw new IllegalStateException("specify connection-url");

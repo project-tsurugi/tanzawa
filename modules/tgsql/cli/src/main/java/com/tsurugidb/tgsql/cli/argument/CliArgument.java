@@ -23,6 +23,7 @@ import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.tgsql.cli.repl.ReplDefaultCredentialSessionConnector;
+import com.tsurugidb.tgsql.core.TgsqlConstants;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
@@ -142,8 +143,8 @@ public class CliArgument {
     @Parameter(names = { "--execute" }, variableArity = true, description = "transaction execute. (PRIOR|EXCLUDING) (DEFERRABLE|IMMEDIATE)?")
     private List<String> execute;
 
-    @Parameter(names = { "--label", "-l" }, arity = 1, description = "transaction label")
-    private String label = "tgsql-transaction";
+    @Parameter(names = { "--label", "-l" }, arity = 1, description = "transaction label. (Default: " + TgsqlConstants.IMPLICIT_TRANSACTION_LABEL + "NOW)")
+    private String label;
 
     @DynamicParameter(names = { "--with" }, description = "transaction setting. <key>=<value>")
     private Map<String, String> withMap = new LinkedHashMap<>();
@@ -492,8 +493,8 @@ public class CliArgument {
      *
      * @return label
      */
-    public @Nonnull String getLabel() {
-        return this.label; // has default value
+    public @Nullable String getLabel() {
+        return this.label;
     }
 
     /**

@@ -2,6 +2,7 @@ package com.tsurugidb.tgsql.core.executor.engine;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -13,6 +14,8 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.sql.proto.SqlRequest;
+import com.tsurugidb.tgsql.core.TgsqlConstants;
 import com.tsurugidb.tgsql.core.config.TgsqlCommitMode;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
@@ -384,9 +387,16 @@ public class BasicEngine extends AbstractEngine {
         if (startIfInactive) {
             var option = config.getTransactionOption();
             if (option != null) {
+                String label = option.getLabel();
+                if (label == null || label.isEmpty()) {
+                    var builder = SqlRequest.TransactionOption.newBuilder(option);
+                    builder.setLabel(TgsqlConstants.IMPLICIT_TRANSACTION_LABEL + OffsetDateTime.now());
+                    option = builder.build();
+                }
                 reporter.reportStartTransactionImplicitly(option);
+                var finalOption = option;
                 executeTiming(timingEnd -> {
-                    sqlProcessor.startTransaction(option);
+                    sqlProcessor.startTransaction(finalOption);
                     timingEnd.accept(System.nanoTime());
                 });
                 return true;

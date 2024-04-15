@@ -135,7 +135,9 @@ public abstract class ConfigBuilder {
         }
 
         String label = argument.getLabel();
-        options.setLabel(label);
+        if (label != null) {
+            options.setLabel(label);
+        }
 
         // TODO Map<String, String> with = argument.getWith();
 
