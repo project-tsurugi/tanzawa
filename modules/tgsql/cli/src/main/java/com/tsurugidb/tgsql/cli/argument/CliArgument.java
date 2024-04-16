@@ -59,6 +59,9 @@ public class CliArgument {
     @Parameter(names = { "--connection", "-c" }, arity = 1, description = "connection uri (e.g. tcp://localhost:12345)")
     private String connectionUri;
 
+    @Parameter(names = { "--connection-label" }, arity = 1, description = "Tsurugi connection session label")
+    private String connectionLabel;
+
     // credential
 
     @Parameter(names = { "--user", "-u" }, arity = 1, description = "<user name>")
@@ -298,6 +301,15 @@ public class CliArgument {
      */
     public @Nonnull String getConnectionUri() {
         return this.connectionUri; // required = true
+    }
+
+    /**
+     * get --connection-label.
+     *
+     * @return connection label
+     */
+    public @Nullable String getConnectionLabel() {
+        return this.connectionLabel;
     }
 
     // credential

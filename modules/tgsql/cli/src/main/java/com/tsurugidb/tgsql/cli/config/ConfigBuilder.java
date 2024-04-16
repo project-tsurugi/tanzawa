@@ -76,6 +76,9 @@ public abstract class ConfigBuilder {
         String endpoint = argument.getConnectionUri();
         log.debug("config.endpoint={}", endpoint);
         config.setEndpoint(endpoint);
+        String label = argument.getConnectionLabel();
+        log.debug("config.connectionLabel={}", label);
+        config.setConnectionLabel(label);
     }
 
     private void fillTransactionOption() {

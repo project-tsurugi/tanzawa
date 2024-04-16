@@ -66,6 +66,7 @@ tgsql --script -c tcp://localhost:12345 -e UTF-8 /path/to/script.sql
 * `--help, -h` - show help
 * `--version` - print version
 * `--connection,-c` - connection URL (`tcp://...`, `ipc://...`, etc. compliant with end-point URI of [SessionBuilder.connect](https://github.com/project-tsurugi/tsubakuro/blob/98fa342082af04cf927b875b9d898dd7961f575e/modules/session/src/main/java/com/nautilus_technologies/tsubakuro/low/common/SessionBuilder.java#L35-L45) )
+* `--connection-label` - Tsurugi connection session label
 * `--property,-P` - SQL properties (corresponds to `SET <key> TO <value>` , multiple specifications allowed)
 * client variable
   * `-D` - client variable (corresponds to `\set <key> <value>`, multiple specifications allowed)

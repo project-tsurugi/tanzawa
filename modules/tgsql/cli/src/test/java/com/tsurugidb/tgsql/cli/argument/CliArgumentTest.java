@@ -118,6 +118,15 @@ class CliArgumentTest {
         }
     }
 
+    @Test
+    void connectionLabel() {
+        String label = "test-label";
+        var argument = new CliArgument();
+        set(argument, "--connection-label", label);
+
+        assertEquals(label, argument.getConnectionLabel());
+    }
+
     // commit
 
     @Test

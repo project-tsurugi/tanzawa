@@ -69,16 +69,19 @@ public class BasicSqlProcessor implements SqlProcessor {
             if (endpoint == null) {
                 throw new IllegalStateException("specify connection-url");
             }
+            var label = config.getConnectionLabel();
 
             Credential credential;
             try {
                 var supplier = config.getCredential();
                 if (supplier != null) {
                     credential = supplier.get();
-                    this.session = SessionBuilder.connect(endpoint).withApplicationName(applicationName).withCredential(credential).create();
+                    var builder = SessionBuilder.connect(endpoint).withApplicationName(applicationName).withCredential(credential);
+                    label.ifPresent(builder::withLabel);
+                    this.session = builder.create();
                 } else {
                     var sessionConnector = config.getDefaultCredentialSessionConnector();
-                    var connection = sessionConnector.connect(applicationName, endpoint);
+                    var connection = sessionConnector.connect(applicationName, label, endpoint);
                     credential = connection.credential();
                     this.session = connection.session();
                 }

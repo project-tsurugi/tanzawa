@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
@@ -22,6 +23,7 @@ import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 public class TgsqlConfig {
 
     private String endpoint;
+    private Optional<String> connectionLabel = Optional.empty();
 
     private Supplier<Credential> credential;
     private DefaultCredentialSessionConnector defaultCredentialSessionConnector;
@@ -52,6 +54,24 @@ public class TgsqlConfig {
      */
     public @Nullable String getEndpoint() {
         return this.endpoint;
+    }
+
+    /**
+     * set connection label.
+     *
+     * @param label connection label
+     */
+    public void setConnectionLabel(@Nullable String label) {
+        this.connectionLabel = Optional.ofNullable(label);
+    }
+
+    /**
+     * get connection label.
+     *
+     * @return connection label
+     */
+    public Optional<String> getConnectionLabel() {
+        return this.connectionLabel;
     }
 
     /**

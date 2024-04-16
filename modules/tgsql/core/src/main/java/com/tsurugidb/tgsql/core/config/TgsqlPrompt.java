@@ -128,10 +128,22 @@ public class TgsqlPrompt {
         }
 
         switch (target) {
-        case "endpoint":
-            return TgsqlPrompt::getEndpoint;
         case "now":
             return parseElementDateTime(originalField);
+        case "endpoint":
+            return TgsqlPrompt::getEndpoint;
+        case "connection":
+        case "conn":
+            switch (field) {
+            case "uri":
+                return TgsqlPrompt::getEndpoint;
+            case "label":
+                return TgsqlPrompt::getConnectionLabel;
+            default:
+                break;
+            }
+            break;
+        case "transaction":
         case "tx":
             switch (field) {
             case "id":
@@ -196,10 +208,6 @@ public class TgsqlPrompt {
         String get(TgsqlConfig config, TransactionWrapper transaction);
     }
 
-    static String getEndpoint(TgsqlConfig config, TransactionWrapper transaction) {
-        return config.getEndpoint();
-    }
-
     static TgsqlPromptElement parseElementDateTime(String format) {
         if (format == null || format.isEmpty()) {
             return (c, t) -> LocalDateTime.now().toString();
@@ -211,6 +219,14 @@ public class TgsqlPrompt {
         } catch (Exception e) {
             throw new TgsqlMessageException(MessageFormat.format("dateTime format error. format={0}, cause={1}", format, e.getMessage()), e);
         }
+    }
+
+    static String getEndpoint(TgsqlConfig config, TransactionWrapper transaction) {
+        return config.getEndpoint();
+    }
+
+    static String getConnectionLabel(TgsqlConfig config, TransactionWrapper transaction) {
+        return config.getConnectionLabel().orElse(null);
     }
 
     static String getTransactionId(TgsqlConfig config, TransactionWrapper transaction) {
