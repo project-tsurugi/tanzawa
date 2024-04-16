@@ -21,10 +21,19 @@ import com.tsurugidb.tgsql.core.executor.explain.DotOutputHandler;
  */
 public abstract class TgsqlCvKey<T> {
 
+    /** implicit-transaction.label.suffix-time . */
+    public static final TgsqlCvKeyDateTimeFormat IMPLICIT_TX_LABEL_SUFFIX_TIME = new TgsqlCvKeyDateTimeFormat("implicit-transaction.label.suffix-time"); //$NON-NLS-1$
+    /** implicit-transaction.auto-commit . */
+    public static final TgsqlCvKeyBoolean IMPLICIT_TX_AUTO_COMMIT = new TgsqlCvKeyBoolean("implicit-transaction.auto-commit"); //$NON-NLS-1$
+
+    /** transaction.label.suffix-time . */
+    public static final TgsqlCvKeyDateTimeFormat TX_LABEL_SUFFIX_TIME = new TgsqlCvKeyDateTimeFormat("transaction.label.suffix-time"); //$NON-NLS-1$
+
     /** select.maxlines . */
     public static final TgsqlCvKeyInt SELECT_MAX_LINES = new TgsqlCvKeyInt("select.maxlines"); //$NON-NLS-1$
     /** sql.timing . */
     public static final TgsqlCvKeyBoolean SQL_TIMING = new TgsqlCvKeyBoolean("sql.timing"); //$NON-NLS-1$
+
     /** auto-commit.when-transaction-started-implicitly . */
     public static final TgsqlCvKeyBoolean AUTO_COMMIT_TX_STARTED_IMPLICITLY = new TgsqlCvKeyBoolean("auto-commit.when-transaction-started-implicitly"); //$NON-NLS-1$
 
@@ -166,6 +175,32 @@ public abstract class TgsqlCvKey<T> {
             return TgsqlPrompt.create(s);
         }
     }
+
+    /**
+     * client variable key for DateTimeFormat.
+     */
+    public static class TgsqlCvKeyDateTimeFormat extends TgsqlCvKey<TgsqlDateTimeFormat> {
+
+        /**
+         * Creates a new instance.
+         *
+         * @param name variable name
+         */
+        public TgsqlCvKeyDateTimeFormat(String name) {
+            super(name);
+        }
+
+        @Override
+        public TgsqlDateTimeFormat convertValue(@Nonnull String s) {
+            try {
+                return TgsqlDateTimeFormat.create(s);
+            } catch (Exception e) {
+                throw new TgsqlMessageException(MessageFormat.format("dateTime format error. key={0}, value={1}, cause={2}", name, s, e.getMessage()), e);
+            }
+        }
+    }
+
+    //
 
     private static final Map<String, TgsqlCvKey<?>> KEY_MAP = new ConcurrentHashMap<>();
     static {

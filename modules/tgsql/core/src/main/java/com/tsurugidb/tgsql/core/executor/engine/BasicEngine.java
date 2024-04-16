@@ -2,7 +2,6 @@ package com.tsurugidb.tgsql.core.executor.engine;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -15,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.sql.proto.SqlRequest;
-import com.tsurugidb.tgsql.core.TgsqlConstants;
 import com.tsurugidb.tgsql.core.config.TgsqlCommitMode;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
@@ -387,10 +385,12 @@ public class BasicEngine extends AbstractEngine {
         if (startIfInactive) {
             var option = config.getTransactionOption();
             if (option != null) {
-                String label = option.getLabel();
-                if (label == null || label.isEmpty()) {
+                var format = config.getClientVariableMap().get(TgsqlCvKey.IMPLICIT_TX_LABEL_SUFFIX_TIME);
+                if (format != null) {
+                    String label = option.getLabel();
+                    label += format.now();
                     var builder = SqlRequest.TransactionOption.newBuilder(option);
-                    builder.setLabel(TgsqlConstants.IMPLICIT_TRANSACTION_LABEL + OffsetDateTime.now());
+                    builder.setLabel(label);
                     option = builder.build();
                 }
                 reporter.reportStartTransactionImplicitly(option);

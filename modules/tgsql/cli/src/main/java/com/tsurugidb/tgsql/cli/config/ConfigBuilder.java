@@ -30,6 +30,7 @@ import com.tsurugidb.tgsql.cli.repl.ReplDefaultCredentialSessionConnector;
 import com.tsurugidb.tgsql.core.config.TgsqlClientVariableMap;
 import com.tsurugidb.tgsql.core.config.TgsqlCommitMode;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.credential.DefaultCredentialSessionConnector;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 
@@ -135,9 +136,7 @@ public abstract class ConfigBuilder {
         }
 
         String label = argument.getLabel();
-        if (label != null) {
-            options.setLabel(label);
-        }
+        options.setLabel(label);
 
         // TODO Map<String, String> with = argument.getWith();
 
@@ -154,6 +153,7 @@ public abstract class ConfigBuilder {
 
     private void fillClientVariable() {
         var clientVariableMap = config.getClientVariableMap();
+        clientVariableMap.put(TgsqlCvKey.IMPLICIT_TX_LABEL_SUFFIX_TIME, "yyyy-MM-dd HH:mm:ss.SSSxxx");
         fillClientVariableDefault(clientVariableMap);
         fillClientVariableFromUserHomeFile(clientVariableMap);
         fillClientVariableFromArgumentFile(clientVariableMap);

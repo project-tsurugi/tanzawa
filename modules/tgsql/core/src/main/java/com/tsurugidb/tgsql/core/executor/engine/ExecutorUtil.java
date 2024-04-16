@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.model.CommitStatement;
 import com.tsurugidb.tgsql.core.model.Regioned;
 import com.tsurugidb.tgsql.core.model.StartTransactionStatement;
@@ -38,7 +39,7 @@ public final class ExecutorUtil {
         var options = SqlRequest.TransactionOption.newBuilder();
         computeTransactionType(statement).ifPresent(options::setType);
         computeTransactionPriority(statement).ifPresent(options::setPriority);
-        statement.getLabel().ifPresent(it -> options.setLabel(it.getValue()));
+        computeLabel(statement, config).ifPresent(options::setLabel);
         computeWritePreserve(statement).ifPresent(options::addAllWritePreserves);
         computeIncludeDdl(statement, options.getType()).ifPresent(options::setModifiesDefinitions);
         computeInclusiveReadArea(statement).ifPresent(options::addAllInclusiveReadAreas);
@@ -98,6 +99,18 @@ public final class ExecutorUtil {
             return Optional.of(SqlRequest.TransactionPriority.INTERRUPT_EXCLUDE);
         }
         throw new AssertionError();
+    }
+
+    private static Optional<String> computeLabel(StartTransactionStatement statement, TgsqlConfig config) {
+        if (statement.getLabel().isEmpty()) {
+            return Optional.empty();
+        }
+        String label = statement.getLabel().get().getValue();
+        var format = config.getClientVariableMap().get(TgsqlCvKey.TX_LABEL_SUFFIX_TIME);
+        if (format != null) {
+            label += format.now();
+        }
+        return Optional.of(label);
     }
 
     private static Optional<List<SqlRequest.WritePreserve>> computeWritePreserve(StartTransactionStatement statement) {

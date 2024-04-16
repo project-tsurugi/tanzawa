@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,6 +23,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlResponse;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.exception.TgsqlNoMessageException;
 import com.tsurugidb.tgsql.core.executor.explain.StatementMetadataHandler;
 import com.tsurugidb.tgsql.core.executor.report.BasicReporter;
@@ -341,6 +344,42 @@ class BasicEngineTest {
         };
         MockResultProcessor rs = new MockResultProcessor();
         var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("START TRANSACTION AS TESTING"));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @Test
+    void start_transaction_statement_as_time() throws Exception {
+        String format = "yyyyMMdd HH:mm:ss.SSSSSS";
+        var formatter = DateTimeFormatter.ofPattern(format);
+
+        var reached = new AtomicBoolean();
+        var start = "TESTING" + ZonedDateTime.now().format(formatter);
+        MockSqlProcessor sql = new MockSqlProcessor(false) {
+            @Override
+            public void startTransaction(SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+                if (!reached.compareAndSet(false, true)) {
+                    fail();
+                }
+                assertEquals(SqlRequest.TransactionType.SHORT, option.getType());
+                assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
+                var end = "TESTING" + ZonedDateTime.now().format(formatter);
+                String label = option.getLabel();
+                if (start.compareTo(label) <= 0 && label.compareTo(end) <= 0) {
+                    // success
+                } else {
+                    fail(String.format("label fail. label=[%s], start=[%s], end=[%s]", label, start, end));
+                }
+                assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        engine.getConfig().getClientVariableMap().put(TgsqlCvKey.TX_LABEL_SUFFIX_TIME, format);
         var cont = engine.execute(parse("START TRANSACTION AS TESTING"));
         assertTrue(cont);
         assertTrue(reached.get());

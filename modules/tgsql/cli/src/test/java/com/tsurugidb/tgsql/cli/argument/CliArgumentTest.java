@@ -23,6 +23,7 @@ import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.tsurugidb.tgsql.cli.argument.CliArgument.TransactionEnum;
+import com.tsurugidb.tgsql.core.TgsqlConstants;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
@@ -307,7 +308,7 @@ class CliArgumentTest {
     void label() {
         {
             var argument = new CliArgument();
-            assertEquals("tgsql-transaction", argument.getLabel());
+            assertEquals(TgsqlConstants.IMPLICIT_TRANSACTION_LABEL, argument.getLabel());
         }
 
         for (String optionName : List.of("--label")) {
