@@ -119,7 +119,8 @@ public class ConnectionProvider {
         LOG.trace("enter: attempt: {} ({})", credential, settings); //$NON-NLS-1$
         var builder = SessionBuilder.connect(settings.getEndpointUri());
         builder.withCredential(credential);
-        // TODO: more settings
+        settings.getApplicationName().ifPresent(builder::withApplicationName);
+        settings.getSessionLabel().ifPresent(builder::withLabel);
         var timeout = settings.getEstablishTimeout();
         Session result;
         if (timeout.isEmpty()) {
