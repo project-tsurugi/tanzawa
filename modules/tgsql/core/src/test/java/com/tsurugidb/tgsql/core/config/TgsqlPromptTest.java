@@ -2,6 +2,11 @@ package com.tsurugidb.tgsql.core.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,6 +47,35 @@ class TgsqlPromptTest {
             var config = new TgsqlConfig();
             String actual = prompt.getPrompt(config, null);
             assertEquals("null> ", actual);
+        }
+    }
+
+    @Test
+    void now() {
+        {
+            var prompt = TgsqlPrompt.create("{now}> ");
+            String start = LocalDateTime.now().toString() + "> ";
+            String actual = prompt.getPrompt(null, null);
+            String end = LocalDateTime.now().toString() + "> ";
+            if (start.compareTo(actual) <= 0 && actual.compareTo(end) <= 0) {
+                // success
+            } else {
+                fail(String.format("now error. actual=[%s], start=[%s], end=[%s]", actual, start, end));
+            }
+        }
+        {
+            String format = "yyyy/MM/dd HHmmss.SSS";
+            var formatter = DateTimeFormatter.ofPattern(format);
+
+            var prompt = TgsqlPrompt.create("{now." + format + "}> ");
+            String start = ZonedDateTime.now().format(formatter) + "> ";
+            String actual = prompt.getPrompt(null, null);
+            String end = ZonedDateTime.now().format(formatter) + "> ";
+            if (start.compareTo(actual) <= 0 && actual.compareTo(end) <= 0) {
+                // success
+            } else {
+                fail(String.format("now error. actual=[%s], start=[%s], end=[%s]", actual, start, end));
+            }
         }
     }
 

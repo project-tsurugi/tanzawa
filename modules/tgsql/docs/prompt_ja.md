@@ -47,18 +47,19 @@ prompt2もprompt1と同様に設定可能。
 
 トランザクションに関するプロパティーは、トランザクション実行中のプロンプトのみで使用できる。
 
-| プロパティー名                 | 説明                       | 出力例                |
-| ------------------------------ | -------------------------- | --------------------- |
-| endpoint                       | エンドポイント             | tcp://localhost:12345 |
-| tx.id                          | トランザクションID         | TID-0000000000000001  |
-| tx.option                      | トランザクションオプション |                       |
-| tx.type                        | トランザクション種別       | OCC                   |
-| tx.label                       | トランザクションのラベル   |                       |
-| tx.include-ddl                 | DDL実行オプション          | true                  |
-| tx.write-preserve, tx.wp       | write preserve             | "test1", "test2"      |
-| tx.inclusive-read-area, tx.ira | inclusive read area        | "test1", "test2"      |
-| tx.exclusive-read-area, tx.era | exclusive read area        | "test1", "test2"      |
-| tx.priority                    | priority                   |                       |
+| プロパティー名                 | 説明                                    | 出力例                |
+| ------------------------------ | --------------------------------------- | --------------------- |
+| endpoint                       | エンドポイント                          | tcp://localhost:12345 |
+| now.日付書式                   | 現在日時（日付書式はDateTimeFormatter） |                       |
+| tx.id                          | トランザクションID                      | TID-0000000000000001  |
+| tx.option                      | トランザクションオプション              |                       |
+| tx.type                        | トランザクション種別                    | OCC                   |
+| tx.label                       | トランザクションのラベル                |                       |
+| tx.include-ddl                 | DDL実行オプション                       | true                  |
+| tx.write-preserve, tx.wp       | write preserve                          | "test1", "test2"      |
+| tx.inclusive-read-area, tx.ira | inclusive read area                     | "test1", "test2"      |
+| tx.exclusive-read-area, tx.era | exclusive read area                     | "test1", "test2"      |
+| tx.priority                    | priority                                |                       |
 
 
 

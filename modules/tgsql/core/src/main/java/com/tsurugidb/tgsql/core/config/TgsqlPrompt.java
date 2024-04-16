@@ -1,5 +1,9 @@
 package com.tsurugidb.tgsql.core.config;
 
+import java.text.MessageFormat;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -11,6 +15,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.tgsql.core.exception.TgsqlMessageException;
 import com.tsurugidb.tgsql.core.executor.report.TransactionOptionReportUtil;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 
@@ -108,14 +113,16 @@ public class TgsqlPrompt {
     }
 
     private static TgsqlPromptElement parseElement(String text) {
-        String target, field;
+        String target, originalField, field;
         {
             int n = text.indexOf('.');
             if (n >= 0) {
                 target = text.substring(0, n).trim().toLowerCase(Locale.ENGLISH);
-                field = text.substring(n + 1).trim().toLowerCase(Locale.ENGLISH).replaceAll("[_-]", "");
+                originalField = text.substring(n + 1);
+                field = originalField.trim().toLowerCase(Locale.ENGLISH).replaceAll("[_-]", "");
             } else {
                 target = text;
+                originalField = "";
                 field = "";
             }
         }
@@ -123,6 +130,8 @@ public class TgsqlPrompt {
         switch (target) {
         case "endpoint":
             return TgsqlPrompt::getEndpoint;
+        case "now":
+            return parseElementDateTime(originalField);
         case "tx":
             switch (field) {
             case "id":
@@ -189,6 +198,19 @@ public class TgsqlPrompt {
 
     static String getEndpoint(TgsqlConfig config, TransactionWrapper transaction) {
         return config.getEndpoint();
+    }
+
+    static TgsqlPromptElement parseElementDateTime(String format) {
+        if (format == null || format.isEmpty()) {
+            return (c, t) -> LocalDateTime.now().toString();
+        }
+
+        try {
+            var formatter = DateTimeFormatter.ofPattern(format);
+            return (c, t) -> ZonedDateTime.now().format(formatter);
+        } catch (Exception e) {
+            throw new TgsqlMessageException(MessageFormat.format("dateTime format error. format={0}, cause={1}", format, e.getMessage()), e);
+        }
     }
 
     static String getTransactionId(TgsqlConfig config, TransactionWrapper transaction) {
