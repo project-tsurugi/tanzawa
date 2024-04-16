@@ -34,9 +34,6 @@ public abstract class TgsqlCvKey<T> {
     /** sql.timing . */
     public static final TgsqlCvKeyBoolean SQL_TIMING = new TgsqlCvKeyBoolean("sql.timing"); //$NON-NLS-1$
 
-    /** auto-commit.when-transaction-started-implicitly . */
-    public static final TgsqlCvKeyBoolean AUTO_COMMIT_TX_STARTED_IMPLICITLY = new TgsqlCvKeyBoolean("auto-commit.when-transaction-started-implicitly"); //$NON-NLS-1$
-
     /** dot.verbose . */
     public static final TgsqlCvKeyBoolean DOT_VERBOSE = new TgsqlCvKeyBoolean(DotOutputHandler.KEY_VERBOSE);
     /** dot.output . */

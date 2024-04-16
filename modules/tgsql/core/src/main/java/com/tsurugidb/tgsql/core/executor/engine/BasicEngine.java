@@ -157,7 +157,7 @@ public class BasicEngine extends AbstractEngine {
 
     private boolean isAutoCommit(boolean transactionSatrtedImplicitly) {
         if (transactionSatrtedImplicitly) {
-            if (config.getClientVariableMap().get(TgsqlCvKey.AUTO_COMMIT_TX_STARTED_IMPLICITLY, true)) {
+            if (config.getClientVariableMap().get(TgsqlCvKey.IMPLICIT_TX_AUTO_COMMIT, true)) {
                 return true;
             }
         }
