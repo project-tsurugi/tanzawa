@@ -90,7 +90,7 @@ public final class ExplainConvertRunner {
         var path = CommandPath.system();
         var handler = DotOutputHandler.fromOptions(options, path);
 
-        handler.handle(new BasicReporter(), plan);
+        handler.handle(new BasicReporter(config), plan);
     }
 
     private Map<Regioned<String>, Optional<Regioned<Value>>> getOptions() {

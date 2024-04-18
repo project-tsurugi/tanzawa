@@ -16,6 +16,9 @@ import javax.annotation.Nullable;
 import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
+import com.tsurugidb.tgsql.core.config.TgsqlCvKey.TgsqlCvKeyBoolean;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.explain.PlanGraph;
 import com.tsurugidb.tsubakuro.sql.CounterType;
@@ -28,33 +31,61 @@ import com.tsurugidb.tsubakuro.sql.TableMetadata;
  */
 public abstract class TgsqlReporter {
 
+    /** tgsql configuration. */
+    protected final TgsqlConfig config;
+
+    /**
+     * Creates a new instance.
+     *
+     * @param config tgsql configuration
+     */
+    public TgsqlReporter(@Nonnull TgsqlConfig config) {
+        this.config = Objects.requireNonNull(config);
+    }
+
     /**
      * output information message.
      *
      * @param message message
      */
-    public abstract void info(String message);
+    public void info(String message) {
+        if (isDisplayInfo()) {
+            doInfo(message);
+        }
+    }
 
     /**
      * output implicit message.
      *
      * @param message message
      */
-    public abstract void implicit(String message);
+    public void implicit(String message) {
+        if (isDisplayImplicit()) {
+            doImplicit(message);
+        }
+    }
 
     /**
      * output succeed message.
      *
      * @param message message
      */
-    public abstract void succeed(String message);
+    public void succeed(String message) {
+        if (isDisplaySucceed()) {
+            doSucceed(message);
+        }
+    }
 
     /**
      * output warning message.
      *
      * @param message message
      */
-    public abstract void warn(String message);
+    public void warn(String message) {
+        if (isDisplayWarn()) {
+            doWarn(message);
+        }
+    }
 
     /**
      * output warning message.
@@ -67,6 +98,74 @@ public abstract class TgsqlReporter {
                 e.getMessage());
         warn(message);
     }
+
+    /**
+     * is output information message.
+     *
+     * @return {@code true} if output
+     */
+    protected boolean isDisplayInfo() {
+        return true;
+    }
+
+    /**
+     * is output implicit message.
+     *
+     * @return {@code true} if output
+     */
+    protected boolean isDisplayImplicit() {
+        return isDisplay(TgsqlCvKey.DISPLAY_IMPLICIT);
+    }
+
+    /**
+     * is output succeed message.
+     *
+     * @return {@code true} if output
+     */
+    protected boolean isDisplaySucceed() {
+        return isDisplay(TgsqlCvKey.DISPLAY_SUCCEED);
+    }
+
+    /**
+     * is output warning message.
+     *
+     * @return {@code true} if output
+     */
+    protected boolean isDisplayWarn() {
+        return true;
+    }
+
+    protected boolean isDisplay(TgsqlCvKeyBoolean key) {
+        return config.getClientVariableMap().get(key, true);
+    }
+
+    /**
+     * output information message.
+     *
+     * @param message message
+     */
+    protected abstract void doInfo(String message);
+
+    /**
+     * output implicit message.
+     *
+     * @param message message
+     */
+    protected abstract void doImplicit(String message);
+
+    /**
+     * output succeed message.
+     *
+     * @param message message
+     */
+    protected abstract void doSucceed(String message);
+
+    /**
+     * output warning message.
+     *
+     * @param message message
+     */
+    protected abstract void doWarn(String message);
 
     //
 

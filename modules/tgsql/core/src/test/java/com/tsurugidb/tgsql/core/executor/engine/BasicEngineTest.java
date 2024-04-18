@@ -26,7 +26,7 @@ import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.exception.TgsqlNoMessageException;
 import com.tsurugidb.tgsql.core.executor.explain.StatementMetadataHandler;
-import com.tsurugidb.tgsql.core.executor.report.BasicReporter;
+import com.tsurugidb.tgsql.core.executor.report.TestReporter;
 import com.tsurugidb.tgsql.core.executor.result.ResultProcessor;
 import com.tsurugidb.tgsql.core.executor.sql.PreparedStatementResult;
 import com.tsurugidb.tgsql.core.executor.sql.SqlProcessor;
@@ -744,7 +744,7 @@ class BasicEngineTest {
         };
         MockResultProcessor rs = new MockResultProcessor();
         var reached = new AtomicBoolean();
-        var reporter = new BasicReporter() {
+        var reporter = new TestReporter() {
             @Override
             public void reportExecutionPlan(String source, PlanGraph plan) {
                 reached.set(true);
@@ -772,7 +772,7 @@ class BasicEngineTest {
         };
         MockResultProcessor rs = new MockResultProcessor();
         var reached = new AtomicBoolean();
-        var reporter = new BasicReporter() {
+        var reporter = new TestReporter() {
             @Override
             public void reportExecutionPlan(String source, PlanGraph plan) {
                 reached.set(true);
@@ -792,7 +792,7 @@ class BasicEngineTest {
     void explain_statement_option_unknown() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter();
         var engine = new BasicEngine(new TgsqlConfig(), sql, rs, reporter);
         assertThrows(EngineException.class, () -> engine.execute(parse("EXPLAIN (INVALID_OPTION=TRUE) SELECT 1")));
     }
@@ -801,7 +801,7 @@ class BasicEngineTest {
     void explain_statement_option_invalid() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(true);
         MockResultProcessor rs = new MockResultProcessor();
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter();
         var engine = new BasicEngine(new TgsqlConfig(), sql, rs, reporter);
         assertThrows(EngineException.class, () -> engine.execute(parse(String.format("EXPLAIN (%s=NULL) SELECT 1", StatementMetadataHandler.KEY_VERBOSE))));
     }
@@ -816,7 +816,7 @@ class BasicEngineTest {
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter();
         var engine = new BasicEngine(new TgsqlConfig(), sql, rs, reporter);
         var e = assertThrows(TgsqlNoMessageException.class, () -> engine.execute(parse("EXPLAIN SELECT 1")));
         assertInstanceOf(EngineException.class, e.getCause());
@@ -929,7 +929,7 @@ class BasicEngineTest {
 
     private static BasicEngine newBasicEngine(MockSqlProcessor sql, MockResultProcessor rs) {
         var config = new TgsqlConfig();
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter(config);
         return new BasicEngine(config, sql, rs, reporter);
     }
 

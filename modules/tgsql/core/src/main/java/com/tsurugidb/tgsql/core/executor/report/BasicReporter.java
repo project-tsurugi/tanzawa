@@ -1,7 +1,11 @@
 package com.tsurugidb.tgsql.core.executor.report;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 
 /**
  * A basic implementation of {@link TgsqlReporter}.
@@ -9,23 +13,32 @@ import org.slf4j.LoggerFactory;
 public class BasicReporter extends TgsqlReporter {
     private static final Logger LOG = LoggerFactory.getLogger(BasicReporter.class);
 
+    /**
+     * Creates a new instance.
+     *
+     * @param config tgsql configuration
+     */
+    public BasicReporter(@Nonnull TgsqlConfig config) {
+        super(config);
+    }
+
     @Override
-    public void info(String message) {
+    protected void doInfo(String message) {
         LOG.info(message);
     }
 
     @Override
-    public void implicit(String message) {
+    protected void doImplicit(String message) {
         LOG.debug(message);
     }
 
     @Override
-    public void succeed(String message) {
+    protected void doSucceed(String message) {
         LOG.info(message);
     }
 
     @Override
-    public void warn(String message) {
+    protected void doWarn(String message) {
         LOG.warn(message);
     }
 }

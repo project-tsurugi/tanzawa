@@ -21,6 +21,11 @@ import com.tsurugidb.tgsql.core.executor.explain.DotOutputHandler;
  */
 public abstract class TgsqlCvKey<T> {
 
+    /** display.implicit . */
+    public static final TgsqlCvKeyBoolean DISPLAY_IMPLICIT = new TgsqlCvKeyBoolean("display.implicit"); //$NON-NLS-1$
+    /** display.succeed . */
+    public static final TgsqlCvKeyBoolean DISPLAY_SUCCEED = new TgsqlCvKeyBoolean("display.succeed"); //$NON-NLS-1$
+
     /** implicit-transaction.label.suffix-time . */
     public static final TgsqlCvKeyDateTimeFormat IMPLICIT_TX_LABEL_SUFFIX_TIME = new TgsqlCvKeyDateTimeFormat("implicit-transaction.label.suffix-time"); //$NON-NLS-1$
     /** implicit-transaction.auto-commit . */

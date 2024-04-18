@@ -22,23 +22,22 @@ import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 public class ReplReporter extends TgsqlReporter {
 
     private final Terminal terminal;
-    private final TgsqlConfig config;
 
     /**
      * Creates a new instance.
      *
      * @param terminal JLine Terminal
-     * @param config   SQL scripts configuration
+     * @param config   tgsql configuration
      */
     public ReplReporter(@Nonnull Terminal terminal, @Nonnull TgsqlConfig config) {
+        super(config);
         this.terminal = Objects.requireNonNull(terminal);
-        this.config = Objects.requireNonNull(config);
     }
 
     // for test
     ReplReporter() {
+        super(new TgsqlConfig());
         this.terminal = null;
-        this.config = null;
     }
 
     protected int red() {
@@ -62,23 +61,23 @@ public class ReplReporter extends TgsqlReporter {
     }
 
     @Override
-    public void info(String message) {
+    protected void doInfo(String message) {
         int color = color(ReplCvKey.CONSOLE_INFO_COLOR, -1);
         println(message, color);
     }
 
     @Override
-    public void implicit(String message) {
+    protected void doImplicit(String message) {
         println(message, yellow());
     }
 
     @Override
-    public void succeed(String message) {
+    protected void doSucceed(String message) {
         println(message, green());
     }
 
     @Override
-    public void warn(String message) {
+    protected void doWarn(String message) {
         println(message, red());
     }
 

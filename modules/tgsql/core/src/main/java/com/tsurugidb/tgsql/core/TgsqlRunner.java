@@ -141,7 +141,7 @@ public final class TgsqlRunner {
 
         try (var sqlProcessor = new BasicSqlProcessor(); //
                 var resultProcessor = new BasicResultProcessor()) {
-            var reporter = new BasicReporter();
+            var reporter = new BasicReporter(config);
             return execute(script, new BasicEngine(config, sqlProcessor, resultProcessor, reporter));
         }
     }

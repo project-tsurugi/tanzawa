@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import com.tsurugidb.tgsql.core.executor.engine.EngineConfigurationException;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tgsql.core.executor.engine.TestUtil;
-import com.tsurugidb.tgsql.core.executor.report.BasicReporter;
+import com.tsurugidb.tgsql.core.executor.report.TestReporter;
 import com.tsurugidb.tgsql.core.model.ErroneousStatement;
 import com.tsurugidb.tgsql.core.model.Region;
 import com.tsurugidb.tgsql.core.model.Regioned;
@@ -49,7 +49,7 @@ class StatementMetadataHandlerTest {
     @Test
     void fromOptions_empty() throws Exception {
         var handler = StatementMetadataHandler.fromOptions(Map.of());
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter();
         var plan = handler.handle(reporter, new BasicStatementMetadata(
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_VERSION_MAX,
@@ -72,7 +72,7 @@ class StatementMetadataHandlerTest {
                 toOptions(Map.of(
                         StatementMetadataHandler.KEY_VERBOSE,
                         Optional.empty())));
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter();
         var plan = handler.handle(reporter, new BasicStatementMetadata(
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_VERSION_MAX,
@@ -95,7 +95,7 @@ class StatementMetadataHandlerTest {
                 toOptions(Map.of(
                         StatementMetadataHandler.KEY_VERBOSE,
                         Optional.of(Value.of(true)))));
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter();
         var plan = handler.handle(reporter, new BasicStatementMetadata(
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_VERSION_MAX,
@@ -128,7 +128,7 @@ class StatementMetadataHandlerTest {
                 toOptions(Map.of(
                         StatementMetadataHandler.KEY_OUTPUT,
                         Optional.of(Value.of(output.toString())))));
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter();
         var json = TestUtil.read("explain-find-project-write.json");
         handler.handle(reporter, new BasicStatementMetadata(
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
@@ -173,7 +173,7 @@ class StatementMetadataHandlerTest {
     @Test
     void handle_json_not_supported() throws Exception {
         var handler = StatementMetadataHandler.fromOptions(Map.of());
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter();
         assertThrows(EngineException.class, () -> handler.handle(reporter, new BasicStatementMetadata(
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_VERSION_MAX,
@@ -184,7 +184,7 @@ class StatementMetadataHandlerTest {
     @Test
     void handle_json_broken() throws Exception {
         var handler = StatementMetadataHandler.fromOptions(Map.of());
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter();
         assertThrows(EngineException.class, () -> handler.handle(reporter, new BasicStatementMetadata(
                 "__INVALID_FORMAT_ID__",
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_VERSION_MAX,
@@ -199,7 +199,7 @@ class StatementMetadataHandlerTest {
                 toOptions(Map.of(
                         StatementMetadataHandler.KEY_OUTPUT,
                         Optional.of(Value.of(output.toString())))));
-        var reporter = new BasicReporter();
+        var reporter = new TestReporter();
         Files.createDirectories(output);
         assertThrows(EngineException.class, () -> handler.handle(reporter, new BasicStatementMetadata(
                 JsonPlanGraphLoader.SUPPORTED_FORMAT_ID,
