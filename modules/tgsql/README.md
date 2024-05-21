@@ -123,7 +123,7 @@ tgsql --script <common options> [[--encoding|-e] <charset-encoding>] [--auto-com
 ```
 
 * `</path/to/script.sql>` - script file to execute
-* `--encoding,-e` - character encoding of script files. if not specified, conforms to the execution environment
+* `--encoding,-e` - character encoding of script files. if not specified, default is `UTF-8`
 * `--auto-commit` - commit each statement
 * `--no-auto-commit` - perform a commit only if you explicitly specify a `COMMIT` 
 * `--commit` - commit if the statement executes successfully, rollback if it fails (default)
