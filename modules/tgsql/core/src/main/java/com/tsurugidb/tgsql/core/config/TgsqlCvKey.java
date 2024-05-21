@@ -39,6 +39,7 @@ public abstract class TgsqlCvKey<T> {
     /** sql.timing . */
     public static final TgsqlCvKeyBoolean SQL_TIMING = new TgsqlCvKeyBoolean("sql.timing"); //$NON-NLS-1$
 
+    // @see DotOutputHandler#extendOptions(Map, TgsqlClientVariableMap)
     /** dot.verbose . */
     public static final TgsqlCvKeyBoolean DOT_VERBOSE = new TgsqlCvKeyBoolean(DotOutputHandler.KEY_VERBOSE);
     /** dot.output . */
@@ -242,8 +243,7 @@ public abstract class TgsqlCvKey<T> {
      * @param name variable name
      * @return key
      */
-    @Nullable
-    public static TgsqlCvKey<?> find(String name) {
+    public static @Nullable TgsqlCvKey<?> find(String name) {
         return KEY_MAP.get(name);
     }
 
