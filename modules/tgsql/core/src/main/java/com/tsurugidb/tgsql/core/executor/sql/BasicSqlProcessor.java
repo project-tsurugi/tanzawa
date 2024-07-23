@@ -192,13 +192,9 @@ public class BasicSqlProcessor implements SqlProcessor {
     public StatementMetadata explain(@Nonnull String statement, @Nonnull Region region) throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(statement);
         Objects.requireNonNull(region);
-        // FIXME: SqlClient.explain(String) is not work
-        // https://github.com/project-tsurugi/tsubakuro/issues/169
         LOG.debug("start explain: '{}'", statement);
         var client = getSqlClient();
-        try (var prepared = client.prepare(statement).await()) {
-            return client.explain(prepared, List.of()).await();
-        }
+        return client.explain(statement).await();
     }
 
     @Override
