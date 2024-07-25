@@ -1,7 +1,15 @@
 package com.tsurugidb.tgsql.cli.repl;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -37,6 +45,12 @@ public class ReplResultProcessor implements ResultProcessor {
         this.reporter = reporter;
     }
 
+    // for test
+    ReplResultProcessor() {
+        this.config = null;
+        this.reporter = null;
+    }
+
     @Override
     public long process(ResultSet target) throws ServerException, IOException, InterruptedException {
         dumpMetadata(target.getMetadata());
@@ -50,6 +64,7 @@ public class ReplResultProcessor implements ResultProcessor {
         boolean over = false;
 
         var columnList = new ArrayList<Object>();
+        var sb = new StringBuilder();
         int rowSize = 0;
         while (ResultSetUtil.fetchNextRow(target, target.getMetadata(), columnList::add)) {
             if (maxLines >= 0) {
@@ -59,7 +74,8 @@ public class ReplResultProcessor implements ResultProcessor {
                 }
             }
 
-            reporter.reportResultSetRow(columnList.toString());
+            appendTo(sb, columnList);
+            reporter.reportResultSetRow(sb.toString());
             rowSize++;
             columnList.clear();
 
@@ -108,6 +124,70 @@ public class ReplResultProcessor implements ResultProcessor {
         public String toString() {
             return getName() + ": " + getType();
         }
+    }
+
+    private void appendTo(StringBuilder sb, List<Object> columnList) {
+        sb.setLength(0);
+        sb.append('[');
+
+        int i = 0;
+        for (Object value : columnList) {
+            if (i++ != 0) {
+                sb.append(", ");
+            }
+            appendTo(sb, value);
+        }
+
+        sb.append(']');
+    }
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+    private static final DateTimeFormatter OFFSET_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSSXXX");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSSSS");
+    private static final DateTimeFormatter OFFSET_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSSSSXXX");
+
+    void appendTo(StringBuilder sb, Object value) {
+        if (value instanceof BigDecimal) {
+            var v = (BigDecimal) value;
+            sb.append(v.toPlainString());
+            return;
+        }
+
+        if (value instanceof LocalDate) {
+            var v = (LocalDate) value;
+            sb.append(DATE_FORMATTER.format(v));
+            return;
+        }
+        if (value instanceof LocalDateTime) {
+            var v = (LocalDateTime) value;
+            sb.append(DATETIME_FORMATTER.format(v));
+            return;
+        }
+        if (value instanceof OffsetDateTime) {
+            var v = (OffsetDateTime) value;
+            sb.append(OFFSET_DATETIME_FORMATTER.format(v));
+            return;
+        }
+        if (value instanceof LocalTime) {
+            var v = (LocalTime) value;
+            sb.append(TIME_FORMATTER.format(v));
+            return;
+        }
+        if (value instanceof OffsetTime) {
+            var v = (OffsetTime) value;
+            sb.append(OFFSET_TIME_FORMATTER.format(v));
+            return;
+        }
+
+        if (value instanceof byte[]) {
+            for (byte v : (byte[]) value) {
+                sb.append(String.format("%02x", v));
+            }
+            return;
+        }
+
+        sb.append(value);
     }
 
     @Override
