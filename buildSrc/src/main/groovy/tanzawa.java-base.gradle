@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.tsurugidb.tools'
-version = '1.5.0'
+version = '1.6.0-SNAPSHOT'
 
 java {
     toolchain {
@@ -21,7 +21,7 @@ def qualifyProjectName(Project project) {
 }
 
 ext {
-    tsubakuroVersion = '1.5.0'
+    tsubakuroVersion = '1.6.0-SNAPSHOT'
     isReleaseVersion = !version.endsWith("SNAPSHOT")
 
     buildTimestamp = new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
