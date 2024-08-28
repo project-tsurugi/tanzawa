@@ -3,6 +3,7 @@ plugins {
     id 'checkstyle'
 
     id 'com.github.spotbugs'
+    id 'com.github.hierynomus.license'
 }
 
 if (hasProperty('mavenLocal')) {
@@ -118,4 +119,12 @@ processResources.dependsOn writeVersion
 tasks.withType(Tar) { task ->
     task.archiveExtension = 'tar.gz'
     task.compression = Compression.GZIP
+}
+
+license {
+    def confDir = 'buildSrc/src/main/resources'
+    header rootProject.file("$confDir/source-header.txt")
+    mapping('java', 'SLASHSTAR_STYLE')
+    include('**/*.java')
+    ignoreFailures true
 }
