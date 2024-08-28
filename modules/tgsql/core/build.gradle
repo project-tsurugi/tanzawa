@@ -42,3 +42,11 @@ test {
 tasks.licenseMain {
     dependsOn 'generateJflex'
 }
+
+tasks.licenseFormatMain {
+    dependsOn 'generateJflex'
+}
+
+license {
+    exclude '**/SqlScannerFlex.java'
+}
