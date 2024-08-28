@@ -39,3 +39,6 @@ test {
     systemProperty 'tanzawa.dot', findProperty('tanzawa.dot') ?: ''
 }
 
+tasks.licenseMain {
+    dependsOn 'generateJflex'
+}
