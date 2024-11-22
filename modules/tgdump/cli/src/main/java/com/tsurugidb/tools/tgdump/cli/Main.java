@@ -146,21 +146,19 @@ public class Main {
                         new BasicDumpMonitor(monitor)));
                 executeBody(dumpMonitor, arguments);
             } catch (DiagnosticException e) {
-                LOG.debug("diagnostic error", e);
                 LOG.error("{} - {}", e.getDiagnosticCode().getTag(), e.getMessage());
                 monitor.onFailure(e);
                 return Constants.EXIT_STATUS_OPERATION_ERROR;
             } catch (IOException e) {
-                LOG.error("I/O error was occurred", e);
+                LOG.error("{}", CliDiagnosticCode.IO_ERROR.getTag());
                 monitor.onFailure(e, CliDiagnosticCode.IO_ERROR, List.of(DiagnosticUtil.getMessage(e)));
                 return Constants.EXIT_STATUS_OPERATION_ERROR;
             } catch (InterruptedException e) {
-                LOG.debug("interrupted", e);
-                LOG.error("interrupted");
+                LOG.error("{}", CliDiagnosticCode.INTERRUPTED.getTag());
                 monitor.onFailure(e, CliDiagnosticCode.INTERRUPTED, List.of());
                 return Constants.EXIT_STATUS_INTERRUPTED;
             } catch (RuntimeException e) {
-                LOG.error("internal error", e);
+                LOG.error("{}", CliDiagnosticCode.INTERNAL.getTag());
                 monitor.onFailure(e, CliDiagnosticCode.INTERNAL, List.of(DiagnosticUtil.getMessage(e)));
                 return Constants.EXIT_STATUS_INTERNAL_ERROR;
             }
