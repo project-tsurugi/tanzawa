@@ -70,10 +70,10 @@ public class LoggingMonitor implements Monitor {
         Objects.requireNonNull(code);
         Objects.requireNonNull(arguments);
         if (cause == null) {
-            logger.info("failure: application={}, reason={}, message={}", //$NON-NLS-1$
+            logger.error("failure: application={}, reason={}, message={}", //$NON-NLS-1$
                     application, code, code.getMessage(arguments));
         } else {
-            logger.info("failure: application={}, reason={}, message={}", //$NON-NLS-1$
+            logger.error("failure: application={}, reason={}, message={}", //$NON-NLS-1$
                     application, code, code.getMessage(arguments),
                     cause);
         }
@@ -82,7 +82,7 @@ public class LoggingMonitor implements Monitor {
     @Override
     public void onFailure(@Nonnull DiagnosticException exception) {
         Objects.requireNonNull(exception);
-        logger.info("failure: application={}, reason={}, message={}", application, //$NON-NLS-1$
+        logger.error("failure: application={}, reason={}, message={}", application, //$NON-NLS-1$
                 application,
                 exception.getDiagnosticCode(),
                 exception.getDiagnosticCode().getMessage(exception.getArguments()),
