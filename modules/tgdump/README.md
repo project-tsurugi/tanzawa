@@ -32,16 +32,22 @@ Deploy the files mentioned above, and the tgdump command will be available for u
 
 ```sh
 tgdump <table-name> [<table-name> [...]] --to </path/to/destination-dir> --connection <endpoint-uri> ...
+tgdump --sql <query-label>:<query-text> [<query-label>:<query-string> [...]] --to </path/to/destination-dir> --connection <endpoint-uri> ...
 ```
 
 parameters:
 
 * `<table-name>` - the dump target table names
+* `<query-label>` - the label for the accompanying SQL text
+* `<query-text>` - the SQL text for dump operations
 * `--to` - the destination directory
 * `--connection` - the target Tsurugi endpoint URI (must be `ipc:` protocol)
 
 optional parameters:
 
+* `--sql`
+  * use SQL text for dump operations instead of table names
+  * default: use table names
 * `--profile`
   * dump profile name / file path
   * available profile name:
