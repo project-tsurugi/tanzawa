@@ -117,6 +117,12 @@ public class Main {
         var result = new CommandArgumentSet();
         var analyzer = getCommandAnalyzerFor(result);
         analyzer.parse(args);
+        try {
+            result.validateCombination();
+        } catch (ParameterException e) {
+            e.setJCommander(analyzer);
+            throw e;
+        }
         return result;
     }
 
@@ -209,7 +215,7 @@ public class Main {
         var engine = new DumpEngine(args.getNumberOfWorkerThreads());
         var profile = CommandUtil.loadProfile(args.getProfileBundleLoader(), args.getProfile());
         var targets = CommandUtil.prepareDestination(
-                args.getTargetSelector(), args.getDestinationPath(), args.getTableNames());
+                args.getTargetSelector(), args.getDestinationPath(), args.getTableNames(), args.isSingleMode());
         try (
             var connection = args.getConnectionProvider().connect(connectionSettings);
             var sql = SqlClient.attach(connection);

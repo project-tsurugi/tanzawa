@@ -39,6 +39,18 @@ public interface DumpTargetSelector {
     char DEFAULT_SEQUENCE_DELIMITER = '-';
 
     /**
+     * Computes a {@link DumpTarget dump target} for the single command.
+     * <p>
+     * The resulting dump target will be just the {@code destinationDirectory} itself.
+     * </p>
+     * @param destinationDirectory the output directory
+     * @param command the command
+     * @return the dump target for the command
+     * @throws IllegalArgumentException if the command is not valid
+     */
+    DumpTarget getTarget(@Nonnull Path destinationDirectory, @Nonnull String command);
+
+    /**
      * Computes {@link DumpTarget dump targets} for each commands.
      * @param destinationDirectory the base destination directory,
      *      each dump target will be placed under it.

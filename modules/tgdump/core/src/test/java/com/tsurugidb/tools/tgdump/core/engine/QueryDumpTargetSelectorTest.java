@@ -44,6 +44,12 @@ class QueryDumpTargetSelectorTest {
     }
 
     @Test
+    void parseCommand_empty() {
+        var result = selector().parseCommand("");
+        assertEquals(parsed(null, ""), result);
+    }
+
+    @Test
     void parseCommand_word() {
         var result = selector().parseCommand("query:SELECT 1");
         assertEquals(parsed("query", "SELECT 1"), result);
@@ -110,6 +116,38 @@ class QueryDumpTargetSelectorTest {
     }
 
     @Test
+    void getTarget_simple() {
+        var result = selector().getTarget(Path.of("p"), "q:SELECT 1");
+        assertEquals(DumpTarget.TargetType.QUERY, result.getTargetType());
+        assertEquals("q", result.getLabel());
+        assertEquals("SELECT 1", result.getTarget());
+        assertEquals("p", toDestinationString(result));
+    }
+
+    @Test
+    void getTarget_default_label() {
+        var result = selector().getTarget(Path.of("p"), "SELECT 1");
+        assertEquals(QueryDumpTargetSelector.DEFAULT_DEFAULT_PREFIX, result.getLabel());
+        assertEquals("SELECT 1", result.getTarget());
+        assertEquals("p", toDestinationString(result));
+    }
+
+    @Test
+    void getTarget_empty() {
+        assertThrows(IllegalArgumentException.class, () -> selector().getTarget(Path.of("p"), ""));
+    }
+
+    @Test
+    void getTarget_empty_label() {
+        assertThrows(IllegalArgumentException.class, () -> selector().getTarget(Path.of("p"), ":SELECT 1"));
+    }
+
+    @Test
+    void getTarget_empty_statement() {
+        assertThrows(IllegalArgumentException.class, () -> selector().getTarget(Path.of("p"), "q:"));
+    }
+
+    @Test
     void getTargets_simple() {
         var results = selector().getTargets(Path.of("p"), List.of("q:SELECT 1"));
         assertEquals(Map.of("q:SELECT 1", "p/q"), toMap(results));
@@ -171,6 +209,10 @@ class QueryDumpTargetSelectorTest {
                 .peek(it -> assertEquals(it.getTarget(), it.getTarget()))
                 .collect(Collectors.toMap(
                         t -> String.format("%s:%s", t.getLabel(), t.getTarget()),
-                        t -> t.getDestination().toString().replace(File.separatorChar, '/')));
+                        QueryDumpTargetSelectorTest::toDestinationString));
+    }
+
+    private static String toDestinationString(DumpTarget target) {
+        return target.getDestination().toString().replace(File.separatorChar, '/');
     }
 }

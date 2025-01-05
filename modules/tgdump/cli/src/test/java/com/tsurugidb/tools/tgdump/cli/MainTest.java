@@ -15,11 +15,7 @@
  */
 package com.tsurugidb.tools.tgdump.cli;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -259,6 +255,7 @@ class MainTest {
 
         // defaults
         assertFalse(args.isQueryMode());
+        assertFalse(args.isSingleMode());
         assertEquals(Path.of("default"), args.getProfile());
         assertNull(args.getConnectionLabel());
         assertEquals(0, args.getConnectionTimeoutMillis());
@@ -291,6 +288,21 @@ class MainTest {
         var app = new Main();
         assertThrows(ParameterException.class,
                 () -> app.parseArguments("--connection", "ipc:testing", "--to", "output"));
+    }
+
+    @Test
+    void parseArguments_single() {
+        var app = new Main();
+        var args = app.parseArguments("--connection", "ipc:testing", "--single", "A", "--to", "output");
+        assertTrue(args.isSingleMode());
+        assertEquals(List.of("A"), args.getTableNames());
+    }
+
+    @Test
+    void parseArguments_single_multiple() {
+        var app = new Main();
+        assertThrows(ParameterException.class,
+                () -> app.parseArguments("--connection", "ipc:testing", "--single", "A", "B", "--to", "output"));
     }
 
     @Test

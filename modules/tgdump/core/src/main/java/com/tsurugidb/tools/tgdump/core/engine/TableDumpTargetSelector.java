@@ -59,6 +59,13 @@ public class TableDumpTargetSelector implements DumpTargetSelector {
         this.delimiter = delimiter;
     }
 
+    @Override
+    public DumpTarget getTarget(@Nonnull Path destinationDirectory, @Nonnull String command) {
+        Objects.requireNonNull(destinationDirectory);
+        Objects.requireNonNull(command);
+        return new DumpTarget(command.strip(), destinationDirectory);
+    }
+
     /**
      * Computes {@link DumpTarget dump targets} for each table.
      * @param destinationDirectory the base destination directory,
@@ -72,7 +79,7 @@ public class TableDumpTargetSelector implements DumpTargetSelector {
         Objects.requireNonNull(commands);
         LOG.trace("enter: getTargets: {}, {}", destinationDirectory, commands); //$NON-NLS-1$
         var results = commands.stream()
-                .map(it -> it.strip())
+                .map(String::strip)
                 .peek(it -> {
                     if (it.isEmpty()) {
                         throw new IllegalArgumentException("table name must not be empty");
