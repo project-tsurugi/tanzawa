@@ -84,6 +84,12 @@ public class MockDumpMonitor implements DumpMonitor {
     }
 
     @Override
+    public void onDumpInfo(String label, String query, Path dumpDirectory) throws MonitoringException {
+        var prev = info.putIfAbsent(label, dumpDirectory);
+        Assertions.assertNull(prev);
+    }
+
+    @Override
     public void onDumpStart(String tableName, Path dumpDirectory) throws MonitoringException {
         var prev = start.putIfAbsent(tableName, dumpDirectory);
         Assertions.assertNull(prev);

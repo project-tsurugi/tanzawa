@@ -71,6 +71,16 @@ public class CompositeDumpMonitor implements DumpMonitor {
     }
 
     @Override
+    public void onDumpInfo(String label, String query, Path dumpDirectory) throws MonitoringException {
+        Objects.requireNonNull(label);
+        Objects.requireNonNull(query);
+        Objects.requireNonNull(dumpDirectory);
+        for (var element : elements) {
+            element.onDumpInfo(label, query, dumpDirectory);
+        }
+    }
+
+    @Override
     public void onDumpStart(@Nonnull String tableName, @Nonnull Path dumpDirectory) throws MonitoringException {
         Objects.requireNonNull(tableName);
         Objects.requireNonNull(dumpDirectory);

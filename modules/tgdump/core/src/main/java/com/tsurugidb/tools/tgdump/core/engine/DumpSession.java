@@ -26,7 +26,7 @@ import com.tsurugidb.tools.tgdump.core.model.DumpTarget;
 public interface DumpSession extends AutoCloseable {
 
     /**
-     * Registers dump target table, and returns its table metadata.
+     * Registers dump target table.
      * <p>
      * This cannot use after calling {@link #begin(DumpMonitor)}.
      * </p>
@@ -36,6 +36,7 @@ public interface DumpSession extends AutoCloseable {
      * @throws DiagnosticException if the target table is not found in the database
      * @throws DiagnosticException if error was occurred
      * @throws IllegalStateException if the transaction have been already started
+     * @throws UnsupportedOperationException if the {@code target} is not supported
      * @see #begin(DumpMonitor)
      */
     void register(@Nonnull DumpMonitor monitor, @Nonnull DumpTarget target)
@@ -59,6 +60,7 @@ public interface DumpSession extends AutoCloseable {
      * @throws DiagnosticException if error was occurred
      * @throws IllegalArgumentException if the dump target is not {@link #register(DumpMonitor, DumpTarget) registered}
      * @throws IllegalStateException if the transaction have not been started. or already finished
+     * @throws UnsupportedOperationException if the {@code target} is not supported
      */
     void execute(@Nonnull DumpMonitor monitor, @Nonnull DumpTarget target)
             throws InterruptedException, DiagnosticException;
