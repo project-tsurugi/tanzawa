@@ -34,15 +34,12 @@
 
 ```sh
 tgdump <table-name> [<table-name> [...]] --to </path/to/destination-dir> --connection <endpoint-uri>
-tgdump --sql <query-label>:<query-text> [<query-label>:<query-text> [...]] --to </path/to/destination-dir> --connection <endpoint-uri>
+tgdump --sql [<query-label>:]<query-text> [[<query-label>:]<query-text> [...]] --to </path/to/destination-dir> --connection <endpoint-uri>
 ```
 
 * mandatory parameters
   * `<table-name>` (`--sql` が指定されていない場合)
     * ダンプ対象のテーブル名 (複数指定可能)
-  * `<query-label>` (`--sql` が指定された場合)
-    * 直後の `<query-text>` を識別するためのクエリラベル
-    * クエリラベルに文字 `:` や空白文字を含めることはできず、1文字以上40文字以内である必要がある
   * `<query-text>` (`--sql` が指定された場合)
     * ダンプ処理の内容を表す SQL 文字列
   * `--to`
@@ -53,6 +50,13 @@ tgdump --sql <query-label>:<query-text> [<query-label>:<query-text> [...]] --to 
 * optional parameters
   * `--sql`
     * テーブル名を指定する代わりに、ダンプ処理の内容を表す SQL 文を直接指定する
+  * `<query-label>` (`--sql` が指定された場合)
+    * 直後の `<query-text>` を識別するためのクエリラベル
+    * クエリラベルに以下のいずれの文字も含めることはできない
+      * 空白文字 (タブや改行を含む)
+      * クウォート文字 (`'`, `"`)
+      * コロン (`:`)
+    * 未指定の場合は、 "`<sql><引数の位置>`" という名前のラベルを自動的に付与する (引数の位置は 1 から始まる整数)
   * `--profile`
     * [ダンププロファイル](#ダンププロファイル)名
     * 未指定の場合は `default` という名前のプロファイルを使用する
@@ -161,7 +165,9 @@ tgdump --sql <query-label>:<query-text> [<query-label>:<query-text> [...]] --to 
     ------|------|------
     `kind` | `data` |
     `format` | `dump-info` | ダンプ対象のテーブルをデータベース上に検出したことを表す
-    `table` | 対象のテーブル名 | `--sql` が指定された場合はクエリラベルを出力
+    `type` | ダンプの種類 | `--sql` の指定がない場合は `table`, ある場合は `query`
+    `table` | テーブル名 | `--sql` が未指定の場合はクエリラベル
+    `query` | クエリ文字列 | `--sql` が未指定の場合は absent
     `destination` | 出力先ファイルパス |
     `columns` | ダンプ対象列の一覧 | 形式は後述 | `--sql` が指定された場合は absent
 
