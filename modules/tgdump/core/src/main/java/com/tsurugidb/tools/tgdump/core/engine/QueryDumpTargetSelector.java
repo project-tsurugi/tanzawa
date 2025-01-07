@@ -25,13 +25,12 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.tools.tgdump.core.model.DumpTarget;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Computes dump destination directories from each SQL text.

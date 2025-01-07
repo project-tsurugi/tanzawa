@@ -23,13 +23,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+
 import com.tsurugidb.tools.common.diagnostic.DiagnosticException;
 import com.tsurugidb.tools.tgdump.core.model.DumpTarget;
 import com.tsurugidb.tools.tgdump.core.model.DumpTarget.TargetType;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.Transaction;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * An implementation of {@link DumpOperation} for dispatching by its tarrget type.
@@ -42,7 +42,7 @@ class DumpOperationDispatch implements DumpOperation {
      * Creates a new instance.
      * @param elements the elements to dispatch
      */
-    DumpOperationDispatch(@NonNull Map<TargetType, DumpOperation> elements) {
+    DumpOperationDispatch(@Nonnull Map<TargetType, DumpOperation> elements) {
         Objects.requireNonNull(elements);
         this.elements = elements.isEmpty() ? Map.of() : new EnumMap<>(elements);
     }
@@ -52,12 +52,12 @@ class DumpOperationDispatch implements DumpOperation {
      * @param type the target type
      * @return the operation for the specified target type, or {@code empty} if not found
      */
-    public Optional<DumpOperation> getOperation(@NonNull DumpTarget.TargetType type) {
+    public Optional<DumpOperation> getOperation(@Nonnull DumpTarget.TargetType type) {
         Objects.requireNonNull(type);
         return Optional.ofNullable(elements.get(type));
     }
 
-    private DumpOperation getOperationStrict(@NonNull DumpTarget target) {
+    private DumpOperation getOperationStrict(@Nonnull DumpTarget target) {
         return getOperation(target.getTargetType())
                 .orElseThrow(() -> new UnsupportedOperationException(MessageFormat.format(
                     "unsupported target type: {0} in {1}", 
@@ -80,7 +80,7 @@ class DumpOperationDispatch implements DumpOperation {
     }
 
     @Override
-    public void register(@NonNull SqlClient client, @NonNull DumpMonitor monitor, @NonNull DumpTarget target)
+    public void register(@Nonnull SqlClient client, @Nonnull DumpMonitor monitor, @Nonnull DumpTarget target)
             throws InterruptedException, DiagnosticException {
         Objects.requireNonNull(client);
         Objects.requireNonNull(monitor);
@@ -90,10 +90,10 @@ class DumpOperationDispatch implements DumpOperation {
 
     @Override
     public void execute(
-            @NonNull SqlClient client,
-            @NonNull Transaction transaction,
-            @NonNull DumpMonitor monitor,
-            @NonNull DumpTarget target)
+            @Nonnull SqlClient client,
+            @Nonnull Transaction transaction,
+            @Nonnull DumpMonitor monitor,
+            @Nonnull DumpTarget target)
             throws InterruptedException, DiagnosticException {
         Objects.requireNonNull(client);
         Objects.requireNonNull(transaction);

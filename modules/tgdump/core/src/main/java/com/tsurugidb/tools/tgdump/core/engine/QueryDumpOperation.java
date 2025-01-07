@@ -24,6 +24,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +39,6 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 import com.tsurugidb.tsubakuro.sql.exception.CompileException;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * An implementation of {@link DumpOperation} for SQL text.
@@ -58,7 +58,7 @@ class QueryDumpOperation implements DumpOperation {
      * @param dumpProfile the dump operation settings
      * @param createTargetDirectories whether or not to create dump target directories before the dump operations
      */
-    QueryDumpOperation(@NonNull DumpProfile dumpProfile, boolean createTargetDirectories) {
+    QueryDumpOperation(@Nonnull DumpProfile dumpProfile, boolean createTargetDirectories) {
         Objects.requireNonNull(dumpProfile);
         this.dumpProfile = dumpProfile;
         this.createTargetDirectories = createTargetDirectories;
@@ -80,7 +80,7 @@ class QueryDumpOperation implements DumpOperation {
     }
 
     @Override
-    public void register(@NonNull SqlClient client, @NonNull DumpMonitor monitor, @NonNull DumpTarget target)
+    public void register(@Nonnull SqlClient client, @Nonnull DumpMonitor monitor, @Nonnull DumpTarget target)
             throws InterruptedException, DiagnosticException {
         Objects.requireNonNull(client);
         Objects.requireNonNull(monitor);
@@ -111,10 +111,10 @@ class QueryDumpOperation implements DumpOperation {
 
     @Override
     public void execute(
-            @NonNull SqlClient client,
-            @NonNull Transaction transaction,
-            @NonNull DumpMonitor monitor,
-            @NonNull DumpTarget target)
+            @Nonnull SqlClient client,
+            @Nonnull Transaction transaction,
+            @Nonnull DumpMonitor monitor,
+            @Nonnull DumpTarget target)
             throws InterruptedException, DiagnosticException {
         Objects.requireNonNull(client);
         Objects.requireNonNull(transaction);
