@@ -46,7 +46,7 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 
 /**
- * The program entry for Tsurugi Table Dump Tool ({@literal a.k.a.} {@code tgdump}}).
+ * The program entry for Tsurugi Dump Tool ({@literal a.k.a.} {@code tgdump}}).
  * @see CommandArgumentSet
  */
 public class Main {

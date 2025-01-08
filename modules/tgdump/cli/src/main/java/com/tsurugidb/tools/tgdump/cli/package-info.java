@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 /**
- * CLI classes for Tsurugi Table Dump Tool.
+ * CLI classes for Tsurugi Dump Tool.
  */
 package com.tsurugidb.tools.tgdump.cli;

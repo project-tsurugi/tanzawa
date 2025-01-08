@@ -38,8 +38,9 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.tsurugidb.tools.common.connection.ConnectionProvider;
 import com.tsurugidb.tools.tgdump.core.engine.DumpTargetSelector;
+import com.tsurugidb.tools.tgdump.core.engine.QueryDumpTargetSelector;
+import com.tsurugidb.tools.tgdump.core.engine.TableDumpTargetSelector;
 import com.tsurugidb.tools.tgdump.core.model.TransactionSettings;
-import com.tsurugidb.tools.tgdump.core.model.TransactionSettings.Type;
 import com.tsurugidb.tools.tgdump.profile.DumpProfileBundleLoader;
 import com.tsurugidb.tools.tgdump.profile.DumpProfileReader;
 
@@ -123,7 +124,7 @@ public class CommandArgumentSet {
                 "read-only", DEFAULT_TRANSACTION_TYPE);
 
         @Override
-        public Type convert(String value) {
+        public TransactionSettings.Type convert(String value) {
             var result = NAMES.get(value.toLowerCase(Locale.ENGLISH));
             if (result == null) {
                 throw new ParameterException(MessageFormat.format(
@@ -143,7 +144,7 @@ public class CommandArgumentSet {
     /**
      * The default transaction type ({@link com.tsurugidb.tools.tgdump.core.model.TransactionSettings.Type#RTX RTX}).
      */
-    public static final Type DEFAULT_TRANSACTION_TYPE = TransactionSettings.Type.RTX;
+    public static final TransactionSettings.Type DEFAULT_TRANSACTION_TYPE = TransactionSettings.Type.RTX;
 
     /**
      * The default number of dump operation worker threads.
@@ -163,6 +164,8 @@ public class CommandArgumentSet {
             validateWith = NoEmptyElementValidator.class,
             required = true)
     private List<String> tableNames;
+
+    private boolean queryMode = false;
 
     private Path destinationPath;
 
@@ -198,10 +201,10 @@ public class CommandArgumentSet {
 
     private ConnectionProvider connectionProvider;
 
-
     /**
      * Returns the dump target table names.
      * @return the table name list
+     * @see #isQueryMode()
      */
     public List<String> getTableNames() {
         if (tableNames == null) {
@@ -221,6 +224,29 @@ public class CommandArgumentSet {
     }
 
     /**
+     * Returns whether to specify query text instead of table names.
+     * @return {@code true} if use query text, or {@code false} if use table names
+     */
+    public boolean isQueryMode() {
+        return queryMode;
+    }
+
+    /**
+     * Sets whether to specify query text instead of table names.
+     * @param enable {@code true} to allow query text, {@code false} to use table names
+     */
+    @Parameter(
+            order = 10,
+            names = { "--sql" },
+            arity = 0,
+            description = "specify SQL text instead of table names",
+            required = false)
+    public void setQueryMode(boolean enable) {
+        LOG.trace("argument: --sql: {}", enable); //$NON-NLS-1$
+        this.queryMode = enable;
+    }
+
+    /**
      * Returns the dump files destination path.
      * @return the destination path
      */
@@ -236,7 +262,7 @@ public class CommandArgumentSet {
             order = 10,
             names = { "--to" },
             arity = 1,
-            description = "Destination directory of table dump files.",
+            description = "Destination directory of dump files.",
             required = true)
     public void setDestinationPath(@Nonnull Path path) {
         Objects.requireNonNull(path);
@@ -525,10 +551,10 @@ public class CommandArgumentSet {
      * @return the dump profile reader
      */
     protected DumpProfileReader getProfileReader() {
-        if (profileReader == null) {
-            this.profileReader = new DumpProfileReader();
+        if (profileReader != null) {
+            return profileReader;
         }
-        return profileReader;
+        return new DumpProfileReader();
     }
 
     /**
@@ -552,13 +578,13 @@ public class CommandArgumentSet {
      * @return the dump profile bundle loader
      */
     protected DumpProfileBundleLoader getProfileBundleLoader() {
-        if (profileBundleLoader == null) {
-            this.profileBundleLoader = new DumpProfileBundleLoader(
-                    getProfileReader(),
-                    CommandArgumentSet.class.getClassLoader(),
-                    true);
+        if (profileBundleLoader != null) {
+            return profileBundleLoader;
         }
-        return profileBundleLoader;
+        return new DumpProfileBundleLoader(
+            getProfileReader(),
+            CommandArgumentSet.class.getClassLoader(),
+            true);
     }
 
     /**
@@ -582,10 +608,13 @@ public class CommandArgumentSet {
      * @return the dump target selector
      */
     protected DumpTargetSelector getTargetSelector() {
-        if (targetSelector == null) {
-            this.targetSelector = new DumpTargetSelector();
+        if (targetSelector != null) {
+            return this.targetSelector;
         }
-        return targetSelector;
+        if (queryMode) {
+            return new QueryDumpTargetSelector();
+        }
+        return new TableDumpTargetSelector();
     }
 
     /**
@@ -609,10 +638,10 @@ public class CommandArgumentSet {
      * @return the connection provider
      */
     protected ConnectionProvider getConnectionProvider() {
-        if (connectionProvider == null) {
-            this.connectionProvider = new ConnectionProvider();
+        if (connectionProvider != null) {
+            return connectionProvider;
         }
-        return connectionProvider;
+        return new ConnectionProvider();
     }
 
     /**

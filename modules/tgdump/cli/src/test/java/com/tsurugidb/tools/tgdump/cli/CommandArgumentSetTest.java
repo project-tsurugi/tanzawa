@@ -15,9 +15,12 @@
  */
 package com.tsurugidb.tools.tgdump.cli;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
+import com.tsurugidb.tools.tgdump.core.engine.QueryDumpTargetSelector;
+import com.tsurugidb.tools.tgdump.core.engine.TableDumpTargetSelector;
 
 class CommandArgumentSetTest {
 
@@ -36,7 +39,18 @@ class CommandArgumentSetTest {
     @Test
     void getTargetSelector() {
         var args = new CommandArgumentSet();
-        assertNotNull(args.getTargetSelector());
+        var selector = args.getTargetSelector();
+        assertNotNull(selector);
+        assertInstanceOf(TableDumpTargetSelector.class, selector);
+    }
+
+    @Test
+    void getTargetSelector_queryMode() {
+        var args = new CommandArgumentSet();
+        args.setQueryMode(true);
+        var selector = args.getTargetSelector();
+        assertNotNull(selector);
+        assertInstanceOf(QueryDumpTargetSelector.class, selector);
     }
 
     @Test

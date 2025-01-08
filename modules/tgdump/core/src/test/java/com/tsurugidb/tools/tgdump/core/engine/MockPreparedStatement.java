@@ -13,7 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Model classes for Tsurugi Dump Tool.
- */
-package com.tsurugidb.tools.tgdump.core.model;
+package com.tsurugidb.tools.tgdump.core.engine;
+
+import com.tsurugidb.tsubakuro.sql.PreparedStatement;
+
+class MockPreparedStatement implements PreparedStatement {
+
+    private final String statement;
+
+    MockPreparedStatement(String statement) {
+        this.statement = statement;
+    }
+
+    public String getStatement() {
+        return statement;
+    }
+
+    @Override
+    public boolean hasResultRecords() {
+        return true;
+    }
+
+    @Override
+    public void close() {
+        return;
+    }
+}

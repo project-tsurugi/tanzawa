@@ -25,6 +25,7 @@ import javax.annotation.Nonnull;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.TextFormat;
+import com.tsurugidb.tools.common.monitoring.MonitoringException;
 import com.tsurugidb.tools.tgdump.core.engine.DumpMonitor;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 
@@ -88,29 +89,37 @@ public class ConsoleDumpMonitor implements DumpMonitor {
                     .map(TextFormat::shortDebugString)
                     .collect(Collectors.joining(", "))).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
             metadata.append('}');
-            verbose("found table: table={0}, metadata={1}", tableName, metadata.toString());
+            verbose("found table: target={0}, metadata={1}", tableName, metadata.toString());
         }
+    }
+
+    @Override
+    public void onDumpInfo(String label, String query, Path dumpDirectory) throws MonitoringException {
+        Objects.requireNonNull(label);
+        Objects.requireNonNull(query);
+        Objects.requireNonNull(dumpDirectory);
+        verbose("checked query: target={0}, query={1}", label, query);
     }
 
     @Override
     public void onDumpStart(@Nonnull String tableName, @Nonnull Path dumpDirectory) {
         Objects.requireNonNull(tableName);
         Objects.requireNonNull(dumpDirectory);
-        print("table dump operation was started: table={0}, output={1}", tableName, dumpDirectory);
+        print("dump operation was started: target={0}, output={1}", tableName, dumpDirectory);
     }
 
     @Override
     public void onDumpFile(@Nonnull String tableName, @Nonnull Path dumpFile) {
         Objects.requireNonNull(tableName);
         Objects.requireNonNull(dumpFile);
-        verbose("generated a part of table dump file: table={0}, output={1}", tableName, dumpFile);
+        verbose("generated a part of dump file: target={0}, output={1}", tableName, dumpFile);
     }
 
     @Override
     public void onDumpFinish(@Nonnull String tableName, @Nonnull Path dumpDirectory) {
         Objects.requireNonNull(tableName);
         Objects.requireNonNull(dumpDirectory);
-        print("table dump operation was finished: table={0}, output={1}", tableName, dumpDirectory);
+        print("dump operation was finished: target={0}, output={1}", tableName, dumpDirectory);
     }
 
     @Override

@@ -50,25 +50,35 @@ public interface DumpMonitor {
             throws MonitoringException;
 
     /**
-     * Invoked when a table dump operation was started.
-     * @param tableName the target table name
-     * @param dumpDirectory the dump destination directory for the table
+     * Invoked when a query text was validated.
+     * @param label the query label
+     * @param query the query text
+     * @param dumpDirectory the dump destination directory for the operation
+     * @throws MonitoringException if error was occurred while monitoring the event
+     */
+    void onDumpInfo(@Nonnull String label, @Nonnull String query, @Nonnull Path dumpDirectory)
+            throws MonitoringException;
+
+    /**
+     * Invoked when a dump operation was started.
+     * @param tableName the table name or label for the operation
+     * @param dumpDirectory the dump destination directory for the operation
      * @throws MonitoringException if error was occurred while monitoring the event
      */
     void onDumpStart(@Nonnull String tableName, @Nonnull Path dumpDirectory) throws MonitoringException;
 
     /**
      * Invoked when a dump file is provided.
-     * @param tableName the target table name
+     * @param tableName the table name or label for the operation
      * @param dumpFile the provided file path
      * @throws MonitoringException if error was occurred while monitoring the event
      */
     void onDumpFile(@Nonnull String tableName, @Nonnull Path dumpFile) throws MonitoringException;
 
     /**
-     * Invoked when a table dump operation was finished for the table.
-     * @param tableName the target table name
-     * @param dumpDirectory the dump destination directory for the table
+     * Invoked when each dump operation was finished.
+     * @param tableName the table name or label for the operation
+     * @param dumpDirectory the dump destination directory for the operation
      * @throws MonitoringException if error was occurred while monitoring the event
      */
     void onDumpFinish(@Nonnull String tableName, @Nonnull Path dumpDirectory) throws MonitoringException;

@@ -42,7 +42,7 @@ public class BasicDumpMonitor implements DumpMonitor {
     public static final String FORMAT_DUMP_INFO = "dump-info";
 
     /**
-     * The monitoring format name that a table dump was started.
+     * The monitoring format name that individual dump operations were started.
      */
     public static final String FORMAT_DUMP_START = "dump-start";
 
@@ -52,14 +52,34 @@ public class BasicDumpMonitor implements DumpMonitor {
     public static final String FORMAT_DUMP_FILE = "dump-file";
 
     /**
-     * The monitoring format name that a table dump was finished.
+     * The monitoring format name that individual dump operations were finished.
      */
     public static final String FORMAT_DUMP_FINISH = "dump-finish";
+
+    /**
+     * The monitoring property of the target type.
+     */
+    public static final String PROPERTY_TYPE = "type";
+
+    /**
+     * The monitoring value of the table type.
+     */
+    public static final String TYPE_TABLE = "table";
+
+    /**
+     * The monitoring value of the query type.
+     */
+    public static final String TYPE_QUERY = "query";
 
     /**
      * The monitoring property of the table name.
      */
     public static final String PROPERTY_TABLE_NAME = "table";
+
+    /**
+     * The monitoring property of the query text.
+     */
+    public static final String PROPERTY_QUERY_TEXT = "query";
 
     /**
      * The monitoring property of the dump destination path.
@@ -106,6 +126,7 @@ public class BasicDumpMonitor implements DumpMonitor {
                     Property.of(PROPERTY_COLUMN_TYPE, getTypeName(column))));
         }
         monitor.onData(FORMAT_DUMP_INFO, List.of(
+                Property.of(PROPERTY_TYPE, Value.of(TYPE_TABLE)),
                 Property.of(PROPERTY_TABLE_NAME, Value.of(tableName)),
                 Property.of(PROPERTY_COLUMNS, Value.of(Array.fromList(columns))),
                 Property.of(PROPERTY_DESTINATION, Value.of(dumpDirectory.toString()))));
@@ -120,6 +141,18 @@ public class BasicDumpMonitor implements DumpMonitor {
         default:
             return Value.ofNull(); // TODO: fix column name to string
         }
+    }
+
+    @Override
+    public void onDumpInfo(String label, String query, Path dumpDirectory) throws MonitoringException {
+        Objects.requireNonNull(label);
+        Objects.requireNonNull(query);
+        Objects.requireNonNull(dumpDirectory);
+        monitor.onData(FORMAT_DUMP_INFO, List.of(
+                Property.of(PROPERTY_TYPE, Value.of(TYPE_QUERY)),
+                Property.of(PROPERTY_TABLE_NAME, Value.of(label)),
+                Property.of(PROPERTY_QUERY_TEXT, Value.of(query)),
+                Property.of(PROPERTY_DESTINATION, Value.of(dumpDirectory.toString()))));
     }
 
     @Override

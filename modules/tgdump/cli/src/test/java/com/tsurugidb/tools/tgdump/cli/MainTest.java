@@ -258,6 +258,7 @@ class MainTest {
         assertEquals(URI.create("ipc:testing"), args.getConnectionUri());
 
         // defaults
+        assertFalse(args.isQueryMode());
         assertEquals(Path.of("default"), args.getProfile());
         assertNull(args.getConnectionLabel());
         assertEquals(0, args.getConnectionTimeoutMillis());
@@ -290,6 +291,14 @@ class MainTest {
         var app = new Main();
         assertThrows(ParameterException.class,
                 () -> app.parseArguments("--connection", "ipc:testing", "--to", "output"));
+    }
+
+    @Test
+    void parseArguments_query() {
+        var app = new Main();
+        var args = app.parseArguments("--connection", "ipc:testing", "--sql", "A", "B", "C", "--to", "output");
+        assertTrue(args.isQueryMode());
+        assertEquals(List.of("A", "B", "C"), args.getTableNames());
     }
 
     @Test

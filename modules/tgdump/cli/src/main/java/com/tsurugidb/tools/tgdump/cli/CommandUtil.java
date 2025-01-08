@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.tools.common.diagnostic.DiagnosticException;
+import com.tsurugidb.tools.common.diagnostic.DiagnosticUtil;
 import com.tsurugidb.tools.common.monitoring.CompositeMonitor;
 import com.tsurugidb.tools.common.monitoring.JsonMonitor;
 import com.tsurugidb.tools.common.monitoring.LoggingMonitor;
@@ -84,6 +85,7 @@ final class CommandUtil {
 
         // dump core settings
         printArgument(printer, "(positional)", args.getTableNames());
+        printArgument(printer, "--sql", args.isQueryMode()); //$NON-NLS-1$
         printArgument(printer, "--to", args.getDestinationPath()); //$NON-NLS-1$
         printArgument(printer, "--profile", args.getProfile()); //$NON-NLS-1$
 
@@ -171,8 +173,15 @@ final class CommandUtil {
                     e);
         }
 
-        LOG.debug("compute individual table dump output directories");
-        var targets = selector.getTargets(destination, tableNames);
+        LOG.debug("compute individual dump output directories");
+        List<DumpTarget> targets;
+        try {
+            targets = selector.getTargets(destination, tableNames);
+        } catch (IllegalArgumentException e) {
+            throw new CliException(CliDiagnosticCode.INVALID_PARAMETER,
+                    List.of(DiagnosticUtil.getMessage(e)),
+                    e);
+        }
         LOG.debug("dump targets: {}", targets);
         return targets;
     }
