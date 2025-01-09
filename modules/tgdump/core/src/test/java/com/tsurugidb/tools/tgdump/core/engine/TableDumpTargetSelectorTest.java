@@ -34,6 +34,21 @@ class TableDumpTargetSelectorTest {
     }
 
     @Test
+    void getTarget_simple() {
+        var target = selector().getTarget(Path.of("p"), "a");
+        assertEquals(DumpTarget.TargetType.TABLE, target.getTargetType());
+        assertEquals("a", target.getTableName());
+        assertEquals("p", toDestinationString(target));
+    }
+
+    @Test
+    void getTarget_strip() {
+        var target = selector().getTarget(Path.of("p"), "  A  ");
+        assertEquals("A", target.getTableName());
+        assertEquals("p", toDestinationString(target));
+    }
+
+    @Test
     void getTargets_simple() {
         var targets = selector().getTargets(Path.of("p"), List.of("a"));
         assertEquals(Map.of("a", "p/a"), toMap(targets));
@@ -81,6 +96,10 @@ class TableDumpTargetSelectorTest {
                 .peek(it -> assertEquals(it.getTableName(), it.getLabel()))
                 .collect(Collectors.toMap(
                         DumpTarget::getTableName,
-                        t -> t.getDestination().toString().replace(File.separatorChar, '/')));
+                        TableDumpTargetSelectorTest::toDestinationString));
+    }
+
+    private static String toDestinationString(DumpTarget target) {
+        return target.getDestination().toString().replace(File.separatorChar, '/');
     }
 }

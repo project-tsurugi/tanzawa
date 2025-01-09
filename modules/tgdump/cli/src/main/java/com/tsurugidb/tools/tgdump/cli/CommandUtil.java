@@ -86,6 +86,7 @@ final class CommandUtil {
         // dump core settings
         printArgument(printer, "(positional)", args.getTableNames());
         printArgument(printer, "--sql", args.isQueryMode()); //$NON-NLS-1$
+        printArgument(printer, "--single", args.isSingleMode()); //$NON-NLS-1$
         printArgument(printer, "--to", args.getDestinationPath()); //$NON-NLS-1$
         printArgument(printer, "--profile", args.getProfile()); //$NON-NLS-1$
 
@@ -151,9 +152,25 @@ final class CommandUtil {
             @Nonnull DumpTargetSelector selector,
             @Nonnull Path destinationPath,
             @Nonnull List<String> tableNames) throws DiagnosticException {
+        return prepareDestination(selector, destinationPath, tableNames, false);
+    }
+
+    static List<DumpTarget> prepareDestination(
+            @Nonnull DumpTargetSelector selector,
+            @Nonnull Path destinationPath,
+            @Nonnull List<String> tableNames,
+            boolean singleMode) throws DiagnosticException {
         Objects.requireNonNull(selector);
         Objects.requireNonNull(destinationPath);
         Objects.requireNonNull(tableNames);
+        if (tableNames.isEmpty()) {
+            throw new CliException(CliDiagnosticCode.INVALID_PARAMETER,
+                    List.of("no table name or query text specified"));
+        }
+        if (singleMode && tableNames.size() != 1) {
+            throw new CliException(CliDiagnosticCode.INVALID_PARAMETER,
+                    List.of("single mode requires only one table name or query text"));
+        }
         LOG.debug("inspecting destination: {}", destinationPath);
         Path destination;
         try {
@@ -176,7 +193,11 @@ final class CommandUtil {
         LOG.debug("compute individual dump output directories");
         List<DumpTarget> targets;
         try {
-            targets = selector.getTargets(destination, tableNames);
+            if (singleMode) {
+                targets = List.of(selector.getTarget(destination, tableNames.get(0)));
+            } else {
+                targets = selector.getTargets(destination, tableNames);
+            }
         } catch (IllegalArgumentException e) {
             throw new CliException(CliDiagnosticCode.INVALID_PARAMETER,
                     List.of(DiagnosticUtil.getMessage(e)),

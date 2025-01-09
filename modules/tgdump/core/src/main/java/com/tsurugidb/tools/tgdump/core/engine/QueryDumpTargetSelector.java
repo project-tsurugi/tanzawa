@@ -84,8 +84,8 @@ public class QueryDumpTargetSelector implements DumpTargetSelector {
 
         LabelAndStatement(String label, @Nonnull String statement) {
             Objects.requireNonNull(statement);
-            this.label = label;
-            this.statement = statement;
+            this.label = label == null ? null : label.strip();
+            this.statement = statement.strip();
         }
 
         Optional<String> getLabel() {
@@ -272,6 +272,29 @@ public class QueryDumpTargetSelector implements DumpTargetSelector {
         return CharType.NORMAL;
     }
 
+    @Override
+    public DumpTarget getTarget(@Nonnull Path destinationDirectory, @Nonnull String command) {
+        Objects.requireNonNull(destinationDirectory);
+        Objects.requireNonNull(command);
+        LOG.trace("enter: getTarget: {}, {}", destinationDirectory, command); //$NON-NLS-1$
+        var parsed = parseCommand(command);
+        var label = parsed.getLabel().orElse(defaultPrefix);
+        var statement = parsed.getStatement();
+        if (label.isEmpty()) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "label must not be empty: {0}",
+                    command));
+        }
+        if (statement.isEmpty()) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "statement must not be empty: {0}",
+                    command));
+        }
+        var result = new DumpTarget(DumpTarget.TargetType.QUERY, label, statement, destinationDirectory);
+        LOG.trace("exit: getTarget: {}", result); //$NON-NLS-1$
+        return result;
+    }
+
     /**
      * Computes {@link DumpTarget dump targets} for each table.
      * @param destinationDirectory the base destination directory,
@@ -292,7 +315,7 @@ public class QueryDumpTargetSelector implements DumpTargetSelector {
                     .orElseGet(() -> {
                         return String.format("%s%d", defaultPrefix, position); //$NON-NLS-1$
                     }); //$NON-NLS-1$
-            var statement = parsed.getStatement();
+            var statement = parsed.getStatement().strip();
             if (label.isEmpty()) {
                 throw new IllegalArgumentException(MessageFormat.format(
                         "label at {0} must not be empty: {1}",

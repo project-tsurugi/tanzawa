@@ -17,8 +17,11 @@ package com.tsurugidb.tools.tgdump.cli;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import com.beust.jcommander.ParameterException;
 import com.tsurugidb.tools.tgdump.core.engine.QueryDumpTargetSelector;
 import com.tsurugidb.tools.tgdump.core.engine.TableDumpTargetSelector;
 
@@ -57,5 +60,32 @@ class CommandArgumentSetTest {
     void getConnectionProvider() {
         var args = new CommandArgumentSet();
         assertNotNull(args.getConnectionProvider());
+    }
+
+    @Test
+    void validateCombination_ok() {
+        var args = new CommandArgumentSet();
+        args.setSingleMode(true);
+        args.setQueryMode(false);
+        args.setTableNames(List.of("tbl"));
+        args.validateCombination();
+    }
+
+    @Test
+    void validateCombination_invalid_table() {
+        var args = new CommandArgumentSet();
+        args.setSingleMode(true);
+        args.setQueryMode(false);
+        args.setTableNames(List.of("t1", "t2"));
+        assertThrows(ParameterException.class, () -> args.validateCombination());
+    }
+
+    @Test
+    void validateCombination_invalid_query() {
+        var args = new CommandArgumentSet();
+        args.setSingleMode(true);
+        args.setQueryMode(true);
+        args.setTableNames(List.of("t1", "t2"));
+        assertThrows(ParameterException.class, () -> args.validateCombination());
     }
 }

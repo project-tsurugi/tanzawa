@@ -15,9 +15,7 @@
  */
 package com.tsurugidb.tools.tgdump.cli;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -110,7 +108,29 @@ class CommandUtilTest {
     }
 
     @Test
-    void prepareDestination_relative() throws Exception {
+    void prepareDestination_commands_empty() throws Exception {
+        CommandArgumentSet args = new CommandArgumentSet();
+        var root = getTemporaryDir();
+        var dest = root.resolve("destination");
+
+        var e = assertThrows(DiagnosticException.class,
+                () -> CommandUtil.prepareDestination(args.getTargetSelector(), dest, List.of(), false));
+        assertEquals(CliDiagnosticCode.INVALID_PARAMETER, e.getDiagnosticCode());
+    }
+
+    @Test
+    void prepareDestination_commands_invalid() throws Exception {
+        CommandArgumentSet args = new CommandArgumentSet();
+        var root = getTemporaryDir();
+        var dest = root.resolve("destination");
+
+        var e = assertThrows(DiagnosticException.class,
+                () -> CommandUtil.prepareDestination(args.getTargetSelector(), dest, List.of(""), false));
+        assertEquals(CliDiagnosticCode.INVALID_PARAMETER, e.getDiagnosticCode());
+    }
+
+    @Test
+    void prepareDestination_destination_relative() throws Exception {
         CommandArgumentSet args = new CommandArgumentSet();
         var root = getTemporaryDir();
         var dest = root.resolve("destination");
@@ -128,7 +148,7 @@ class CommandUtilTest {
     }
 
     @Test
-    void prepareDestination_exists() throws Exception {
+    void prepareDestination_destination_existing() throws Exception {
         CommandArgumentSet args = new CommandArgumentSet();
         var root = getTemporaryDir();
         var dest = root.resolve("destination");
@@ -143,7 +163,7 @@ class CommandUtilTest {
     }
 
     @Test
-    void prepareDestination_failure() throws Exception {
+    void prepareDestination_destination_failure() throws Exception {
         CommandArgumentSet args = new CommandArgumentSet();
         var root = getTemporaryDir();
         var dest = root.resolve("destination");
@@ -155,7 +175,7 @@ class CommandUtilTest {
     }
 
     @Test
-    void prepareDestination_exists_nonempty() throws Exception {
+    void prepareDestination_destination_exists_nonempty() throws Exception {
         CommandArgumentSet args = new CommandArgumentSet();
         var root = getTemporaryDir();
         var dest = root.resolve("destination");
@@ -164,5 +184,27 @@ class CommandUtilTest {
         var e = assertThrows(DiagnosticException.class,
                 () -> CommandUtil.prepareDestination(args.getTargetSelector(), dest, List.of("testing")));
         assertEquals(CliDiagnosticCode.DESTINATION_EXISTS, e.getDiagnosticCode());
+    }
+
+    @Test
+    void prepareDestination_single() throws Exception {
+        CommandArgumentSet args = new CommandArgumentSet();
+        var root = getTemporaryDir();
+        var dest = root.resolve("destination");
+
+        var targets = CommandUtil.prepareDestination(args.getTargetSelector(), dest, List.of("testing"), true);
+        assertEquals(
+                List.of(new DumpTarget("testing", dest)),
+                targets);
+    }
+
+    @Test
+    void prepareDestination_single_multiple() throws Exception {
+        CommandArgumentSet args = new CommandArgumentSet();
+        var root = getTemporaryDir();
+        var dest = root.resolve("destination");
+        var e = assertThrows(DiagnosticException.class,
+                () -> CommandUtil.prepareDestination(args.getTargetSelector(), dest, List.of("t1", "t2"), true));
+        assertEquals(CliDiagnosticCode.INVALID_PARAMETER, e.getDiagnosticCode());
     }
 }

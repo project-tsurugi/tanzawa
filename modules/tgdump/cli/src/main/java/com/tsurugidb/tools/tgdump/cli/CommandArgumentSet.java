@@ -167,6 +167,8 @@ public class CommandArgumentSet {
 
     private boolean queryMode = false;
 
+    private boolean singleMode = false;
+
     private Path destinationPath;
 
     private Path profile = Path.of(DEFAULT_PROFILE);
@@ -246,6 +248,37 @@ public class CommandArgumentSet {
         this.queryMode = enable;
     }
 
+    /**
+     * Returns whether to output dump files into the {@link #getDestinationPath() destination directory} directly.
+     * <p>
+     * If this is {@code true}, the destination directory must contain only one {@link #getTableNames() table or query name}.
+     * Otherwise, if this is {@code false}, the dump files will be placed into sub-directories for each table or query.
+     * </p>
+     * @return {@code true} if dump only a single table, {@code false} otherwise
+     */
+    public boolean isSingleMode() {
+        return singleMode;
+    }
+
+    /**
+     * Sets whether to output dump files into the {@link #getDestinationPath() destination directory} directly.
+     * <p>
+     * If this is {@code true}, the destination directory must contain only one {@link #getTableNames() table or query name}.
+     * Otherwise, if this is {@code false}, the dump files will be placed into sub-directories for each table or query.
+     * </p>
+     * @param enable {@code true} to dump only a single table, {@code false} otherwise
+     */
+    @Parameter(
+            order = 11,
+            names = { "--single" },
+            arity = 0,
+            description = "Put dump files into the destination directory directly",
+            required = false)
+    public void setSingleMode(boolean enable) {
+        LOG.trace("argument: --single: {}", enable); //$NON-NLS-1$
+        this.singleMode = enable;
+    }
+    
     /**
      * Returns the dump files destination path.
      * @return the destination path
@@ -654,5 +687,18 @@ public class CommandArgumentSet {
      */
     protected void setConnectionProvider(@Nullable ConnectionProvider value) {
         this.connectionProvider = value;
+    }
+
+    /**
+     * Validates the combination of the command arguments.
+     * @throws ParameterException if this command arguments contain invalid combinations
+     */
+    public void validateCombination() {
+        if (singleMode && tableNames.size() > 1) {
+            if (queryMode) {
+                throw new ParameterException("Cannot specify multiple queries with --single.");
+            }
+            throw new ParameterException("Cannot specify multiple table names with --single.");
+        }
     }
 }
