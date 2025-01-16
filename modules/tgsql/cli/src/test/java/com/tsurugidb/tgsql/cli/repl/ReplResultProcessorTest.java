@@ -38,15 +38,29 @@ class ReplResultProcessorTest {
         test("123", BigDecimal.valueOf(123));
 
         test("2024-07-25", LocalDate.of(2024, 7, 25));
+        test("0000-01-01", LocalDate.of(0, 1, 1));
+        test("-0001-01-01", LocalDate.of(-1, 1, 1));
+        test("9999-12-31", LocalDate.of(9999, 12, 31));
+        test("+99999-01-01", LocalDate.of(99999, 1, 1));
+        test("-99999-01-01", LocalDate.of(-99999, 1, 1));
+
         test("2024-07-25 01:02:03.123456789", LocalDateTime.of(2024, 7, 25, 1, 2, 3, 123456789));
         test("2024-07-25 23:59:59.000000000", LocalDateTime.of(2024, 7, 25, 23, 59, 59, 0));
+        test("0000-07-25 23:59:59.000000000", LocalDateTime.of(0, 7, 25, 23, 59, 59, 0));
+        test("-0001-07-25 23:59:59.000000000", LocalDateTime.of(-1, 7, 25, 23, 59, 59, 0));
+
         test("2024-07-25 01:02:03.123456789+09:00", OffsetDateTime.of(2024, 7, 25, 1, 2, 3, 123456789, ZoneOffset.ofHours(9)));
         test("2024-07-25 23:59:59.000000000+09:00", OffsetDateTime.of(2024, 7, 25, 23, 59, 59, 0, ZoneOffset.ofHours(9)));
         test("2024-07-25 23:59:59.000000000Z", OffsetDateTime.of(2024, 7, 25, 23, 59, 59, 0, ZoneOffset.UTC));
+        test("0000-07-25 23:59:59.000000000+09:00", OffsetDateTime.of(0, 7, 25, 23, 59, 59, 0, ZoneOffset.ofHours(9)));
+        test("-0001-07-25 23:59:59.000000000+09:00", OffsetDateTime.of(-1, 7, 25, 23, 59, 59, 0, ZoneOffset.ofHours(9)));
+
         test("01:02:03.123456789", LocalTime.of(1, 2, 3, 123456789));
         test("23:59:59.000000000", LocalTime.of(23, 59, 59, 0));
+
         test("01:02:03.123456789+09:00", OffsetTime.of(1, 2, 3, 123456789, ZoneOffset.ofHours(9)));
         test("23:59:59.000000000+09:00", OffsetTime.of(23, 59, 59, 0, ZoneOffset.ofHours(9)));
+
         test("23:59:59.000000000Z", OffsetTime.of(23, 59, 59, 0, ZoneOffset.UTC));
 
         test("0123456789abcdef", new byte[] { 0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef });
