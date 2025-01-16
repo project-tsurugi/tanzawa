@@ -15,7 +15,7 @@
  */
 package com.tsurugidb.tgsql.core.executor.engine;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * Errors in {@link Engine}.
