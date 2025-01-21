@@ -169,7 +169,7 @@ class BasicEngineTest {
     }
 
     @Test
-    void generic_staement_wo_result() throws Exception {
+    void generic_statement_wo_result() throws Exception {
         var reached = new AtomicBoolean();
         MockSqlProcessor sql = new MockSqlProcessor(true) {
             @Override
@@ -195,7 +195,7 @@ class BasicEngineTest {
     }
 
     @Test
-    void generic_staement_w_result() throws Exception {
+    void generic_statement_w_result() throws Exception {
         var reachedExec = new AtomicBoolean();
         MockSqlProcessor sql = new MockSqlProcessor(true) {
             @Override
@@ -205,7 +205,7 @@ class BasicEngineTest {
                 }
                 assertEquals("SELECT * FROM T", statement);
                 var rs = Relation.of(new Object[][] { { 1 } }).getResultSet(new ResultSetMetadataAdapter(SqlResponse.ResultSetMetadata.newBuilder().addColumns(Types.column(int.class)).build()));
-                return new PreparedStatementResult(rs);
+                return new PreparedStatementResult(rs, null);
             }
         };
         var reachedRs = new AtomicBoolean();
@@ -231,7 +231,7 @@ class BasicEngineTest {
     }
 
     @Test
-    void call_staement_fall_through() throws Exception {
+    void call_statement_fall_through() throws Exception {
         var reached = new AtomicBoolean();
         MockSqlProcessor sql = new MockSqlProcessor(true) {
             @Override
@@ -257,7 +257,7 @@ class BasicEngineTest {
     }
 
     @Test
-    void generic_staement_inactive_tx() throws Exception {
+    void generic_statement_inactive_tx() throws Exception {
         MockSqlProcessor sql = new MockSqlProcessor(false);
         MockResultProcessor rs = new MockResultProcessor();
         var engine = newBasicEngine(sql, rs);

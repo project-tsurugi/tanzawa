@@ -38,6 +38,7 @@ import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
+import com.tsurugidb.tsubakuro.util.Owner;
 
 /**
  * A basic implementation of {@link SqlProcessor}.
@@ -190,12 +191,13 @@ public class BasicSqlProcessor implements SqlProcessor {
         LOG.debug("start prepare: '{}'", statement);
         desireActive();
         var client = getSqlClient();
-        try (var prepared = client.prepare(statement).await()) {
+        try (var preparedOwner = Owner.of(client.prepare(statement).await())) {
+            var prepared = preparedOwner.get();
             var t = transaction.getTransaction();
             if (prepared.hasResultRecords()) {
                 LOG.debug("start query: '{}'", statement);
                 var result = t.executeQuery(prepared).await();
-                return new PreparedStatementResult(result);
+                return new PreparedStatementResult(result, preparedOwner.release());
             }
             LOG.debug("start execute: '{}'", statement);
             var result = t.executeStatement(prepared).await();

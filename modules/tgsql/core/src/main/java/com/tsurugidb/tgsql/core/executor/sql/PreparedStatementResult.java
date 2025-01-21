@@ -19,21 +19,25 @@ import java.io.IOException;
 
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ExecuteResult;
+import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 
 public class PreparedStatementResult implements AutoCloseable {
 
     private final ResultSet resultSet;
     private final ExecuteResult executeResult;
+    private final PreparedStatement preparedStatement;
 
-    public PreparedStatementResult(ResultSet resultSet) {
+    public PreparedStatementResult(ResultSet resultSet, PreparedStatement preparedStatement) {
         this.resultSet = resultSet;
         this.executeResult = null;
+        this.preparedStatement = preparedStatement;
     }
 
     public PreparedStatementResult(ExecuteResult executeResult) {
         this.resultSet = null;
         this.executeResult = executeResult;
+        this.preparedStatement = null;
     }
 
     public ResultSet getResultSet() {
@@ -46,7 +50,7 @@ public class PreparedStatementResult implements AutoCloseable {
 
     @Override
     public void close() throws ServerException, IOException, InterruptedException {
-        try (resultSet) {
+        try (preparedStatement; resultSet) {
             // close only
         }
     }
