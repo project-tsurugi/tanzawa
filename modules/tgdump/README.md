@@ -35,6 +35,22 @@ tgdump <table-name> [<table-name> [...]] --to </path/to/destination-dir> --conne
 tgdump --sql [<query-label>:]<query-text> [[<query-label>:]<query-string> [...]] --to </path/to/destination-dir> --connection <endpoint-uri> ...
 ```
 
+examples:
+
+```sh
+# Dump the contents of the tables "t1" and "t2" to /tmp/dump/{t1, t2}
+tgdump t1 t2 --to /tmp/dump --connection ipc://tsurugi 
+
+# Dump the query results to /tmp/sql/{a, b}
+tgdump --sql "a: SELECT * FROM t1 WHERE k = 0" "b: SELECT * FROM t2 WHERE k = 1" --to /tmp/sql --connection ipc://tsurugi
+
+# Dump the contents of the table "t1" to /tmp/single without sub-directories
+tgdump --single t1 --to /tmp/single --connection ipc://tsurugi
+
+# Dump the contents of the table "t1" to /tmp/arrow/t1 as Arrow format
+tgdump t1 --profile arrow --to /tmp/arrow --connection ipc://tsurugi 
+```
+
 parameters:
 
 * `<table-name>` - the dump target table names
