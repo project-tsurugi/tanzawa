@@ -575,6 +575,17 @@ public abstract class TgsqlReporter {
         }
     }
 
+    /**
+     * output message for object list.
+     *
+     * @param list object list
+     */
+    public void reportObjectList(List<?> list) {
+        for (var object : list) {
+            info(object.toString());
+        }
+    }
+
     private PlanGraphReporter planGraphReporter;
 
     /**

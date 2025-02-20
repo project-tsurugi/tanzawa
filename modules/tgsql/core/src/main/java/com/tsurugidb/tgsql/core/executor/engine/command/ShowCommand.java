@@ -29,10 +29,12 @@ import org.slf4j.LoggerFactory;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
+import com.tsurugidb.tgsql.core.executor.result.type.BlobWrapper;
+import com.tsurugidb.tgsql.core.executor.result.type.ClobWrapper;
 import com.tsurugidb.tgsql.core.model.ErroneousStatement;
+import com.tsurugidb.tgsql.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.tgsql.core.model.Regioned;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
-import com.tsurugidb.tgsql.core.model.ErroneousStatement.ErrorKind;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 /**
@@ -85,6 +87,8 @@ public class ShowCommand extends SpecialCommand {
         add("session", false, ShowCommand::executeShowSession); //$NON-NLS-1$
         add("transaction", false, ShowCommand::executeShowTransaction); //$NON-NLS-1$
         add("table", true, ShowCommand::executeShowTable); //$NON-NLS-1$
+        add("blob", false, ShowCommand::executeShowBlob); //$NON-NLS-1$
+        add("clob", false, ShowCommand::executeShowClob); //$NON-NLS-1$
         add(CLIENT, true, ShowCommand::executeShowClient); // $NON-NLS-1$
     }
 
@@ -191,6 +195,24 @@ public class ShowCommand extends SpecialCommand {
         var tableList = sqlProcessor.getTableNames();
         var reporter = engine.getReporter();
         reporter.reportTableList(tableList);
+        return true;
+    }
+
+    private static boolean executeShowBlob(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+        var sqlProcessor = engine.getSqlProcessor();
+        var transaction = sqlProcessor.getTransactionOrThrow();
+        var list = transaction.objectList(BlobWrapper.KEY_NAME);
+        var reporter = engine.getReporter();
+        reporter.reportObjectList(list);
+        return true;
+    }
+
+    private static boolean executeShowClob(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+        var sqlProcessor = engine.getSqlProcessor();
+        var transaction = sqlProcessor.getTransactionOrThrow();
+        var list = transaction.objectList(ClobWrapper.KEY_NAME);
+        var reporter = engine.getReporter();
+        reporter.reportObjectList(list);
         return true;
     }
 

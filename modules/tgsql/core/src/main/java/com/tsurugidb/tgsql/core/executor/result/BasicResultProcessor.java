@@ -29,12 +29,14 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.tgsql.core.executor.IoSupplier;
+import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 
 /**
  * A basic implementation of {@link ResultProcessor}.
+ *
  * This will print the contents into standard output.
  */
 public class BasicResultProcessor implements ResultProcessor {
@@ -47,12 +49,14 @@ public class BasicResultProcessor implements ResultProcessor {
      * Creates a new instance.
      */
     public BasicResultProcessor() {
-        this(new StandardWriterSupplier(), new JsonFactory()
-                .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false));
+        this(new StandardWriterSupplier(), //
+                new JsonFactory().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false) //
+        );
     }
 
     /**
      * Creates a new instance.
+     *
      * @param outputs the output factory
      * @param factory the JSON output settings.
      */
@@ -64,15 +68,15 @@ public class BasicResultProcessor implements ResultProcessor {
     }
 
     @Override
-    public long process(@Nonnull ResultSet target) throws ServerException, IOException, InterruptedException {
+    public long process(TransactionWrapper transaction, @Nonnull ResultSet target) throws ServerException, IOException, InterruptedException {
         List<Object> buffer = new ArrayList<>();
-        try (
-            var output = outputs.get();
-            var generator = factory.createGenerator(output);
+        try ( //
+                var output = outputs.get(); //
+                var generator = factory.createGenerator(output); //
         ) {
             generator.setPrettyPrinter(new MinimalPrettyPrinter(System.lineSeparator()));
             dumpMetadata(generator, target.getMetadata());
-            while (ResultSetUtil.fetchNextRow(target, target.getMetadata(), buffer::add)) {
+            while (ResultSetUtil.fetchNextRow(transaction, target, target.getMetadata(), buffer::add)) {
                 dumpRow(generator, buffer, target.getMetadata().getColumns());
                 buffer.clear();
             }
@@ -89,8 +93,7 @@ public class BasicResultProcessor implements ResultProcessor {
         generator.writeEndObject();
     }
 
-    private void writeColumnsMetadata(
-            JsonGenerator generator, List<? extends SqlCommon.Column> columns) throws IOException {
+    private void writeColumnsMetadata(JsonGenerator generator, List<? extends SqlCommon.Column> columns) throws IOException {
         generator.writeFieldName("columns");
         generator.writeStartArray();
         for (int i = 0, n = columns.size(); i < n; i++) {
@@ -149,10 +152,10 @@ public class BasicResultProcessor implements ResultProcessor {
         generator.writeEndObject();
     }
 
-    private void dumpValue(
-            JsonGenerator generator,
-            Object value,
-            SqlCommon.Column column,
+    private void dumpValue( //
+            JsonGenerator generator, //
+            Object value, //
+            SqlCommon.Column column, //
             int dimension) throws IOException {
         if (value == null) {
             generator.writeNull();

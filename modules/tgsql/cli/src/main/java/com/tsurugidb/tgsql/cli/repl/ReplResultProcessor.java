@@ -36,6 +36,7 @@ import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.executor.result.ResultProcessor;
 import com.tsurugidb.tgsql.core.executor.result.ResultSetUtil;
+import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
@@ -67,7 +68,7 @@ public class ReplResultProcessor implements ResultProcessor {
     }
 
     @Override
-    public long process(ResultSet target) throws ServerException, IOException, InterruptedException {
+    public long process(TransactionWrapper transaction, ResultSet target) throws ServerException, IOException, InterruptedException {
         dumpMetadata(target.getMetadata());
         if (Thread.interrupted()) {
             LOG.trace("Thread.interrupted (1)");
@@ -81,7 +82,7 @@ public class ReplResultProcessor implements ResultProcessor {
         var columnList = new ArrayList<Object>();
         var sb = new StringBuilder();
         int rowSize = 0;
-        while (ResultSetUtil.fetchNextRow(target, target.getMetadata(), columnList::add)) {
+        while (ResultSetUtil.fetchNextRow(transaction, target, target.getMetadata(), columnList::add)) {
             if (maxLines >= 0) {
                 if (rowSize >= maxLines) {
                     over = true;

@@ -16,6 +16,10 @@
 package com.tsurugidb.tgsql.core.executor.sql;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
@@ -29,6 +33,7 @@ public class TransactionWrapper implements AutoCloseable {
 
     private final Transaction transaction;
     private final TransactionOption option;
+    private final Map<String, List<Object>> objectMap = new HashMap<>();
 
     /**
      * Creates a new instance.
@@ -57,6 +62,36 @@ public class TransactionWrapper implements AutoCloseable {
      */
     public SqlRequest.TransactionOption getOption() {
         return this.option;
+    }
+
+    /**
+     * add object.
+     *
+     * @param value object
+     */
+    public void addObject(String keyName, Object value) {
+        if (value == null) {
+            return;
+        }
+
+        var list = objectMap.computeIfAbsent(keyName, k -> new ArrayList<>());
+        list.add(value);
+    }
+
+    /**
+     * get object list
+     *
+     * @param <T>     object type
+     * @param keyName key name
+     * @return object list
+     */
+    @SuppressWarnings("unchecked")
+    public <T> List<T> objectList(String keyName) {
+        var list = objectMap.get(keyName);
+        if (list == null) {
+            return List.of();
+        }
+        return (List<T>) list;
     }
 
     @Override

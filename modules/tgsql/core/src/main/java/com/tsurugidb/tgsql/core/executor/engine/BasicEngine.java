@@ -141,7 +141,8 @@ public class BasicEngine extends AbstractEngine {
                 try (var result = sqlProcessor.execute(statement.getText(), statement.getRegion())) {
                     var rs = result.getResultSet();
                     if (rs != null) {
-                        timingEnd.accept(resultSetProcessor.process(rs));
+                        var transaction = getTransaction();
+                        timingEnd.accept(resultSetProcessor.process(transaction, rs));
                     } else {
                         timingEnd.accept(System.nanoTime());
                         var er = result.getExecuteResult();

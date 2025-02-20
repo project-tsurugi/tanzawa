@@ -70,6 +70,7 @@ class BasicEngineTest {
 
         private boolean active = false;
         private String transactionId = null;
+        private TransactionWrapper transaction = null;
 
         MockSqlProcessor() {
             this(false);
@@ -107,7 +108,10 @@ class BasicEngineTest {
 
         @Override
         public TransactionWrapper getTransaction() {
-            throw new UnsupportedOperationException();
+            if (this.transaction == null) {
+                this.transaction = new TransactionWrapper(null, null);
+            }
+            return this.transaction;
         }
 
         @Override
@@ -154,7 +158,7 @@ class BasicEngineTest {
     static class MockResultProcessor implements ResultProcessor {
 
         @Override
-        public long process(ResultSet target) throws ServerException, IOException, InterruptedException {
+        public long process(TransactionWrapper transaction, ResultSet target) throws ServerException, IOException, InterruptedException {
             throw new UnsupportedOperationException();
         }
     }
@@ -211,7 +215,7 @@ class BasicEngineTest {
         var reachedRs = new AtomicBoolean();
         MockResultProcessor rs = new MockResultProcessor() {
             @Override
-            public long process(ResultSet target) throws ServerException, IOException, InterruptedException {
+            public long process(TransactionWrapper transaction, ResultSet target) throws ServerException, IOException, InterruptedException {
                 if (!reachedRs.compareAndSet(false, true)) {
                     fail();
                 }

@@ -44,6 +44,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.sql.proto.SqlResponse;
 import com.tsurugidb.tgsql.core.executor.IoSupplier;
+import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 import com.tsurugidb.tsubakuro.sql.impl.ResultSetMetadataAdapter;
@@ -60,6 +61,7 @@ class BasicResultProcessorTest {
         public Writer get() throws IOException {
             return new StringWriter() {
                 private boolean closed = false;
+
                 @Override
                 public void close() throws IOException {
                     if (closed) {
@@ -72,6 +74,7 @@ class BasicResultProcessorTest {
         }
     };
 
+    private final TransactionWrapper transaction = new TransactionWrapper(null, null);
     private final List<String> outputs = new ArrayList<>();
 
     @AfterEach
@@ -85,275 +88,304 @@ class BasicResultProcessorTest {
 
     @Test
     void simple() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { 1 },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { 1 }, //
         }).getResultSet(meta(column("a", int.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void matrix() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { 1, "A", new BigDecimal("100") },
-            { 2, "B", new BigDecimal("200") },
-            { 3, "C", new BigDecimal("300") },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { 1, "A", new BigDecimal("100") }, //
+                { 2, "B", new BigDecimal("200") }, //
+                { 3, "C", new BigDecimal("300") }, //
         }).getResultSet(meta(column(int.class), column(String.class), column(BigDecimal.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void header_array() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {})
+        ResultSet rs = Relation.of(new Object[][] {}) //
                 .getResultSet(meta(column("a", int[].class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void header_row() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {})
+        ResultSet rs = Relation.of(new Object[][] {}) //
                 .getResultSet(meta(column("a", row(column(int.class), column(String.class), column(BigDecimal.class)))));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void header_user() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {})
+        ResultSet rs = Relation.of(new Object[][] {}) //
                 .getResultSet(meta(column("a", user("U"))));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_null() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { null },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { null }, //
         }).getResultSet(meta(column(int.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_boolean() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { true },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { true }, //
         }).getResultSet(meta(column(boolean.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_int4() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { 125 },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { 125 }, //
         }).getResultSet(meta(column(long.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_int8() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { 1L },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { 1L }, //
         }).getResultSet(meta(column(long.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_float4() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { 1.f },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { 1.f }, //
         }).getResultSet(meta(column(float.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_float8() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { 1.d },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { 1.d }, //
         }).getResultSet(meta(column(double.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_decimal() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { new BigDecimal("3.14") },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { new BigDecimal("3.14") }, //
         }).getResultSet(meta(column(BigDecimal.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_character() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { "Hello, world!" },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { "Hello, world!" }, //
         }).getResultSet(meta(column(String.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_octet() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { new byte[] { 1, 2, 3 } },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { new byte[] { 1, 2, 3 } }, //
         }).getResultSet(meta(column(byte[].class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_bit() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { new boolean[] { true, false } },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { new boolean[] { true, false } }, //
         }).getResultSet(meta(column(boolean[].class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_date() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { LocalDate.of(2000, 1, 1) },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { LocalDate.of(2000, 1, 1) }, //
         }).getResultSet(meta(column(LocalDate.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_time_point() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { LocalDateTime.of(2022, 9, 22, 12, 28) },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { LocalDateTime.of(2022, 9, 22, 12, 28) }, //
         }).getResultSet(meta(column(LocalDateTime.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_time_point_with_time_zone() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { OffsetDateTime.of(2022, 9, 22, 12, 28, 59, 0, ZoneOffset.ofHours(9)) },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { OffsetDateTime.of(2022, 9, 22, 12, 28, 59, 0, ZoneOffset.ofHours(9)) }, //
         }).getResultSet(meta(column(OffsetDateTime.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_time_of_day() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { LocalTime.of(1, 2, 3) },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { LocalTime.of(1, 2, 3) }, //
         }).getResultSet(meta(column(LocalTime.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_time_of_day_with_time_zone() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { OffsetTime.of(1, 2, 3, 4, ZoneOffset.ofHours(9)) },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { OffsetTime.of(1, 2, 3, 4, ZoneOffset.ofHours(9)) }, //
         }).getResultSet(meta(column(OffsetTime.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_date_time_interval() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { new DateTimeInterval(1, 2, 3, 4L) },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { new DateTimeInterval(1, 2, 3, 4L) }, //
         }).getResultSet(meta(column(DateTimeInterval.class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
+    // TODO BLOB
+//    @Test
+//    void value_blob() throws Exception {
+//        var bref = new BlobReference() {
+//        };
+//        ResultSet rs = Relation.of(new Object[][] { //
+//                { bref }, //
+//        }).getResultSet(meta(column(AtomType.BLOB)));
+//
+//        try (var proc = create()) {
+//            proc.process(transaction, rs);
+//        }
+//        assertEquals(1, outputs.size());
+//    }
+//
+//    @Test
+//    void value_clob() throws Exception {
+//        var cref = new ClobReference() {
+//        };
+//        ResultSet rs = Relation.of(new Object[][] { //
+//                { cref }, //
+//        }).getResultSet(meta(column(AtomType.CLOB)));
+//
+//        try (var proc = create()) {
+//            proc.process(transaction, rs);
+//        }
+//        assertEquals(1, outputs.size());
+//    }
+
     @Test
     void value_array() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            {  Relation.array(1, 2, 3) },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { Relation.array(1, 2, 3) }, //
         }).getResultSet(meta(column(int[].class)));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
 
     @Test
     void value_row() throws Exception {
-        ResultSet rs = Relation.of(new Object[][] {
-            { Relation.row(1, "OK", new BigDecimal("3.14")) },
+        ResultSet rs = Relation.of(new Object[][] { //
+                { Relation.row(1, "OK", new BigDecimal("3.14")) }, //
         }).getResultSet(meta(column(row(column(int.class), column(String.class), column(BigDecimal.class)))));
 
         try (var proc = create()) {
-            proc.process(rs);
+            proc.process(transaction, rs);
         }
         assertEquals(1, outputs.size());
     }
@@ -363,8 +395,8 @@ class BasicResultProcessorTest {
     }
 
     private static ResultSetMetadata meta(SqlCommon.Column... columns) {
-        return new ResultSetMetadataAdapter(SqlResponse.ResultSetMetadata.newBuilder()
-                .addAllColumns(Arrays.asList(columns))
+        return new ResultSetMetadataAdapter(SqlResponse.ResultSetMetadata.newBuilder() //
+                .addAllColumns(Arrays.asList(columns)) //
                 .build());
     }
 }

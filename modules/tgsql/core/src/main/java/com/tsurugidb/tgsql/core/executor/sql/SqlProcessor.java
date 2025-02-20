@@ -109,6 +109,20 @@ public interface SqlProcessor extends ServerResource {
     TransactionWrapper getTransaction();
 
     /**
+     * Returns the running transaction.
+     *
+     * @return the running transaction
+     * @throws IllegalStateException if there is no active transactions
+     */
+    default TransactionWrapper getTransactionOrThrow() {
+        var transaction = getTransaction();
+        if (transaction == null) {
+            throw new IllegalStateException("transaction is not running");
+        }
+        return transaction;
+    }
+
+    /**
      * Provides transaction id that is unique to for the duration of the database server's lifetime.
      *
      * @return the id String for this transaction

@@ -23,11 +23,14 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
+import com.tsurugidb.sql.proto.SqlCommon;
+import com.tsurugidb.tgsql.core.executor.result.type.BlobWrapper;
+import com.tsurugidb.tgsql.core.executor.result.type.ClobWrapper;
+import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.RelationCursor;
 import com.tsurugidb.tsubakuro.sql.RelationMetadata;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
-import com.tsurugidb.sql.proto.SqlCommon;
 
 /**
  * Utilities about {@link ResultSet}.
@@ -38,7 +41,7 @@ public final class ResultSetUtil {
 
     /**
      * Fetches the next row from the cursor. Each atom value will be mapped the original Java type, and arrays and row values are mapped into {@code List<Object>}.
-     * 
+     *
      * @param cursor      the input cursor
      * @param metadata    the input metadata
      * @param destination the result destination
@@ -48,6 +51,7 @@ public final class ResultSetUtil {
      * @throws InterruptedException if interrupted while executing the statement
      */
     public static boolean fetchNextRow(//
+            @Nonnull TransactionWrapper transaction, //
             @Nonnull RelationCursor cursor, //
             @Nonnull RelationMetadata metadata, //
             @Nonnull Consumer<Object> destination) throws IOException, ServerException, InterruptedException {
@@ -65,7 +69,7 @@ public final class ResultSetUtil {
                         columnInfo, //
                         columnAt + 1));
             }
-            Object value = fetchCurrentColumn(cursor, columnInfo);
+            Object value = fetchCurrentColumn(transaction, cursor, columnInfo);
             destination.accept(value);
             columnAt++;
         }
@@ -73,12 +77,14 @@ public final class ResultSetUtil {
     }
 
     private static Object fetchCurrentColumn(//
+            @Nonnull TransactionWrapper transaction, //
             @Nonnull RelationCursor cursor, //
             @Nonnull SqlCommon.Column columnInfo) throws IOException, ServerException, InterruptedException {
-        return fetchCurrentColumn0(cursor, columnInfo, columnInfo.getDimension());
+        return fetchCurrentColumn0(transaction, cursor, columnInfo, columnInfo.getDimension());
     }
 
     private static Object fetchCurrentColumn0(//
+            @Nonnull TransactionWrapper transaction, //
             @Nonnull RelationCursor cursor, //
             @Nonnull SqlCommon.Column columnInfo, //
             int dimension) throws IOException, ServerException, InterruptedException {
@@ -94,7 +100,7 @@ public final class ResultSetUtil {
                             "array data is broken: column={0}", //
                             columnInfo));
                 }
-                Object element = fetchCurrentColumn0(cursor, columnInfo, dimension - 1);
+                Object element = fetchCurrentColumn0(transaction, cursor, columnInfo, dimension - 1);
                 array.add(element);
             }
             if (cursor.nextColumn()) {
@@ -106,9 +112,9 @@ public final class ResultSetUtil {
         }
         switch (columnInfo.getTypeInfoCase()) {
         case ATOM_TYPE:
-            return fetchCurrentColumnAtom(cursor, columnInfo, columnInfo.getAtomType());
+            return fetchCurrentColumnAtom(transaction, cursor, columnInfo, columnInfo.getAtomType());
         case ROW_TYPE:
-            return fetchCurrentColumnRow(cursor, columnInfo, columnInfo.getRowType());
+            return fetchCurrentColumnRow(transaction, cursor, columnInfo, columnInfo.getRowType());
         case USER_TYPE:
         default:
             throw new UnsupportedOperationException(MessageFormat.format(//
@@ -119,6 +125,7 @@ public final class ResultSetUtil {
     }
 
     private static Object fetchCurrentColumnAtom(//
+            @Nonnull TransactionWrapper transaction, //
             @Nonnull RelationCursor cursor, //
             @Nonnull SqlCommon.Column columnInfo, //
             @Nonnull SqlCommon.AtomType type) throws IOException, ServerException, InterruptedException {
@@ -153,12 +160,18 @@ public final class ResultSetUtil {
             return cursor.fetchTimePointValue();
         case TIME_POINT_WITH_TIME_ZONE:
             return cursor.fetchTimePointWithTimeZoneValue();
+        case BLOB:
+            var blob = BlobWrapper.of(cursor.fetchBlob());
+            transaction.addObject(BlobWrapper.KEY_NAME, blob);
+            return blob;
+        case CLOB:
+            var clob = ClobWrapper.of(cursor.fetchClob());
+            transaction.addObject(ClobWrapper.KEY_NAME, clob);
+            return clob;
 
         case UNKNOWN:
             return null;
 
-        case BLOB:
-        case CLOB:
         case UNRECOGNIZED:
         case TYPE_UNSPECIFIED:
         default:
@@ -170,6 +183,7 @@ public final class ResultSetUtil {
     }
 
     private static Object fetchCurrentColumnRow(//
+            @Nonnull TransactionWrapper transaction, //
             @Nonnull RelationCursor cursor, //
             @Nonnull SqlCommon.Column columnInfo, //
             @Nonnull SqlCommon.RowType type) throws IOException, ServerException, InterruptedException {
@@ -181,7 +195,7 @@ public final class ResultSetUtil {
                         "row value data is broken: column={0}", //
                         columnInfo));
             }
-            Object element = fetchCurrentColumn(cursor, type.getColumns(i));
+            Object element = fetchCurrentColumn(transaction, cursor, type.getColumns(i));
             array.add(element);
         }
         if (cursor.nextColumn()) {
@@ -194,7 +208,7 @@ public final class ResultSetUtil {
 
     /**
      * get field name.
-     * 
+     *
      * @param column column
      * @param index  column index
      * @return field name
