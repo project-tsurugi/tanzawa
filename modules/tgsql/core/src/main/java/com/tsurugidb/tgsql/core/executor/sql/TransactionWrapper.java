@@ -16,13 +16,16 @@
 package com.tsurugidb.tgsql.core.executor.sql;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
+import com.tsurugidb.tgsql.core.exception.TgsqlMessageException;
+import com.tsurugidb.tgsql.core.executor.result.type.IdWrapper;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 
@@ -33,7 +36,7 @@ public class TransactionWrapper implements AutoCloseable {
 
     private final Transaction transaction;
     private final TransactionOption option;
-    private final Map<String, List<Object>> objectMap = new HashMap<>();
+    private final Map<Class<?>, Map<Integer, IdWrapper>> objectMap = new HashMap<>();
 
     /**
      * Creates a new instance.
@@ -69,29 +72,59 @@ public class TransactionWrapper implements AutoCloseable {
      *
      * @param value object
      */
-    public void addObject(String keyName, Object value) {
+    public <T extends IdWrapper> void addObject(Class<T> key, T value) {
         if (value == null) {
             return;
         }
 
-        var list = objectMap.computeIfAbsent(keyName, k -> new ArrayList<>());
-        list.add(value);
+        var list = objectMap.computeIfAbsent(key, k -> new TreeMap<>());
+        list.put(value.id(), value);
     }
 
     /**
-     * get object list
+     * get object map.
      *
-     * @param <T>     object type
-     * @param keyName key name
-     * @return object list
+     * @param <T> object type
+     * @param key key
+     * @return object map
      */
     @SuppressWarnings("unchecked")
-    public <T> List<T> objectList(String keyName) {
-        var list = objectMap.get(keyName);
-        if (list == null) {
-            return List.of();
+    public <T extends IdWrapper> Map<Integer, T> objectMap(Class<T> key) {
+        var map = objectMap.get(key);
+        if (map == null) {
+            return Map.of();
         }
-        return (List<T>) list;
+        return (Map<Integer, T>) map;
+    }
+
+    /**
+     * get object list.
+     *
+     * @param <T> object type
+     * @param key key
+     * @return object list
+     */
+    public <T extends IdWrapper> Collection<T> objectList(Class<T> key) {
+        return objectMap(key).values();
+    }
+
+    /**
+     * get object.
+     *
+     * @param <T>    object type
+     * @param key    key
+     * @param prefix prefix
+     * @param id     object id
+     * @return object list
+     * @throws TgsqlMessageException if object not found
+     */
+    public <T extends IdWrapper> T getObject(Class<T> key, String prefix, int id) {
+        var map = objectMap(key);
+        T object = map.get(id);
+        if (object == null) {
+            throw new TgsqlMessageException(MessageFormat.format("object not found in transaction. objectName={0}@{1}", prefix, id));
+        }
+        return object;
     }
 
     @Override

@@ -22,9 +22,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.tsurugidb.tsubakuro.sql.ClobReference;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 
-public final class ClobWrapper {
+/**
+ * CLOB.
+ */
+public final class ClobWrapper implements IdWrapper {
 
-    public static final String KEY_NAME = "CLOB";
+    /**
+     * object name prefix.
+     */
+    public static final String PREFIX = "clob";
 
     private static final AtomicInteger SEED = new AtomicInteger();
 
@@ -41,6 +47,7 @@ public final class ClobWrapper {
         this.reference = reference;
     }
 
+    @Override
     public int id() {
         return this.id;
     }
@@ -51,6 +58,6 @@ public final class ClobWrapper {
 
     @Override
     public String toString() {
-        return "clob@" + id;
+        return PREFIX + "@" + id;
     }
 }

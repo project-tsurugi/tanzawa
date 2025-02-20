@@ -70,7 +70,7 @@ public class BasicResultProcessor implements ResultProcessor {
     @Override
     public long process(TransactionWrapper transaction, @Nonnull ResultSet target) throws ServerException, IOException, InterruptedException {
         List<Object> buffer = new ArrayList<>();
-        try ( //
+        try (//
                 var output = outputs.get(); //
                 var generator = factory.createGenerator(output); //
         ) {
@@ -152,7 +152,7 @@ public class BasicResultProcessor implements ResultProcessor {
         generator.writeEndObject();
     }
 
-    private void dumpValue( //
+    private void dumpValue(//
             JsonGenerator generator, //
             Object value, //
             SqlCommon.Column column, //

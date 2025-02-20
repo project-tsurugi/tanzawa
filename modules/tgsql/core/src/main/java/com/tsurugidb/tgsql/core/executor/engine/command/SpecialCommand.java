@@ -56,6 +56,7 @@ public abstract class SpecialCommand {
             new SetCommand(), //
             new ShowCommand(), //
             new StatusCommand(), //
+            new StoreCommand(), //
             new TimingCommand(), //
     };
     static { // assertion

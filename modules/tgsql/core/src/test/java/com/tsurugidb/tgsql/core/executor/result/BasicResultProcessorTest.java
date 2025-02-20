@@ -42,9 +42,12 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.tsurugidb.sql.proto.SqlCommon;
+import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 import com.tsurugidb.sql.proto.SqlResponse;
 import com.tsurugidb.tgsql.core.executor.IoSupplier;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
+import com.tsurugidb.tsubakuro.sql.BlobReference;
+import com.tsurugidb.tsubakuro.sql.ClobReference;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 import com.tsurugidb.tsubakuro.sql.impl.ResultSetMetadataAdapter;
@@ -337,34 +340,33 @@ class BasicResultProcessorTest {
         assertEquals(1, outputs.size());
     }
 
-    // TODO BLOB
-//    @Test
-//    void value_blob() throws Exception {
-//        var bref = new BlobReference() {
-//        };
-//        ResultSet rs = Relation.of(new Object[][] { //
-//                { bref }, //
-//        }).getResultSet(meta(column(AtomType.BLOB)));
-//
-//        try (var proc = create()) {
-//            proc.process(transaction, rs);
-//        }
-//        assertEquals(1, outputs.size());
-//    }
-//
-//    @Test
-//    void value_clob() throws Exception {
-//        var cref = new ClobReference() {
-//        };
-//        ResultSet rs = Relation.of(new Object[][] { //
-//                { cref }, //
-//        }).getResultSet(meta(column(AtomType.CLOB)));
-//
-//        try (var proc = create()) {
-//            proc.process(transaction, rs);
-//        }
-//        assertEquals(1, outputs.size());
-//    }
+    @Test
+    void value_blob() throws Exception {
+        var bref = new BlobReference() {
+        };
+        ResultSet rs = Relation.of(new Object[][] { //
+                { bref }, //
+        }).getResultSet(meta(column(AtomType.BLOB)));
+
+        try (var proc = create()) {
+            proc.process(transaction, rs);
+        }
+        assertEquals(1, outputs.size());
+    }
+
+    @Test
+    void value_clob() throws Exception {
+        var cref = new ClobReference() {
+        };
+        ResultSet rs = Relation.of(new Object[][] { //
+                { cref }, //
+        }).getResultSet(meta(column(AtomType.CLOB)));
+
+        try (var proc = create()) {
+            proc.process(transaction, rs);
+        }
+        assertEquals(1, outputs.size());
+    }
 
     @Test
     void value_array() throws Exception {

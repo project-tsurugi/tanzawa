@@ -16,6 +16,7 @@
 package com.tsurugidb.tgsql.core.executor.engine.command;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.exception.TgsqlMessageException;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tgsql.core.executor.result.type.BlobWrapper;
@@ -38,14 +39,13 @@ import com.tsurugidb.tgsql.core.model.SpecialStatement;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 /**
- * Show command for Tsurugi SQL console.
+ * Store command for Tsurugi SQL console.
  */
-public class ShowCommand extends SpecialCommand {
-    private static final Logger LOG = LoggerFactory.getLogger(ShowCommand.class);
+public class StoreCommand extends SpecialCommand {
+    private static final Logger LOG = LoggerFactory.getLogger(StoreCommand.class);
 
-    private static final String COMMAND_NAME = "show"; //$NON-NLS-1$
+    private static final String COMMAND_NAME = "store"; //$NON-NLS-1$
     private static final String COMMAND = COMMAND_PREFIX + COMMAND_NAME;
-    private static final String CLIENT = "client"; //$NON-NLS-1$
 
     @FunctionalInterface
     private interface Executor {
@@ -81,15 +81,11 @@ public class ShowCommand extends SpecialCommand {
     /**
      * Creates a new instance.
      */
-    public ShowCommand() {
+    public StoreCommand() {
         super(COMMAND_NAME);
 
-        add("session", false, ShowCommand::executeShowSession); //$NON-NLS-1$
-        add("transaction", false, ShowCommand::executeShowTransaction); //$NON-NLS-1$
-        add("table", true, ShowCommand::executeShowTable); //$NON-NLS-1$
-        add("blob", false, ShowCommand::executeShowBlob); //$NON-NLS-1$
-        add("clob", false, ShowCommand::executeShowClob); //$NON-NLS-1$
-        add(CLIENT, true, ShowCommand::executeShowClient); // $NON-NLS-1$
+        add("blob", true, StoreCommand::executeStoreBlob); //$NON-NLS-1$
+        add("clob", true, StoreCommand::executeStoreClob); //$NON-NLS-1$
     }
 
     private void add(String name, boolean hasParameter, Executor executor) {
@@ -99,24 +95,8 @@ public class ShowCommand extends SpecialCommand {
     @Override
     protected void collectCompleterCandidate(List<CompleterCandidateWords> result) {
         for (var command : subCommandList) {
-            if (command.name().equals(CLIENT)) {
-                SetCommand.collectCompleterCandidate(result, List.of(COMMAND, CLIENT));
-            } else {
-                result.add(new CompleterCandidateWords(COMMAND, command.name(), !command.hasParameter()));
-            }
+            result.add(new CompleterCandidateWords(COMMAND, command.name(), !command.hasParameter()));
         }
-    }
-
-    @Override
-    public List<CompleterCandidateWords> getDynamicCompleterCandidateList(TgsqlConfig config, String[] inputWords) {
-        if (inputWords.length != 3) {
-            return List.of();
-        }
-        if (!inputWords[1].equals(CLIENT)) {
-            return List.of();
-        }
-
-        return SetCommand.getDynamicCompleterCandidateList(config, List.of(COMMAND, CLIENT));
     }
 
     @Override
@@ -149,77 +129,64 @@ public class ShowCommand extends SpecialCommand {
         return subCommandList.stream().filter(command -> command.name().startsWith(subName)).collect(Collectors.toList());
     }
 
-    private static boolean executeShowSession(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
-        LOG.debug("show session status"); //$NON-NLS-1$
-        var sqlProcessor = engine.getSqlProcessor();
-        String endpoint = sqlProcessor.getEndpoint();
-        boolean active = sqlProcessor.isSessionActive();
-        var reporter = engine.getReporter();
-        reporter.reportSessionStatus(endpoint, active);
-        return true;
-    }
+    private static boolean executeStoreBlob(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+        String objectName = getOption(statement, 1);
+        String destination = getOption(statement, 2);
+        LOG.debug("store blob. objectName={}, destination={}", objectName, destination); //$NON-NLS-1$ $NON-NLS-2$
 
-    private static boolean executeShowTransaction(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
-        LOG.debug("show transaction status"); //$NON-NLS-1$
-        return executeShowTransaction(engine);
-    }
-
-    static boolean executeShowTransaction(BasicEngine engine) throws EngineException, ServerException, IOException, InterruptedException {
-        var sqlProcessor = engine.getSqlProcessor();
-        boolean active = sqlProcessor.isTransactionActive();
-        String transactionId = sqlProcessor.getTransactionId();
-        var reporter = engine.getReporter();
-        reporter.reportTransactionStatus(active, transactionId);
-        if (active) {
-            var exception = sqlProcessor.getTransactionException();
-            reporter.reportTransactionException(exception);
-        }
-        return true;
-    }
-
-    private static boolean executeShowTable(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
-        String tableName = getOption(statement, 1);
-        LOG.debug("show table. tableName={}", tableName); //$NON-NLS-1$
-        if (tableName == null) {
-            return executeShowTables(engine);
-        }
-        var sqlProcessor = engine.getSqlProcessor();
-        var metadata = sqlProcessor.getTableMetadata(tableName);
-        var reporter = engine.getReporter();
-        reporter.reportTableMetadata(tableName, metadata);
-        return true;
-    }
-
-    private static boolean executeShowTables(BasicEngine engine) throws EngineException, ServerException, IOException, InterruptedException {
-        var sqlProcessor = engine.getSqlProcessor();
-        var tableList = sqlProcessor.getTableNames();
-        var reporter = engine.getReporter();
-        reporter.reportTableList(tableList);
-        return true;
-    }
-
-    private static boolean executeShowBlob(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
         var sqlProcessor = engine.getSqlProcessor();
         var transaction = sqlProcessor.getTransactionOrThrow();
-        var list = transaction.objectList(BlobWrapper.class);
-        var reporter = engine.getReporter();
-        reporter.reportObjectList(list);
+
+        int id = parseId("blob", objectName);
+        if (destination == null) {
+            throw new TgsqlMessageException("destination not specified");
+        }
+
+        var blob = transaction.getObject(BlobWrapper.class, BlobWrapper.PREFIX, id);
+        var client = sqlProcessor.getSqlClient();
+        blob.copyTo(client, Path.of(destination));
+
         return true;
     }
 
-    private static boolean executeShowClob(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+    private static boolean executeStoreClob(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
+        String objectName = getOption(statement, 1);
+        String destination = getOption(statement, 2);
+        LOG.debug("store clob. objectName={}, destination={}", objectName, destination); //$NON-NLS-1$ $NON-NLS-2$
+
         var sqlProcessor = engine.getSqlProcessor();
         var transaction = sqlProcessor.getTransactionOrThrow();
-        var list = transaction.objectList(ClobWrapper.class);
-        var reporter = engine.getReporter();
-        reporter.reportObjectList(list);
+
+        int id = parseId("clob", objectName);
+        if (destination == null) {
+            throw new TgsqlMessageException("destination not specified");
+        }
+
+        var clob = transaction.getObject(ClobWrapper.class, ClobWrapper.PREFIX, id);
+        var client = sqlProcessor.getSqlClient();
+        clob.copyTo(client, Path.of(destination));
+
         return true;
     }
 
-    private static boolean executeShowClient(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
-        String key = getOption(statement, 1);
-        LOG.debug("show client. key={}", key); //$NON-NLS-1$
-        return SetCommand.executeShow(engine, key);
+    private static int parseId(String prefix, String objectName) {
+        if (objectName == null) {
+            throw new TgsqlMessageException("objectName not specified");
+        }
+
+        String s = objectName.trim();
+        int n = objectName.indexOf('@');
+        if (n >= 0) {
+            if (!prefix.equalsIgnoreCase(objectName.substring(0, n).trim())) {
+                throw new TgsqlMessageException(MessageFormat.format("not target object. target={0}, objectName={1}", prefix, objectName));
+            }
+            s = objectName.substring(n + 1).trim();
+        }
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            throw new TgsqlMessageException(MessageFormat.format("not integer. objectName={0}", objectName), e);
+        }
     }
 
     private static ErroneousStatement toSubUnknownError(SpecialStatement statement) {

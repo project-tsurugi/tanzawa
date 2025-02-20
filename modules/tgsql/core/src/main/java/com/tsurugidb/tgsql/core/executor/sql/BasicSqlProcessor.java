@@ -111,16 +111,17 @@ public class BasicSqlProcessor implements SqlProcessor {
         return this.session;
     }
 
-    protected SqlClient getSqlClient() throws ServerException, IOException, InterruptedException {
+    @Override
+    public String getEndpoint() {
+        return this.sessionEndpoint;
+    }
+
+    @Override
+    public SqlClient getSqlClient() throws ServerException, IOException, InterruptedException {
         if (this.sqlClient == null) {
             throw new IllegalStateException("connection not exists");
         }
         return this.sqlClient;
-    }
-
-    @Override
-    public String getEndpoint() {
-        return this.sessionEndpoint;
     }
 
     @Override

@@ -162,11 +162,11 @@ public final class ResultSetUtil {
             return cursor.fetchTimePointWithTimeZoneValue();
         case BLOB:
             var blob = BlobWrapper.of(cursor.fetchBlob());
-            transaction.addObject(BlobWrapper.KEY_NAME, blob);
+            transaction.addObject(BlobWrapper.class, blob);
             return blob;
         case CLOB:
             var clob = ClobWrapper.of(cursor.fetchClob());
-            transaction.addObject(ClobWrapper.KEY_NAME, clob);
+            transaction.addObject(ClobWrapper.class, clob);
             return clob;
 
         case UNKNOWN:

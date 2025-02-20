@@ -25,6 +25,7 @@ import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.model.Region;
 import com.tsurugidb.tsubakuro.exception.ServerException;
+import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
@@ -52,6 +53,18 @@ public interface SqlProcessor extends ServerResource {
      */
     default @Nullable String getEndpoint() {
         return null;
+    }
+
+    /**
+     * get SqlClient.
+     *
+     * @return SqlClient
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while executing the statement
+     * @throws InterruptedException if interrupted while executing the statement
+     */
+    default SqlClient getSqlClient() throws ServerException, IOException, InterruptedException {
+        throw new AssertionError("do override");
     }
 
     /**

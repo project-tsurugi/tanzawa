@@ -18,6 +18,7 @@ package com.tsurugidb.tgsql.core.executor.report;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -580,7 +581,7 @@ public abstract class TgsqlReporter {
      *
      * @param list object list
      */
-    public void reportObjectList(List<?> list) {
+    public void reportObjectList(Collection<?> list) {
         for (var object : list) {
             info(object.toString());
         }
