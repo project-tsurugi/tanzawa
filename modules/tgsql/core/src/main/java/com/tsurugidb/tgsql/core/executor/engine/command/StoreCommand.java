@@ -49,7 +49,7 @@ public class StoreCommand extends SpecialCommand {
 
     @FunctionalInterface
     private interface Executor {
-        boolean execute(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException;
+        boolean execute(BasicEngine engine, StoreCommandArgument argument) throws EngineException, ServerException, IOException, InterruptedException;
     }
 
     private static class SubCommand {
@@ -84,8 +84,8 @@ public class StoreCommand extends SpecialCommand {
     public StoreCommand() {
         super(COMMAND_NAME);
 
-        add("blob", true, StoreCommand::executeStoreBlob); //$NON-NLS-1$
-        add("clob", true, StoreCommand::executeStoreClob); //$NON-NLS-1$
+        add("blob", false, StoreCommand::executeStoreBlob); //$NON-NLS-1$
+        add("clob", false, StoreCommand::executeStoreClob); //$NON-NLS-1$
     }
 
     private void add(String name, boolean hasParameter, Executor executor) {
@@ -110,83 +110,110 @@ public class StoreCommand extends SpecialCommand {
         case 0:
             return engine.execute(toSubUnknownError(statement));
         case 1:
-            var command = list.get(0).executor();
-            return command.execute(engine, statement);
+            var command = list.get(0);
+            var argument = parseArgument(command.name(), statement);
+            return command.executor().execute(engine, argument);
         default:
             var nameList = list.stream().map(c -> c.name()).collect(Collectors.toList());
             return engine.execute(toSubUnknownError(statement, nameList));
         }
     }
 
-    @Nullable
-    private List<SubCommand> findSubCommand(SpecialStatement statement) {
+    private @Nullable List<SubCommand> findSubCommand(SpecialStatement statement) {
         String option = getOption(statement, 0);
         if (option == null) {
             return null;
         }
 
-        String subName = toLowerCase(option);
+        String s = toLowerCase(option);
+        int n = s.indexOf('@');
+        if (n >= 0) {
+            s = s.substring(0, n).trim();
+        }
+        String subName = s;
         return subCommandList.stream().filter(command -> command.name().startsWith(subName)).collect(Collectors.toList());
     }
 
-    private static boolean executeStoreBlob(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
-        String objectName = getOption(statement, 1);
-        String destination = getOption(statement, 2);
+    static class StoreCommandArgument {
+        public String objectPrefix;
+        public int objectNumber;
+        public String destination;
+    }
+
+    StoreCommandArgument parseArgument(String subName, SpecialStatement statement) {
+        var argument = new StoreCommandArgument();
+
+        int index = 0;
+        String objectName = getOption(statement, index++);
+        if (objectName != null && !objectName.contains("@")) {
+            objectName = getOption(statement, index++);
+        }
+        if (objectName == null) {
+            throw new TgsqlMessageException("objectName not specified");
+        }
+
+        String objectPrefix;
+        String objectNumber;
+        int n = objectName.indexOf('@');
+        if (n >= 0) {
+            objectPrefix = objectName.substring(0, n).trim();
+            objectNumber = objectName.substring(n + 1).trim();
+        } else {
+            objectPrefix = subName;
+            objectNumber = objectName;
+            objectName = objectPrefix + "@" + objectNumber;
+        }
+        if (!subName.equals(objectPrefix)) {
+            throw new TgsqlMessageException(MessageFormat.format("illegal objectName. target={0}, objectName={1}", subName, objectName));
+        }
+        argument.objectPrefix = objectPrefix;
+        argument.objectNumber = toInt(subName, objectNumber);
+
+        String destination = getOption(statement, index);
+        if (destination == null) {
+            throw new TgsqlMessageException("destination not specified");
+        }
+        argument.destination = destination;
+
+        return argument;
+    }
+
+    private static int toInt(String prefix, String s) {
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (NumberFormatException e) {
+            throw new TgsqlMessageException(MessageFormat.format("not integer. objectNumber={0}", s), e);
+        }
+    }
+
+    private static boolean executeStoreBlob(BasicEngine engine, StoreCommandArgument argument) throws EngineException, ServerException, IOException, InterruptedException {
+        String objectName = argument.objectPrefix + "@" + argument.objectNumber;
+        String destination = argument.destination;
         LOG.debug("store blob. objectName={}, destination={}", objectName, destination); //$NON-NLS-1$ $NON-NLS-2$
 
         var sqlProcessor = engine.getSqlProcessor();
         var transaction = sqlProcessor.getTransactionOrThrow();
 
-        int id = parseId("blob", objectName);
-        if (destination == null) {
-            throw new TgsqlMessageException("destination not specified");
-        }
-
-        var blob = transaction.getObject(BlobWrapper.class, BlobWrapper.PREFIX, id);
+        var blob = transaction.getObject(BlobWrapper.class, BlobWrapper.PREFIX, argument.objectNumber);
         var client = sqlProcessor.getSqlClient();
         blob.copyTo(client, Path.of(destination));
 
         return true;
     }
 
-    private static boolean executeStoreClob(BasicEngine engine, SpecialStatement statement) throws EngineException, ServerException, IOException, InterruptedException {
-        String objectName = getOption(statement, 1);
-        String destination = getOption(statement, 2);
+    private static boolean executeStoreClob(BasicEngine engine, StoreCommandArgument argument) throws EngineException, ServerException, IOException, InterruptedException {
+        String objectName = argument.objectPrefix + "@" + argument.objectNumber;
+        String destination = argument.destination;
         LOG.debug("store clob. objectName={}, destination={}", objectName, destination); //$NON-NLS-1$ $NON-NLS-2$
 
         var sqlProcessor = engine.getSqlProcessor();
         var transaction = sqlProcessor.getTransactionOrThrow();
 
-        int id = parseId("clob", objectName);
-        if (destination == null) {
-            throw new TgsqlMessageException("destination not specified");
-        }
-
-        var clob = transaction.getObject(ClobWrapper.class, ClobWrapper.PREFIX, id);
+        var clob = transaction.getObject(ClobWrapper.class, ClobWrapper.PREFIX, argument.objectNumber);
         var client = sqlProcessor.getSqlClient();
         clob.copyTo(client, Path.of(destination));
 
         return true;
-    }
-
-    private static int parseId(String prefix, String objectName) {
-        if (objectName == null) {
-            throw new TgsqlMessageException("objectName not specified");
-        }
-
-        String s = objectName.trim();
-        int n = objectName.indexOf('@');
-        if (n >= 0) {
-            if (!prefix.equalsIgnoreCase(objectName.substring(0, n).trim())) {
-                throw new TgsqlMessageException(MessageFormat.format("not target object. target={0}, objectName={1}", prefix, objectName));
-            }
-            s = objectName.substring(n + 1).trim();
-        }
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            throw new TgsqlMessageException(MessageFormat.format("not integer. objectName={0}", objectName), e);
-        }
     }
 
     private static ErroneousStatement toSubUnknownError(SpecialStatement statement) {

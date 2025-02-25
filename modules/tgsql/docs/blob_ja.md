@@ -44,11 +44,10 @@ BLOBの場合は `blob@番号` 、CLOBの場合は `clob@番号` です。
 また、トランザクションが実行中の間のみ使用可能です。
 
 ```
-\store blob <object-name> </path/to/file>
-\store clob <object-name> </path/to/file>
+\store <object-name> </path/to/file>
 ```
 
-object-nameには `blob@番号` や `clob@番号` 、もしくは接頭辞を省略した `番号` が指定できます。
+object-nameには `blob@番号` や `clob@番号` が指定できます。
 
 ### 例
 
@@ -65,7 +64,7 @@ tgsql> select * from blob_example;
 [3, blob@1]
 (3 rows)
 
-tgsql> \store blob 0 /tmp/blob-0.bin
+tgsql> \store blob@0 /tmp/blob-0.bin
 
 tgsql> commit;
 transaction commit(DEFAULT) finished.
