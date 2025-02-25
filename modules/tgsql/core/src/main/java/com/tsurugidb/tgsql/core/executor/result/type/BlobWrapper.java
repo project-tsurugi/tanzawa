@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.BlobReference;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 
@@ -52,8 +53,8 @@ public final class BlobWrapper implements IdWrapper {
         return this.id;
     }
 
-    public void copyTo(SqlClient client, Path destination) throws IOException {
-        client.copyTo(reference, destination);
+    public void copyTo(SqlClient client, Path destination) throws IOException, ServerException, InterruptedException {
+        client.copyTo(reference, destination).await();
     }
 
     @Override
