@@ -195,8 +195,7 @@ public class StoreCommand extends SpecialCommand {
         var transaction = sqlProcessor.getTransactionOrThrow();
 
         var blob = transaction.getObject(BlobWrapper.class, BlobWrapper.PREFIX, argument.objectNumber);
-        var client = sqlProcessor.getSqlClient();
-        blob.copyTo(client, Path.of(destination));
+        blob.copyTo(transaction.getTransaction(), Path.of(destination));
 
         return true;
     }
@@ -210,8 +209,7 @@ public class StoreCommand extends SpecialCommand {
         var transaction = sqlProcessor.getTransactionOrThrow();
 
         var clob = transaction.getObject(ClobWrapper.class, ClobWrapper.PREFIX, argument.objectNumber);
-        var client = sqlProcessor.getSqlClient();
-        clob.copyTo(client, Path.of(destination));
+        clob.copyTo(transaction.getTransaction(), Path.of(destination));
 
         return true;
     }
