@@ -167,17 +167,22 @@ public final class TgsqlRunner {
      * @param script the script file
      * @param engine the statement executor
      * @return {@code true} if successfully completed, {@code false} otherwise
-     * @throws ServerException      if server side error was occurred
      * @throws IOException          if I/O error was occurred while establishing connection
      * @throws InterruptedException if interrupted while establishing connection
      */
     public static boolean execute(//
             @Nonnull IoSupplier<? extends Reader> script, //
-            @Nonnull Engine engine) throws ServerException, IOException, InterruptedException {
+            @Nonnull Engine engine) throws IOException, InterruptedException {
         Objects.requireNonNull(script);
         Objects.requireNonNull(engine);
 
-        prepareConnect(engine);
+        try {
+            prepareConnect(engine);
+        } catch (Exception e) {
+            LOG.error("exception was occurred while connect", e);
+            engine.finish(false);
+            return false;
+        }
 
         LOG.info("start processing script");
         try (var parser = new SqlParser(script.get())) {
@@ -193,6 +198,24 @@ public final class TgsqlRunner {
                         LOG.info("shutdown was requested");
                         break;
                     }
+                } catch (TgsqlMessageException e) {
+                    LOG.trace("message exception", e);
+                    LOG.error(e.getMessage());
+                    long time = e.getTimingTime();
+                    if (time != 0) {
+                        var clientVariableMap = engine.getConfig().getClientVariableMap();
+                        boolean timing = clientVariableMap.get(TgsqlCvKey.SQL_TIMING, false);
+                        if (timing) {
+                            var reporter = engine.getReporter();
+                            reporter.reportTiming(time);
+                        }
+                    }
+                    engine.finish(false);
+                    return false;
+                } catch (TgsqlNoMessageException e) {
+                    LOG.trace("no message exception", e);
+                    engine.finish(false);
+                    return false;
                 } catch (Exception e) {
                     LOG.error("exception was occurred while processing statement: text=''{}'', line={}, column={}", //
                             statement.getText(), //
@@ -287,7 +310,13 @@ public final class TgsqlRunner {
         Objects.requireNonNull(script);
         Objects.requireNonNull(engine);
 
-        prepareConnect(engine);
+        try {
+            prepareConnect(engine);
+        } catch (Exception e) {
+            LOG.trace("exception was occurred while connect", e);
+            var reporter = engine.getReporter();
+            reporter.warn(MessageFormat.format("{0} (Use `\\connect` to connect)", e.getMessage()));
+        }
 
         LOG.info("start repl");
         loop: while (true) {

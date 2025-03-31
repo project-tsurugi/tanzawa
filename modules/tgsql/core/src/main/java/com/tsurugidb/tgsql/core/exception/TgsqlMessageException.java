@@ -17,6 +17,10 @@ package com.tsurugidb.tgsql.core.exception;
 
 /**
  * script message exception.
+ *
+ * <p>
+ * The message is output at the location where this exception is thrown. The caught side only outputs the message.
+ * </p>
  */
 @SuppressWarnings("serial")
 public class TgsqlMessageException extends RuntimeException {

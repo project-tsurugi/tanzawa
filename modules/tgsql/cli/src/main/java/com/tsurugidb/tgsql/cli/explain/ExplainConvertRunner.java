@@ -45,14 +45,15 @@ public final class ExplainConvertRunner {
      * Convert explain.
      *
      * @param argument explain argument
+     * @return exit code
      * @throws Exception if exception was occurred
      */
-    public static void execute(CliArgument argument) throws Exception {
+    public static int execute(CliArgument argument) throws Exception {
         argument.checkUnknownParameter();
 
         var builder = new ExplainConfigBuilder(argument);
         var config = builder.build();
-        new ExplainConvertRunner(argument, config).execute();
+        return new ExplainConvertRunner(argument, config).execute();
     }
 
     private final CliArgument argument;
@@ -66,9 +67,10 @@ public final class ExplainConvertRunner {
     /**
      * Convert explain.
      *
+     * @return exit code
      * @throws Exception if exception was occurred
      */
-    public void execute() throws Exception {
+    public int execute() throws Exception {
         var contents = readContents();
         var plan = getPlanGraph(contents);
 
@@ -78,6 +80,7 @@ public final class ExplainConvertRunner {
         if (argument.getOutputFile() != null) {
             executeDot(plan);
         }
+        return 0;
     }
 
     private String readContents() throws IOException {

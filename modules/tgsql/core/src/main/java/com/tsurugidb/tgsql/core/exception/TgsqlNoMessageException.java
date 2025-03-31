@@ -17,6 +17,10 @@ package com.tsurugidb.tgsql.core.exception;
 
 /**
  * script no message exception.
+ *
+ * <p>
+ * The message is output at the location where this exception is thrown. The caught side does nothing.
+ * </p>
  */
 @SuppressWarnings("serial")
 public class TgsqlNoMessageException extends RuntimeException {

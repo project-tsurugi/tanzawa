@@ -97,22 +97,17 @@ public final class Main {
 
             switch (argument.getCliMode()) {
             case CONSOLE:
-                executeConsole(commander, argument);
-                break;
+                return executeConsole(commander, argument);
             case EXEC:
-                executeExec(commander, argument);
-                break;
+                return executeExec(commander, argument);
             case SCRIPT:
-                executeScript(commander, argument);
-                break;
+                return executeScript(commander, argument);
             case EXPLAIN:
-                ExplainConvertRunner.execute(argument);
-                break;
+                return ExplainConvertRunner.execute(argument);
             default:
                 commander.usage();
                 return 1;
             }
-            return 0;
         } catch (ParameterException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.error(e.getMessage(), e);
@@ -180,7 +175,7 @@ public final class Main {
         }
     }
 
-    private static void executeConsole(JCommander commander, CliArgument argument) throws Exception {
+    private static int executeConsole(JCommander commander, CliArgument argument) throws Exception {
         argument.checkUnknownParameter();
 
         ReplCvKey.registerKey();
@@ -197,20 +192,25 @@ public final class Main {
                 var resultProcessor = new ReplResultProcessor(config, reporter)) {
             TgsqlRunner.repl(script, config, engine -> new ReplEngine(engine, executor), resultProcessor, reporter);
         }
+        return 0;
     }
 
-    private static void executeExec(JCommander commander, CliArgument argument) throws Exception {
+    private static int executeExec(JCommander commander, CliArgument argument) throws Exception {
         var builder = new ExecConfigBuilder(argument);
         var config = builder.build();
         var statement = builder.getStatement();
         LOG.debug("exec.statement=[{}]", statement);
 
         try (var reader = new StringReader(statement)) {
-            TgsqlRunner.execute(() -> reader, config);
+            boolean success = TgsqlRunner.execute(() -> reader, config);
+            if (!success) {
+                return 1;
+            }
         }
+        return 0;
     }
 
-    private static void executeScript(JCommander commander, CliArgument argument) throws Exception {
+    private static int executeScript(JCommander commander, CliArgument argument) throws Exception {
         var builder = new ScriptConfigBuilder(argument);
         var config = builder.build();
         var script = builder.getScript();
@@ -219,8 +219,12 @@ public final class Main {
         LOG.debug("script.encoding=[{}]", encoding);
 
         try (var reader = Files.newBufferedReader(script, encoding)) {
-            TgsqlRunner.execute(() -> reader, config);
+            boolean success = TgsqlRunner.execute(() -> reader, config);
+            if (!success) {
+                return 1;
+            }
         }
+        return 0;
     }
 
     private Main() {

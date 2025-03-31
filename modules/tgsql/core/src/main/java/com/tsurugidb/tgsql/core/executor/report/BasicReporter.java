@@ -54,6 +54,6 @@ public class BasicReporter extends TgsqlReporter {
 
     @Override
     protected void doWarn(String message) {
-        LOG.warn(message);
+        LOG.error(message); // for --exec, --script
     }
 }
