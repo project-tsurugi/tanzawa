@@ -200,7 +200,11 @@ public final class TgsqlRunner {
                     }
                 } catch (TgsqlMessageException e) {
                     LOG.trace("message exception", e);
-                    LOG.error(e.getMessage());
+                    LOG.error("exception was occurred while processing statement: text=''{}'', line={}, column={}\n{}", //
+                            statement.getText(), //
+                            statement.getRegion().getStartLine() + 1, //
+                            statement.getRegion().getStartColumn() + 1, //
+                            e.getMessage());
                     long time = e.getTimingTime();
                     if (time != 0) {
                         var clientVariableMap = engine.getConfig().getClientVariableMap();
@@ -214,6 +218,10 @@ public final class TgsqlRunner {
                     return false;
                 } catch (TgsqlNoMessageException e) {
                     LOG.trace("no message exception", e);
+                    LOG.error("exception was occurred while processing statement: text=''{}'', line={}, column={}", //
+                            statement.getText(), //
+                            statement.getRegion().getStartLine() + 1, //
+                            statement.getRegion().getStartColumn() + 1);
                     engine.finish(false);
                     return false;
                 } catch (Exception e) {
