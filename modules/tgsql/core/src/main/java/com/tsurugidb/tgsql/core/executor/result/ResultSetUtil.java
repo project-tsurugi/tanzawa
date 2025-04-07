@@ -185,7 +185,7 @@ public final class ResultSetUtil {
     private static Object fetchCurrentColumnRow(//
             @Nonnull TransactionWrapper transaction, //
             @Nonnull RelationCursor cursor, //
-            @Nonnull SqlCommon.Column columnInfo, //
+            @Nonnull SqlCommon.Column column, //
             @Nonnull SqlCommon.RowType type) throws IOException, ServerException, InterruptedException {
         int count = cursor.beginRowValue();
         var array = new ArrayList<>(count);
@@ -193,7 +193,7 @@ public final class ResultSetUtil {
             if (!cursor.nextColumn()) {
                 throw new IllegalStateException(MessageFormat.format(//
                         "row value data is broken: column={0}", //
-                        columnInfo));
+                        column));
             }
             Object element = fetchCurrentColumn(transaction, cursor, type.getColumns(i));
             array.add(element);
@@ -201,7 +201,7 @@ public final class ResultSetUtil {
         if (cursor.nextColumn()) {
             throw new IllegalStateException(MessageFormat.format(//
                     "row value is broken: column={0}", //
-                    columnInfo));
+                    column));
         }
         return array;
     }

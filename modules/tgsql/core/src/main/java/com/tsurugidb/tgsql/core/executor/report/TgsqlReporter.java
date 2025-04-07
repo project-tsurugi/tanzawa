@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,6 +34,7 @@ import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.config.TgsqlCvKey.TgsqlCvKeyBoolean;
+import com.tsurugidb.tgsql.core.executor.sql.ColumnWrapper;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.explain.PlanGraph;
 import com.tsurugidb.tsubakuro.sql.CounterType;
@@ -535,7 +535,7 @@ public abstract class TgsqlReporter {
 
         int i = 0;
         for (var column : data.getColumns()) {
-            reportTableMetadata(column, i++);
+            reportTableMetadata(cerateColumnWrapper(column), i++);
         }
     }
 
@@ -549,10 +549,11 @@ public abstract class TgsqlReporter {
         info(message);
     }
 
-    protected void reportTableMetadata(SqlCommon.Column column, int index) {
+    protected void reportTableMetadata(ColumnWrapper column, int index) {
         String name = column.getName();
-        String type = getFieldTypeText(column);
-        String message = MessageFormat.format("({0}) {1}: {2}", index, name, type);
+        String type = column.getTypeText();
+        String constraint = column.getConstraintText();
+        String message = String.format("(%d) %s: %s %s", index, name, type, constraint);
         info(message);
     }
 
@@ -563,17 +564,11 @@ public abstract class TgsqlReporter {
      * @return type text
      */
     public String getFieldTypeText(SqlCommon.Column column) {
-        switch (column.getTypeInfoCase()) {
-        case ATOM_TYPE:
-            return column.getAtomType().name();
-        case ROW_TYPE:
-            return column.getRowType().getColumnsList().stream().map(this::getFieldTypeText).collect(Collectors.joining(", ", "[", "]"));
-        case USER_TYPE:
-            return column.getUserType().getName();
-        case TYPEINFO_NOT_SET:
-        default:
-            return "";
-        }
+        return cerateColumnWrapper(column).getTypeText();
+    }
+
+    protected ColumnWrapper cerateColumnWrapper(SqlCommon.Column column) {
+        return new ColumnWrapper(column);
     }
 
     /**
