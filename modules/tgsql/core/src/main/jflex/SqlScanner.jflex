@@ -16,9 +16,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
     return eof();
 %eofval}
 
-%ctorarg boolean skipComments
+%ctorarg boolean skipRegularComments
+%ctorarg boolean skipDocumentationComments
 %init{
-    this.skipComments = skipComments;
+    this.skipRegularComments = skipRegularComments;
+    this.skipDocumentationComments = skipDocumentationComments;
 %init}
 
 %char
@@ -32,7 +34,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
     static final int SAW_BODY = 1;
 
-    private boolean skipComments;
+    private static final String PREFIX_DOCUMENTATION_COMMENT = "/**";
+
+    private final boolean skipRegularComments;
+
+    private final boolean skipDocumentationComments;
 
     private final Segment.Builder buffer = new Segment.Builder();
 
@@ -55,8 +61,17 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
     }
 
     private int token(TokenKind kind) {
-        if (skipComments && kind.getCategory() == TokenCategory.COMMENT) {
-            return skip();
+        if (kind.getCategory() == TokenCategory.COMMENT) {
+            boolean isDocumentationComment = 
+                    kind == TokenKind.BLOCK_COMMENT &&
+                    yytext().startsWith(PREFIX_DOCUMENTATION_COMMENT);
+            if (isDocumentationComment) {
+                if (this.skipDocumentationComments) {
+                    return skip();
+                }
+            } else if (this.skipRegularComments) {
+                return skip();
+            }
         }
         initialize();
         flushUnhandled();
