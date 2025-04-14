@@ -72,18 +72,44 @@ class SqlParserTest {
     }
 
     @Test
-    void comments() throws Exception {
-        var ss = parse("-- comment\nSELECT * FROM T");
+    void regular_comments() throws Exception {
+        var opts = new SqlParser.Options()
+                .withSkipRegularComments(false)
+                .withSkipDocumentationComments(true);
+        var ss = parse(opts, "-- comment\nSELECT * FROM T");
         assertEquals(1, ss.size());
         assertEquals(Statement.Kind.GENERIC, ss.get(0).getKind());
         assertEquals("-- comment\nSELECT * FROM T", ss.get(0).getText());
     }
 
     @Test
-    void comments_skip() throws Exception {
+    void regular_comments_skip() throws Exception {
         var opts = new SqlParser.Options()
-                .withSkipComments(true);
-        var ss = parse(opts, "-- comment\nSELECT * FROM T");
+                .withSkipRegularComments(true)
+                .withSkipDocumentationComments(true);
+        var ss = parse(opts, "/* regular comment */\nSELECT * FROM T");
+        assertEquals(1, ss.size());
+        assertEquals(Statement.Kind.GENERIC, ss.get(0).getKind());
+        assertEquals("SELECT * FROM T", ss.get(0).getText());
+    }
+
+    @Test
+    void documentation_comments() throws Exception {
+        var opts = new SqlParser.Options()
+                .withSkipRegularComments(true)
+                .withSkipDocumentationComments(false);
+        var ss = parse(opts, "/** doc comment */\nSELECT * FROM T");
+        assertEquals(1, ss.size());
+        assertEquals(Statement.Kind.GENERIC, ss.get(0).getKind());
+        assertEquals("/** doc comment */\nSELECT * FROM T", ss.get(0).getText());
+    }
+
+    @Test
+    void documentation_comments_skip() throws Exception {
+        var opts = new SqlParser.Options()
+                .withSkipRegularComments(false)
+                .withSkipDocumentationComments(true);
+        var ss = parse(opts, "/** doc comment */\nSELECT * FROM T");
         assertEquals(1, ss.size());
         assertEquals(Statement.Kind.GENERIC, ss.get(0).getKind());
         assertEquals("SELECT * FROM T", ss.get(0).getText());

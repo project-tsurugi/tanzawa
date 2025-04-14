@@ -34,13 +34,16 @@ class SqlScanner implements Closeable {
 
         static final boolean DEFAULT_SKIP_COMMENTS = false;
 
-        boolean skipComments = DEFAULT_SKIP_COMMENTS;
+        boolean skipRegularComments = DEFAULT_SKIP_COMMENTS;
+
+        boolean skipDocumentationComments = DEFAULT_SKIP_COMMENTS;
 
         @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + (skipComments ? 1231 : 1237);
+            result = prime * result + (skipRegularComments ? 1231 : 1237);
+            result = prime * result + (skipDocumentationComments ? 1231 : 1237);
             return result;
         }
 
@@ -56,7 +59,10 @@ class SqlScanner implements Closeable {
                 return false;
             }
             Options other = (Options) obj;
-            if (skipComments != other.skipComments) {
+            if (skipRegularComments != other.skipRegularComments) {
+                return false;
+            }
+            if (skipDocumentationComments != other.skipDocumentationComments) {
                 return false;
             }
             return true;
@@ -83,7 +89,10 @@ class SqlScanner implements Closeable {
     SqlScanner(@Nonnull Reader input, @Nonnull Options options) {
         Objects.requireNonNull(input);
         Objects.requireNonNull(options);
-        flex = new SqlScannerFlex(input, options.skipComments);
+        flex = new SqlScannerFlex(
+                input,
+                options.skipRegularComments,
+                options.skipDocumentationComments);
     }
 
     /**

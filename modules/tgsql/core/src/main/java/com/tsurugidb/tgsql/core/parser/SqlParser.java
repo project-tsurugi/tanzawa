@@ -44,23 +44,71 @@ public class SqlParser implements Closeable {
         private final SqlScanner.Options scannerOpts = new SqlScanner.Options();
 
         /**
-         * Sets whether or not skip comment tokens.
+         * Sets whether to skip all comment tokens, including regular and documentation comments.
          * @param enabled {@code true} to skip comments, or {@code false} to treat comments as tokens
          * @return this
+         * @see #withSkipRegularComments(boolean)
+         * @see #withSkipDocumentationComments(boolean)
          * @see #DEFAULT_SKIP_COMMENTS
          */
         public Options withSkipComments(boolean enabled) {
-            this.scannerOpts.skipComments = enabled;
+            this.scannerOpts.skipRegularComments = enabled;
+            this.scannerOpts.skipDocumentationComments = enabled;
             return this;
         }
 
         /**
-         * Returns whether or not skip comment tokens.
-         * @return {@code true} to skip comments, or {@code false} to treat comments as tokens
+         * Returns whether or not skip all comment tokens.
+         * @return {@code true} to skip comments, or {@code false} to treat some comments as tokens
+         * @see #isSkipRegularComments()
+         * @see #isSkipDocumentationComments()
          * @see #DEFAULT_SKIP_COMMENTS
          */
         public boolean isSkipComments() {
-            return this.scannerOpts.skipComments;
+            return isSkipRegularComments() && isSkipDocumentationComments();
+        }
+
+        /**
+         * Sets whether to skip regular comments.
+         * <p>
+         * Even if this option is set to {@code true}, documentation comments are still effective.
+         * </p>
+         * @param enabled {@code true} to skip regular comments, or {@code false} to treat them as tokens
+         * @return this
+         * @see #withSkipDocumentationComments(boolean)
+         */
+        public Options withSkipRegularComments(boolean enabled) {
+            this.scannerOpts.skipRegularComments = enabled;
+            return this;
+        }
+
+        /**
+         * Returns whether to skip regular comments.
+         * @return {@code true} to skip regular comments, or {@code false} to treat them as tokens
+         * @see #isSkipDocumentationComments()
+         */
+        public boolean isSkipRegularComments() {
+            return this.scannerOpts.skipRegularComments;
+        }
+
+        /**
+         * Sets whether to skip documentation comments ({@code /&#42;&#42; .. &#42;/}).
+         * @param enabled {@code true} to skip documentation comments, or {@code false} to treat them as tokens
+         * @return this
+         * @see #withSkipRegularComments(boolean)
+         */
+        public Options withSkipDocumentationComments(boolean enabled) {
+            this.scannerOpts.skipDocumentationComments = enabled;
+            return this;
+        }
+
+        /**
+         * Returns whether to skip documentation comments.
+         * @return {@code true} to skip documentation comments, or {@code false} to treat them as tokens
+         * @see #isSkipRegularComments()
+         */
+        public boolean isSkipDocumentationComments() {
+            return this.scannerOpts.skipDocumentationComments;
         }
 
         @Override
@@ -95,8 +143,9 @@ public class SqlParser implements Closeable {
 
         @Override
         public String toString() {
-            return String.format("{skipComments:%s}", //$NON-NLS-1$
-                    scannerOpts.skipComments);
+            return String.format("{skipRegularComments:%s, skipDocumentationComments:%s}", //$NON-NLS-1$
+                    scannerOpts.skipRegularComments,
+                    scannerOpts.skipDocumentationComments);
         }
     }
 

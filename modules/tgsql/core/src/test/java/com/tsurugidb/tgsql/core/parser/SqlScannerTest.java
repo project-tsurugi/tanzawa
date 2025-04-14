@@ -230,7 +230,7 @@ class SqlScannerTest {
     @Test
     void block_comment_skip() throws Exception {
         var opts = new SqlScanner.Options();
-        opts.skipComments = true;
+        opts.skipRegularComments = true;
         var s = scanOne(
                 opts,
                 "SELECT",
@@ -260,7 +260,7 @@ class SqlScannerTest {
     @Test
     void slash_comment_skip() throws Exception {
         var opts = new SqlScanner.Options();
-        opts.skipComments = true;
+        opts.skipRegularComments = true;
         var s = scanOne(
                 opts,
                 "// just returns 1",
@@ -288,11 +288,46 @@ class SqlScannerTest {
     @Test
     void hyphen_comment_skip() throws Exception {
         var opts = new SqlScanner.Options();
-        opts.skipComments = true;
+        opts.skipRegularComments = true;
         var s = scanOne(
                 opts,
                 "-- just returns 1",
                 "SELECT 1");
+        assertEquals(List.of(
+                TokenKind.REGULAR_IDENTIFIER,
+                TokenKind.NUMERIC_LITERAL,
+                TokenKind.END_OF_STATEMENT), kinds(s));
+        assertEquals(0, s.getComments().size());
+    }
+
+    @Test
+    void documentation_comment() throws Exception {
+        var opts = new SqlScanner.Options();
+        opts.skipRegularComments = true;
+        var s = scanOne(
+                opts,
+                "SELECT",
+                "/**",
+                " * TESTING",
+                " */ 1");
+        assertEquals(List.of(
+                TokenKind.REGULAR_IDENTIFIER,
+                TokenKind.NUMERIC_LITERAL,
+                TokenKind.END_OF_STATEMENT), kinds(s));
+        assertEquals(1, s.getComments().size());
+        assertEquals(TokenKind.BLOCK_COMMENT, s.getComments().get(0).getKind());
+    }
+
+    @Test
+    void documentation_comment_skip() throws Exception {
+        var opts = new SqlScanner.Options();
+        opts.skipDocumentationComments = true;
+        var s = scanOne(
+                opts,
+                "SELECT",
+                "/**",
+                " * TESTING",
+                " */ 1");
         assertEquals(List.of(
                 TokenKind.REGULAR_IDENTIFIER,
                 TokenKind.NUMERIC_LITERAL,

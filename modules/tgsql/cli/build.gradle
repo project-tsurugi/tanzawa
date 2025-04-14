@@ -40,7 +40,10 @@ application {
 
 run {
     description 'run SQL script : -Dscript=</path/to/script> -Dconnection=<endpoint-uri> [-DlogLevel=<level>]'
-    args = [ System.getProperty('script', '(unspecified)'), System.getProperty('connection', 'unspecified:unspecified') ]
+    args = [
+        '--script', System.getProperty('script', '(unspecified)'),
+        '--connection', System.getProperty('connection', 'ipc:tsurugi'),
+    ]
     systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', System.getProperty('logLevel', 'INFO')
     jvmArgs = ['--add-opens=java.base/java.nio=ALL-UNNAMED']
 }
