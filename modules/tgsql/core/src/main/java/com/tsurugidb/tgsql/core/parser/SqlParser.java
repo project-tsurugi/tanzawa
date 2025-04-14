@@ -143,8 +143,9 @@ public class SqlParser implements Closeable {
 
         @Override
         public String toString() {
-            return String.format("{skipComments:%s}", //$NON-NLS-1$
-                    scannerOpts.skipRegularComments);
+            return String.format("{skipRegularComments:%s, skipDocumentationComments:%s}", //$NON-NLS-1$
+                    scannerOpts.skipRegularComments,
+                    scannerOpts.skipDocumentationComments);
         }
     }
 
