@@ -30,6 +30,7 @@ public class MockTableMetadata implements TableMetadata {
 
     /**
      * Creates a new instance.
+     *
      * @param tableName the table name
      */
     public MockTableMetadata(String tableName) {
@@ -52,10 +53,15 @@ public class MockTableMetadata implements TableMetadata {
     }
 
     @Override
+    public Optional<String> getDescription() {
+        return Optional.empty();
+    }
+
+    @Override
     public List<? extends SqlCommon.Column> getColumns() {
-        return List.of(SqlCommon.Column.newBuilder()
-                .setName("k")
-                .setAtomType(SqlCommon.AtomType.INT4)
+        return List.of(SqlCommon.Column.newBuilder() //
+                .setName("k") //
+                .setAtomType(SqlCommon.AtomType.INT4) //
                 .build());
     }
 }
