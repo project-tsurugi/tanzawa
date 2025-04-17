@@ -258,4 +258,18 @@ public class ColumnWrapper {
             return Optional.empty();
         }
     }
+
+    public Optional<String> findDescription() {
+        var c = column.getDescriptionOptCase();
+        if (c == null) {
+            return Optional.empty();
+        }
+        switch (c) {
+        case DESCRIPTION:
+            return Optional.of(column.getDescription());
+        case DESCRIPTIONOPT_NOT_SET:
+        default:
+            return Optional.empty();
+        }
+    }
 }

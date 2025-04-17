@@ -532,6 +532,9 @@ public abstract class TgsqlReporter {
         reportTableMetadata("schemaName", schemaName);
         String tableName = data.getTableName();
         reportTableMetadata("tableName", tableName);
+        data.getDescription().ifPresent(description -> {
+            reportTableMetadata("description", description);
+        });
 
         int i = 0;
         for (var column : data.getColumns()) {
@@ -550,11 +553,25 @@ public abstract class TgsqlReporter {
     }
 
     protected void reportTableMetadata(ColumnWrapper column, int index) {
+        var sb = new StringBuilder(32);
+        sb.append("(").append(index).append(") ");
+
         String name = column.getName();
+        sb.append(name).append(": ");
+
         String type = column.getTypeText();
+        sb.append(type);
+
         String constraint = column.getConstraintText();
-        String message = String.format("(%d) %s: %s %s", index, name, type, constraint);
-        info(message);
+        if (constraint != null) {
+            sb.append(" ").append(constraint);
+        }
+
+        column.findDescription().ifPresent(description -> {
+            sb.append(" /** ").append(description).append(" */");
+        });
+
+        info(sb.toString());
     }
 
     /**
