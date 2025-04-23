@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import com.tsurugidb.sql.proto.SqlRequest.ReadArea;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
+import com.tsurugidb.sql.proto.SqlRequest.TransactionOption.ScanParallelOptCase;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionPriority;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
@@ -97,6 +98,11 @@ public class TransactionOptionReportUtil {
                 sb.append("\n  read_area_exclude: ");
                 sb.append(toStringRa(list));
             }
+        }
+        if (option.getScanParallelOptCase() == ScanParallelOptCase.SCAN_PARALLEL) {
+            int parallel = option.getScanParallel();
+            sb.append("\n  scan_parallel: ");
+            sb.append(parallel);
         }
         {
             var priority = option.getPriority();

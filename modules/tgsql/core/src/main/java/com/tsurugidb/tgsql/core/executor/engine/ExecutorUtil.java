@@ -15,7 +15,12 @@
  */
 package com.tsurugidb.tgsql.core.executor.engine;
 
+import java.math.BigDecimal;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,6 +38,7 @@ import com.tsurugidb.tgsql.core.model.Regioned;
 import com.tsurugidb.tgsql.core.model.StartTransactionStatement;
 import com.tsurugidb.tgsql.core.model.StartTransactionStatement.ReadWriteMode;
 import com.tsurugidb.tgsql.core.model.StartTransactionStatement.TransactionMode;
+import com.tsurugidb.tgsql.core.model.Value;
 
 /**
  * Utilities about Tsurugi SQL console executors.
@@ -59,7 +65,7 @@ public final class ExecutorUtil {
         computeIncludeDdl(statement, options.getType()).ifPresent(options::setModifiesDefinitions);
         computeInclusiveReadArea(statement).ifPresent(options::addAllInclusiveReadAreas);
         computeExclusiveReadArea(statement).ifPresent(options::addAllExclusiveReadAreas);
-        // FIXME: properties config.getProperty();
+        computeProperties(statement, config, options);
         return options.build();
     }
 
@@ -182,6 +188,69 @@ public final class ExecutorUtil {
         return Optional.of(ras);
     }
 
+    private interface PropertyProcessor {
+        void execute(Value value, SqlRequest.TransactionOption.Builder options);
+
+        void execute(String value, SqlRequest.TransactionOption.Builder options);
+    }
+
+    private static final Map<String, PropertyProcessor> PROPERTY_PROCESSOR_MAP;
+    static {
+        var map = new HashMap<String, PropertyProcessor>();
+        map.put("PARALLEL", new PropertyProcessor() {
+            @Override
+            public void execute(Value value, SqlRequest.TransactionOption.Builder options) {
+                execute(toInt(value), options);
+            }
+
+            @Override
+            public void execute(String value, SqlRequest.TransactionOption.Builder options) {
+                execute(toInt(value), options);
+            }
+
+            private void execute(Integer value, SqlRequest.TransactionOption.Builder options) {
+                if (value != null) {
+                    options.setScanParallel(value);
+                }
+            }
+        });
+        PROPERTY_PROCESSOR_MAP = map;
+    }
+
+    private static void computeProperties(StartTransactionStatement statement, TgsqlConfig config, SqlRequest.TransactionOption.Builder options) {
+        var set = new HashSet<String>();
+        {
+            Map<String, Value> properties = unwrapMap(statement.getProperties());
+            for (var entry : properties.entrySet()) {
+                String key = entry.getKey().toUpperCase();
+                set.add(key);
+
+                var processor = PROPERTY_PROCESSOR_MAP.get(key);
+                if (processor != null) {
+                    processor.execute(entry.getValue(), options);
+                } else {
+                    LOG.debug("ignore property {}", entry.getKey());
+                }
+            }
+        }
+        {
+            Map<String, String> properties = config.getProperty();
+            for (var entry : properties.entrySet()) {
+                String key = entry.getKey().toUpperCase();
+                if (set.contains(key)) {
+                    continue;
+                }
+
+                var processor = PROPERTY_PROCESSOR_MAP.get(key);
+                if (processor != null) {
+                    processor.execute(entry.getValue(), options);
+                } else {
+                    LOG.debug("ignore property {}", entry.getKey());
+                }
+            }
+        }
+    }
+
     /**
      * Extracts commit option from the {@link CommitStatement}.
      *
@@ -208,6 +277,45 @@ public final class ExecutorUtil {
 
     private static <T> T unwrap(Optional<Regioned<T>> value) {
         return value.map(Regioned::getValue).orElse(null);
+    }
+
+    private static <K> Map<K, Value> unwrapMap(Map<Regioned<K>, Optional<Regioned<Value>>> wrapped) {
+        return wrapped.entrySet().stream().map(it -> Map.entry(it.getKey().getValue(), it.getValue().map(Regioned::getValue).orElse(Value.of())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private static <K> Map<K, Value> unwrapMap(Optional<Map<Regioned<K>, Optional<Regioned<Value>>>> wrapped) {
+        return wrapped.map(it -> unwrapMap(it)).orElse(Map.of());
+    }
+
+    private static Integer toInt(Value value) {
+        switch (value.getKind()) {
+        case NULL:
+            return null;
+        case CHARACTER:
+            return value.asCharacter().map(ExecutorUtil::parseInt).orElse(null);
+        case NUMERIC:
+            return value.asNumeric().map(BigDecimal::intValue).orElse(null);
+        case BOOLEAN:
+            return value.asBoolean().map(b -> b.toString()).map(ExecutorUtil::parseInt).orElse(null);
+        default:
+            return Integer.parseInt(value.toString());
+        }
+    }
+
+    private static Integer toInt(String value) {
+        return parseInt(value);
+    }
+
+    private static Integer parseInt(String s) {
+        if (s == null) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException(MessageFormat.format("\"{0}\" is not integer", s));
+        }
     }
 
     private ExecutorUtil() {

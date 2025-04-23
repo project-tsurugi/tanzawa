@@ -284,6 +284,7 @@ class BasicEngineTest {
                 assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -309,6 +310,7 @@ class BasicEngineTest {
                 assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -334,6 +336,7 @@ class BasicEngineTest {
                 assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -359,6 +362,7 @@ class BasicEngineTest {
                 assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -394,6 +398,7 @@ class BasicEngineTest {
                 assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -423,6 +428,7 @@ class BasicEngineTest {
                 assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -449,6 +455,7 @@ class BasicEngineTest {
                 assertTrue(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -484,6 +491,7 @@ class BasicEngineTest {
                 assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -509,6 +517,7 @@ class BasicEngineTest {
                 assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -534,6 +543,7 @@ class BasicEngineTest {
                 assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -559,6 +569,7 @@ class BasicEngineTest {
                 assertFalse(option.getModifiesDefinitions());
                 assertEquals(0, option.getInclusiveReadAreasCount());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -603,6 +614,7 @@ class BasicEngineTest {
                 assertEquals("b", option.getInclusiveReadAreas(1).getTableName());
                 assertEquals("c", option.getInclusiveReadAreas(2).getTableName());
                 assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -631,6 +643,7 @@ class BasicEngineTest {
                 assertEquals("a", option.getExclusiveReadAreas(0).getTableName());
                 assertEquals("b", option.getExclusiveReadAreas(1).getTableName());
                 assertEquals("c", option.getExclusiveReadAreas(2).getTableName());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
@@ -662,11 +675,38 @@ class BasicEngineTest {
                 assertEquals("d", option.getExclusiveReadAreas(0).getTableName());
                 assertEquals("e", option.getExclusiveReadAreas(1).getTableName());
                 assertEquals("f", option.getExclusiveReadAreas(2).getTableName());
+                assertEquals(0, option.getScanParallel());
             }
         };
         MockResultProcessor rs = new MockResultProcessor();
         var engine = newBasicEngine(sql, rs);
         var cont = engine.execute(parse("START TRANSACTION READ AREA INCLUDE a, b, c EXCLUDE d, e, f"));
+        assertTrue(cont);
+        assertTrue(reached.get());
+    }
+
+    @Test
+    void start_transaction_statement_parallel() throws Exception {
+        var reached = new AtomicBoolean();
+        MockSqlProcessor sql = new MockSqlProcessor(false) {
+            @Override
+            public void startTransaction(SqlRequest.TransactionOption option) throws ServerException, IOException, InterruptedException {
+                if (!reached.compareAndSet(false, true)) {
+                    fail();
+                }
+                assertEquals(SqlRequest.TransactionType.READ_ONLY, option.getType());
+                assertEquals(SqlRequest.TransactionPriority.TRANSACTION_PRIORITY_UNSPECIFIED, option.getPriority());
+                assertEquals("", option.getLabel());
+                assertEquals(0, option.getWritePreservesCount());
+                assertFalse(option.getModifiesDefinitions());
+                assertEquals(0, option.getInclusiveReadAreasCount());
+                assertEquals(0, option.getExclusiveReadAreasCount());
+                assertEquals(123, option.getScanParallel());
+            }
+        };
+        MockResultProcessor rs = new MockResultProcessor();
+        var engine = newBasicEngine(sql, rs);
+        var cont = engine.execute(parse("START TRANSACTION READ ONLY WITH PARALLEL=123"));
         assertTrue(cont);
         assertTrue(reached.get());
     }

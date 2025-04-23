@@ -44,7 +44,7 @@ public class TgsqlConfig {
     private DefaultCredentialSessionConnector defaultCredentialSessionConnector;
 
     private SqlRequest.TransactionOption transactionOption;
-    private Map<String, String> propertyMap;
+    private Map<String, String> propertyMap = Map.of();
 
     private TgsqlCommitMode commitMode;
     private CommitStatus commitStatus;
