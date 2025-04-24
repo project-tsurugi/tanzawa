@@ -51,44 +51,44 @@ import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredent
 @Parameters
 public class CliArgument {
 
-    @Parameter(names = { "--help", "-h" }, arity = 0, description = "print this message", help = true)
+    @Parameter(order = 10000, names = { "--help", "-h" }, arity = 0, description = "print this message", help = true)
     private Boolean help;
 
-    @Parameter(names = { "--version" }, arity = 0, description = "print version", help = true)
+    @Parameter(order = 10001, names = { "--version" }, arity = 0, description = "print version", help = true)
     private Boolean version;
 
-    @Parameter(names = { "--console" }, arity = 0, description = "SQL console mode")
+    @Parameter(order = 10, names = { "--console" }, arity = 0, description = "SQL console mode")
     private Boolean console;
 
-    @Parameter(names = { "--script" }, arity = 0, description = "execute SQL script file mode")
+    @Parameter(order = 11, names = { "--script" }, arity = 0, description = "execute SQL script file mode")
     private Boolean script;
 
-    @Parameter(names = { "--exec" }, arity = 0, description = "execute a SQL statement mode")
+    @Parameter(order = 12, names = { "--exec" }, arity = 0, description = "execute a SQL statement mode")
     private Boolean exec;
 
-    @Parameter(names = { "--explain" }, arity = 0, description = "print explain mode", hidden = true)
+    @Parameter(order = 13, names = { "--explain" }, arity = 0, description = "print explain mode", hidden = true)
     private Boolean explain;
 
     // connection
 
-    @Parameter(names = { "--connection", "-c" }, arity = 1, description = "connection uri (e.g. tcp://localhost:12345)")
+    @Parameter(order = 20, names = { "--connection", "-c" }, arity = 1, description = "connection uri (e.g. tcp://localhost:12345)")
     private String connectionUri;
 
-    @Parameter(names = { "--connection-label" }, arity = 1, description = "Tsurugi connection session label")
+    @Parameter(order = 21, names = { "--connection-label" }, arity = 1, description = "Tsurugi connection session label")
     private String connectionLabel;
 
     // credential
 
-    @Parameter(names = { "--user", "-u" }, arity = 1, description = "<user name>")
+    @Parameter(order = 30, names = { "--user", "-u" }, arity = 1, description = "<user name>")
     private String user;
 
-    @Parameter(names = { "--auth-token" }, arity = 1, description = "<token>")
+    @Parameter(order = 31, names = { "--auth-token" }, arity = 1, description = "<token>")
     private String authToken;
 
-    @Parameter(names = { "--credentials" }, arity = 1, description = "</path/to/credentials.json>")
+    @Parameter(order = 32, names = { "--credentials" }, arity = 1, description = "</path/to/credentials.json>")
     private String credentials;
 
-    @Parameter(names = { "--no-auth" }, arity = 0, description = "no auth")
+    @Parameter(order = 33, names = { "--no-auth" }, arity = 0, description = "no auth")
     private Boolean noAuth;
 
     // transaction
@@ -143,42 +143,42 @@ public class CliArgument {
         }
     }
 
-    @Parameter(names = { "--transaction", "-t" }, arity = 1, description = "transaction type")
+    @Parameter(order = 40, names = { "--transaction", "-t" }, arity = 1, description = "transaction type")
     private TransactionEnum transaction = TransactionEnum.OCC;
 
-    @Parameter(names = { "--include-ddl" }, arity = 0, description = "declares DDL execution")
+    @Parameter(order = 41, names = { "--include-ddl" }, arity = 0, description = "declares DDL execution")
     private Boolean includeDdl;
 
-    @Parameter(names = { "--write-preserve", "-w" }, arity = 1, description = "write preserve. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
+    @Parameter(order = 42, names = { "--write-preserve", "-w" }, arity = 1, description = "write preserve. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
     private List<String> writePreserve;
 
-    @Parameter(names = { "--read-area-include" }, arity = 1, description = "read area include. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
+    @Parameter(order = 43, names = { "--read-area-include" }, arity = 1, description = "read area include. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
     private List<String> readAreaInclude;
 
-    @Parameter(names = { "--read-area-exclude" }, arity = 1, description = "read area exclude. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
+    @Parameter(order = 44, names = { "--read-area-exclude" }, arity = 1, description = "read area exclude. <table>[,<table>[,...]]", splitter = CommaParameterSplitter.class)
     private List<String> readAreaExclude;
 
-    @Parameter(names = { "--execute" }, variableArity = true, description = "transaction execute. (PRIOR|EXCLUDING) (DEFERRABLE|IMMEDIATE)?")
+    @Parameter(order = 45, names = { "--execute" }, variableArity = true, description = "transaction execute. (PRIOR|EXCLUDING) (DEFERRABLE|IMMEDIATE)?")
     private List<String> execute;
 
-    @Parameter(names = { "--label", "-l" }, arity = 1, description = "transaction label")
+    @Parameter(order = 46, names = { "--label", "-l" }, arity = 1, description = "transaction label")
     private String label = TgsqlConstants.IMPLICIT_TRANSACTION_LABEL;
 
-    @DynamicParameter(names = { "--with" }, description = "transaction setting. <key>=<value>")
+    @DynamicParameter(order = 47, names = { "--with" }, description = "transaction properties. <key>=<value>")
     private Map<String, String> withMap = new LinkedHashMap<>();
 
     // commit
 
-    @Parameter(names = { "--auto-commit" }, arity = 0, description = "commit every statement")
+    @Parameter(order = 50, names = { "--auto-commit" }, arity = 0, description = "commit every statement")
     private Boolean autoCommit;
 
-    @Parameter(names = { "--no-auto-commit" }, arity = 0, description = "commit only if you explicitly specify a COMMIT statement")
+    @Parameter(order = 51, names = { "--no-auto-commit" }, arity = 0, description = "commit only if you explicitly specify a COMMIT statement")
     private Boolean noAutoCommit;
 
-    @Parameter(names = { "--commit" }, arity = 0, description = "commit on success, rollback on failure")
+    @Parameter(order = 52, names = { "--commit" }, arity = 0, description = "commit on success, rollback on failure")
     private Boolean commit;
 
-    @Parameter(names = { "--no-commit" }, arity = 0, description = "always rollback")
+    @Parameter(order = 53, names = { "--no-commit" }, arity = 0, description = "always rollback")
     private Boolean noCommit;
 
     /**
@@ -221,40 +221,40 @@ public class CliArgument {
         }
     }
 
-    @Parameter(names = { "--commit-option" }, arity = 1, description = "commit option")
+    @Parameter(order = 54, names = { "--commit-option" }, arity = 1, description = "commit option")
     private CommitOption commitOption;
 
     // script
 
-    @Parameter(names = { "--encoding", "-e" }, arity = 1, description = "charset encoding")
+    @Parameter(order = 60, names = { "--encoding", "-e" }, arity = 1, description = "charset encoding")
     private String encoding = StandardCharsets.UTF_8.name();
 
     // explain (hidden)
 
-    @Parameter(names = { "--input", "-i" }, arity = 1, description = "explain json file", hidden = true)
+    @Parameter(order = 70, names = { "--input", "-i" }, arity = 1, description = "explain json file", hidden = true)
     private String inputFile;
 
-    @Parameter(names = { "--report", "-r" }, arity = 0, description = "report to stdout", hidden = true)
+    @Parameter(order = 71, names = { "--report", "-r" }, arity = 0, description = "report to stdout", hidden = true)
     private Boolean report;
 
-    @Parameter(names = { "--output", "-o" }, arity = 1, description = "output file (dot)", hidden = true)
+    @Parameter(order = 72, names = { "--output", "-o" }, arity = 1, description = "output file (dot)", hidden = true)
     private String outputFile = null;
 
-    @Parameter(names = { "--verbose", "-v" }, arity = 0, description = "verbose", hidden = true)
+    @Parameter(order = 73, names = { "--verbose", "-v" }, arity = 0, description = "verbose", hidden = true)
     private Boolean verbose;
 
     // other
 
-    @DynamicParameter(names = { "--property", "-P" }, description = "SQL setting. <key>=<value>")
+    @DynamicParameter(order = 80, names = { "--property", "-P" }, description = "SQL setting. <key>=<value>")
     private Map<String, String> propertyMap = new LinkedHashMap<>();
 
-    @DynamicParameter(names = { "-D" }, description = "client variable. <key>=<value>")
+    @DynamicParameter(order = 81, names = { "-D" }, description = "client variable. <key>=<value>")
     private Map<String, String> clientVariableMap = new LinkedHashMap<>();
 
-    @Parameter(names = { "--client-variable" }, arity = 1, description = "client variable file. </path/to/client-variable.properties>")
+    @Parameter(order = 82, names = { "--client-variable" }, arity = 1, description = "client variable file. </path/to/client-variable.properties>")
     private String clientVariableFile;
 
-    @Parameter(description = "</path/to/script.sql(--script) or statement(--exec)>")
+    @Parameter(order = 83, description = "</path/to/script.sql(--script) or statement(--exec)>")
     private List<String> otherList;
 
     //

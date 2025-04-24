@@ -252,6 +252,25 @@ public final class ExecutorUtil {
     }
 
     /**
+     * Compute transaction property.
+     *
+     * @param withMap properties
+     * @param options transaction option builder
+     */
+    public static void computeProperties(Map<String, String> withMap, SqlRequest.TransactionOption.Builder options) {
+        for (var entry : withMap.entrySet()) {
+            String key = entry.getKey().trim().toUpperCase();
+
+            var processor = PROPERTY_PROCESSOR_MAP.get(key);
+            if (processor != null) {
+                processor.execute(entry.getValue().trim(), options);
+            } else {
+                LOG.debug("ignore property {}", entry.getKey());
+            }
+        }
+    }
+
+    /**
      * Extracts commit option from the {@link CommitStatement}.
      *
      * @param statement the extraction target statement

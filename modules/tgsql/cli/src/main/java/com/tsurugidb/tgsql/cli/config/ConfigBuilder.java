@@ -47,6 +47,7 @@ import com.tsurugidb.tgsql.core.config.TgsqlCommitMode;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.credential.DefaultCredentialSessionConnector;
+import com.tsurugidb.tgsql.core.executor.engine.ExecutorUtil;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 
 /**
@@ -156,7 +157,7 @@ public abstract class ConfigBuilder {
         String label = argument.getLabel();
         options.setLabel(label);
 
-        // TODO Map<String, String> with = argument.getWith();
+        ExecutorUtil.computeProperties(argument.getWith(), options);
 
         var option = options.build();
         log.debug("config.transactionOption={}", option);
