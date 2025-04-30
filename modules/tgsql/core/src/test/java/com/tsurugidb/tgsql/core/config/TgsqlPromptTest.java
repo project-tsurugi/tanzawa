@@ -17,6 +17,7 @@ package com.tsurugidb.tgsql.core.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.LocalDateTime;
@@ -69,9 +70,12 @@ class TgsqlPromptTest {
     void now() {
         {
             var prompt = TgsqlPrompt.create("{now}> ");
-            String start = LocalDateTime.now().toString() + "> ";
+            String start = LocalDateTime.now().toString();
             String actual = prompt.getPrompt(null, null);
-            String end = LocalDateTime.now().toString() + "> ";
+            String end = LocalDateTime.now().toString();
+
+            assertTrue(actual.endsWith("> "));
+            actual = actual.substring(0, actual.length() - 2);
             if (start.compareTo(actual) <= 0 && actual.compareTo(end) <= 0) {
                 // success
             } else {
