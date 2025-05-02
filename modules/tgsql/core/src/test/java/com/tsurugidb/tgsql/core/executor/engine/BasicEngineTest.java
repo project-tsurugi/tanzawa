@@ -59,6 +59,7 @@ import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
+import com.tsurugidb.tsubakuro.sql.TransactionStatus.TransactionStatusWithMessage;
 import com.tsurugidb.tsubakuro.sql.Types;
 import com.tsurugidb.tsubakuro.sql.impl.BasicStatementMetadata;
 import com.tsurugidb.tsubakuro.sql.impl.ResultSetMetadataAdapter;
@@ -126,6 +127,11 @@ class BasicEngineTest {
 
         @Override
         public SqlServiceException getTransactionException() throws ServerException, IOException, InterruptedException {
+            return null;
+        }
+
+        @Override
+        public TransactionStatusWithMessage getTransactionStatus() throws ServerException, IOException, InterruptedException {
             return null;
         }
 

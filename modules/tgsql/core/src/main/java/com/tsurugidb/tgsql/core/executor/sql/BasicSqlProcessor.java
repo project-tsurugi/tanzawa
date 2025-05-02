@@ -37,6 +37,7 @@ import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
+import com.tsurugidb.tsubakuro.sql.TransactionStatus.TransactionStatusWithMessage;
 import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
 import com.tsurugidb.tsubakuro.util.Owner;
 
@@ -244,6 +245,15 @@ public class BasicSqlProcessor implements SqlProcessor {
         }
         var t = transaction.getTransaction();
         return t.getSqlServiceException().await();
+    }
+
+    @Override
+    public TransactionStatusWithMessage getTransactionStatus() throws ServerException, IOException, InterruptedException {
+        if (!isTransactionActive()) {
+            return null;
+        }
+        var t = transaction.getTransaction();
+        return t.getStatus().await();
     }
 
     @Override

@@ -173,6 +173,8 @@ public class ShowCommand extends SpecialCommand {
         if (active) {
             var exception = sqlProcessor.getTransactionException();
             reporter.reportTransactionException(exception);
+            var status = sqlProcessor.getTransactionStatus();
+            reporter.reportTransactionStatus(status);
         }
         return true;
     }

@@ -41,6 +41,8 @@ import com.tsurugidb.tsubakuro.sql.CounterType;
 import com.tsurugidb.tsubakuro.sql.ExecuteResult;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
+import com.tsurugidb.tsubakuro.sql.TransactionStatus;
+import com.tsurugidb.tsubakuro.sql.TransactionStatus.TransactionStatusWithMessage;
 
 /**
  * reporter of Tsurugi SQL console.
@@ -425,6 +427,37 @@ public abstract class TgsqlReporter {
             info(message);
         } else {
             warn(message);
+        }
+    }
+
+    /**
+     * output message for transaction status.
+     *
+     * @param status transaction status
+     */
+    public void reportTransactionStatus(TransactionStatusWithMessage status) {
+        if (status == null) {
+            return;
+        }
+        TransactionStatus s = status.getStatus();
+        String message = status.getMessage();
+        reportTransactionStatus(s, message);
+    }
+
+    /**
+     * output message for transaction status.
+     *
+     * @param status  transaction status
+     * @param message message
+     */
+    protected void reportTransactionStatus(TransactionStatus status, String message) {
+        if (status != null) {
+            String s = MessageFormat.format("transaction progress: {0}", status);
+            info(s);
+        }
+        if (message != null && !message.isEmpty()) {
+            String s = "transaction progress message: " + message;
+            info(s);
         }
     }
 

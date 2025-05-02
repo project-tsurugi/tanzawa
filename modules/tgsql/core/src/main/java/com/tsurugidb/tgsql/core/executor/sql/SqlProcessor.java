@@ -29,6 +29,7 @@ import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
+import com.tsurugidb.tsubakuro.sql.TransactionStatus.TransactionStatusWithMessage;
 import com.tsurugidb.tsubakuro.util.ServerResource;
 
 /**
@@ -151,6 +152,16 @@ public interface SqlProcessor extends ServerResource {
      * @throws InterruptedException if interrupted while retrieving transaction error
      */
     SqlServiceException getTransactionException() throws ServerException, IOException, InterruptedException;
+
+    /**
+     * Returns status in the target transaction.
+     *
+     * @return status
+     * @throws ServerException      if server side error was occurred
+     * @throws IOException          if I/O error was occurred while retrieving transaction error
+     * @throws InterruptedException if interrupted while retrieving transaction error
+     */
+    TransactionStatusWithMessage getTransactionStatus() throws ServerException, IOException, InterruptedException;
 
     /**
      * Executes a SQL statement.
