@@ -64,4 +64,9 @@ public class MockTableMetadata implements TableMetadata {
                 .setAtomType(SqlCommon.AtomType.INT4) //
                 .build());
     }
+
+    @Override
+    public List<String> getPrimaryKeys() {
+        return List.of();
+    }
 }

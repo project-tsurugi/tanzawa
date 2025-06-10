@@ -573,6 +573,8 @@ public abstract class TgsqlReporter {
         for (var column : data.getColumns()) {
             reportTableMetadata(cerateColumnWrapper(column), i++);
         }
+
+        info(MessageFormat.format("primary key={0}", data.getPrimaryKeys()));
     }
 
     protected void reportTableMetadata(String title, String name) {
