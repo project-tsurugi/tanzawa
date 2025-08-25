@@ -172,7 +172,7 @@ tgdump --sql [<query-label>:]<query-text> [[<query-label>:]<query-text> [...]] -
     `org.slf4j.simpleLogger.dateTimeFormat`  | (未設定) | 日時の形式
 
     ※「(未設定)」となっている箇所は、正しく表示できないため一時的に未設定に戻している
-  
+
   * コマンド起動時に環境変数 (`JAVA_OPTS`, `TGDUMP_OPTS`) 経由で上書き可能
 * monitoring information
   * ダンプ処理の開始前に、対象テーブルごとに以下の `kind=data` のレコード (`format=dump-info`) を出力する
@@ -363,8 +363,7 @@ tgdump --sql [<query-label>:]<query-text> [[<query-label>:]<query-text> [...]] -
   * 複数指定した場合はエラーとなる
 * 上記のオプション引数を一つも指定しなかった場合、以下の手順で認証を行う
   * 環境変数 `TSURUGI_AUTH_TOKEN` の文字列を認証トークンとしてセッション認証を行う
-  * 上記が存在しない、またはセッションの確立に失敗した場合、 `~/.tsurugi/credentials.key` を認証ファイルとして利用してセッション認証を行う
+  * 上記が存在しない、またはセッションの確立に失敗した場合、 `~/.tsurugidb/credentials.key` を認証ファイルとして利用してセッション認証を行う
   * 上記が存在しない、またはセッションの確立に失敗した場合、認証情報を利用せずにセッションに接続する
   * 上記によるセッションの確立に失敗した場合、ユーザー名とパスワードを対話的に標準入力から取得してセッション認証を行う
   * 上記のユーザー名が未指定、またはセッションの確立に失敗した場合、プログラムはエラー (`authentication_failure`) を出力して失敗する
- 
