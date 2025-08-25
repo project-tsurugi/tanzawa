@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -259,6 +260,12 @@ class MainTest {
         assertEquals(Path.of("default"), args.getProfile());
         assertNull(args.getConnectionLabel());
         assertEquals(0, args.getConnectionTimeoutMillis());
+
+        assertNull(args.getAuthenticationUser());
+        assertNull(args.getAuthenticationToken());
+        assertNull(args.getAuthenticationCredentialFile());
+        assertFalse(args.isAuthenticationGuest());
+
         assertEquals(TransactionSettings.Type.RTX, args.getTransactionType());
         assertNull(args.getTransactionLabel());
         assertEquals(1, args.getNumberOfWorkerThreads());
@@ -377,6 +384,61 @@ class MainTest {
         assertThrows(ParameterException.class, () -> app.parseArguments(
                 "--connection", "ipc:testing", "A", "--to", "output",
                 "--connection-timeout", "-1"));
+    }
+
+    @Test
+    void parseArguments_user() {
+        var app = new Main();
+        var args = app.parseArguments(
+                "--connection", "ipc:testing", "A", "--to", "output",
+                "--user", "testuser");
+        assertEquals("testuser", args.getAuthenticationUser());
+    }
+
+    @Test
+    void parseArguments_user_empty() {
+        var app = new Main();
+        assertThrows(ParameterException.class, () -> app.parseArguments(
+                "--connection", "ipc:testing", "A", "--to", "output",
+                "--user", ""));
+    }
+
+    @Test
+    void parseArguments_auth_token() {
+        var app = new Main();
+        var args = app.parseArguments(
+                "--connection", "ipc:testing", "A", "--to", "output",
+                "--auth-token", "testtoken");
+        assertEquals("testtoken", args.getAuthenticationToken());
+    }
+
+    @Test
+    void parseArguments_auth_token_empty() {
+        var app = new Main();
+        assertThrows(ParameterException.class, () -> app.parseArguments(
+                "--connection", "ipc:testing", "A", "--to", "output",
+                "--auth-token", ""));
+    }
+
+    @Test
+    void parseArguments_credentials() throws Exception {
+        var file = getTemporaryDir().resolve("creds.key");
+        Files.writeString(file, "encrypted", StandardCharsets.UTF_8);
+
+        var app = new Main();
+        var args = app.parseArguments(
+                "--connection", "ipc:testing", "A", "--to", "output",
+                "--credentials", file.toString());
+        assertEquals(file, args.getAuthenticationCredentialFile());
+    }
+
+    @Test
+    void parseArguments_no_auth() {
+        var app = new Main();
+        var args = app.parseArguments(
+                "--connection", "ipc:testing", "A", "--to", "output",
+                "--no-auth");
+        assertTrue(args.isAuthenticationGuest());
     }
 
     @Test

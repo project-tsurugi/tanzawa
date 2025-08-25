@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.tsurugidb.tools.common.connection.BasicCredentialProvider;
 import com.tsurugidb.tools.common.connection.ConnectionSettings;
 import com.tsurugidb.tools.common.diagnostic.DiagnosticException;
 import com.tsurugidb.tools.common.diagnostic.DiagnosticUtil;
@@ -41,7 +40,6 @@ import com.tsurugidb.tools.tgdump.core.engine.DumpMonitor;
 import com.tsurugidb.tools.tgdump.core.model.TransactionSettings;
 import com.tsurugidb.tools.tgdump.profile.DumpProfileBundle;
 import com.tsurugidb.tools.tgdump.profile.DumpProfileBundleLoader;
-import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 
@@ -206,7 +204,11 @@ public class Main {
                 .withApplicationName(Constants.APPLICATION_NAME)
                 .withSessionLabel(args.getConnectionLabel())
                 .withEstablishTimeout(Duration.ofMillis(args.getConnectionTimeoutMillis()))
-                .withCredentialProviders(List.of(new BasicCredentialProvider("default", NullCredential.INSTANCE)))
+                .withCredentialProviders(CommandUtil.prepareCredentials(
+                        args.getAuthenticationUser(),
+                        args.getAuthenticationToken(),
+                        args.getAuthenticationCredentialFile(),
+                        args.isAuthenticationGuest()))
                 .build();
         var transactionSettings = TransactionSettings.newBuilder()
                 .withType(args.getTransactionType())

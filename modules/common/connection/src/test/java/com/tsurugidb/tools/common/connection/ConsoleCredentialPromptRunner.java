@@ -15,27 +15,25 @@
  */
 package com.tsurugidb.tools.common.connection;
 
-import java.util.Optional;
-
-import com.tsurugidb.tools.common.diagnostic.DiagnosticException;
-import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
 
 /**
- * Provides Tsurugi connection {@link Credential credentials}.
+ * An program entry of {@link ConsoleCredentialPrompt} for testing.
  */
-public interface CredentialProvider {
+public class ConsoleCredentialPromptRunner {
 
     /**
-     * Returns the authentication method information which this will provide.
-     * @return the authentication method information
-     */
-    String getType();
-
-    /**
-     * Retrieves credentials.
-     * @return credentials, or {@code empty} if it was disabled
+     * Prompt the user for credentials.
+     * @param args ignored
+     * @throws IOException if I/O error was occurred
      * @throws InterruptedException if the operation was interrupted
-     * @throws DiagnosticException if error occurred while retrieving credentials information
      */
-    Optional<? extends Credential> get() throws InterruptedException, DiagnosticException;
+    public static void main(String... args) throws IOException, InterruptedException {
+        var prompt = new ConsoleCredentialPrompt(System.console());
+        var username = prompt.getUsername().orElseThrow(CancellationException::new);
+        var password = prompt.getPassword().orElseThrow(CancellationException::new);
+        System.out.println("Username: " + username);
+        System.out.println("Password: " + password);
+    }
 }

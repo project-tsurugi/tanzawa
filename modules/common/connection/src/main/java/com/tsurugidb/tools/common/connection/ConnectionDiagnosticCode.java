@@ -31,6 +31,21 @@ import com.tsurugidb.tools.common.diagnostic.DiagnosticUtil;
 public enum ConnectionDiagnosticCode implements DiagnosticCode {
 
     /**
+     * {@code credential_error} - retrieving credential was failed.
+     *
+     * <p>
+     * Parameters:
+     * </p>
+     * <ul>
+     * <li> {@code [0]} - the error message </li>
+     * <li> {@code [1]} - the credential type </li>
+     * </ul>
+     */
+    CREDENTIAL_ERROR(
+            "credential_error", //$NON-NLS-1$
+            "failed to retrieve credential: {1} ({0})"), //$NON-NLS-1$
+
+    /**
      * {@code authentication_failure} - authentication was failed.
      *
      * <p>

@@ -18,6 +18,7 @@ package com.tsurugidb.tools.tgdump.cli;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -26,6 +27,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import com.tsurugidb.tools.common.connection.CredentialProviderFactory;
+import com.tsurugidb.tools.common.connection.PromptCredentialProvider;
 import com.tsurugidb.tools.common.diagnostic.DiagnosticException;
 import com.tsurugidb.tools.tgdump.core.model.DumpTarget;
 import com.tsurugidb.tools.tgdump.profile.ProfileDiagnosticCode;
@@ -84,6 +87,47 @@ class CommandUtilTest {
             assertEquals(2, TestUtil.readMonitor(file).count());
         }
         assertEquals(2, TestUtil.readMonitor(file).count());
+    }
+
+    @Test
+    void prepareCredential_user() throws Exception {
+        var providers = CommandUtil.prepareCredentials("user", null, null, false);
+        assertEquals(1, providers.size());
+        assertEquals(CredentialProviderFactory.CREDENTIAL_TYPE_PASSWORD, providers.get(0).getType());
+    }
+
+    @Test
+    void prepareCredential_token() throws Exception {
+        var providers = CommandUtil.prepareCredentials(null, "token", null, false);
+        assertEquals(1, providers.size());
+        assertEquals(CredentialProviderFactory.CREDENTIAL_TYPE_TOKEN, providers.get(0).getType());
+    }
+
+    @Test
+    void prepareCredential_file() throws Exception {
+        var file = getTemporaryDir().resolve("creds.key");
+        Files.writeString(file, "encrypted", StandardCharsets.UTF_8);
+        var providers = CommandUtil.prepareCredentials(null, null, file, false);
+        assertEquals(1, providers.size());
+        assertEquals(CredentialProviderFactory.CREDENTIAL_TYPE_FILE, providers.get(0).getType());
+    }
+
+    @Test
+    void prepareCredential_guest() throws Exception {
+        var providers = CommandUtil.prepareCredentials(null, null, null, true);
+        assertEquals(1, providers.size());
+        assertEquals(CredentialProviderFactory.CREDENTIAL_TYPE_NULL, providers.get(0).getType());
+    }
+
+    @Test
+    void prepareCredential_default() throws Exception {
+        var providers = CommandUtil.prepareCredentials(null, null, null, false);
+        // depends on the current environment, auth token or credential files may be available..
+        assertTrue(providers.size() >= 2 && providers.size() <= 4);
+        var guest = providers.get(providers.size() - 2);
+        var prompt = providers.get(providers.size() - 1);
+        assertEquals(CredentialProviderFactory.CREDENTIAL_TYPE_NULL, guest.getType());
+        assertEquals(CredentialProviderFactory.CREDENTIAL_TYPE_USERNAME_PASSWORD, prompt.getType());
     }
 
     @Test
