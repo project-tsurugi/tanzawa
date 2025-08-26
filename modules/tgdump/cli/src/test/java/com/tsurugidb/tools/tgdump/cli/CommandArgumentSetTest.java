@@ -144,8 +144,8 @@ class CommandArgumentSetTest {
     void validateCombination_multiple_auth_file_guest() {
         var args = new CommandArgumentSet();
         args.setTableNames(List.of("tbl"));
-        args.setAuthenticationToken("token");
         args.setAuthenticationCredentialFile(Path.of("creds.key"));
+        args.setAuthenticationGuest(true);
 
         assertThrows(ParameterException.class, () -> args.validateCombination());
     }
