@@ -39,7 +39,7 @@ public final class CredentialEnvironment {
     }
 
     /**
-     * get path of credential.json under user.home .
+     * get path of credential.key under user.home .
      *
      * @return path
      */

@@ -186,7 +186,7 @@ public class ConnectCommand extends SpecialCommand {
             case "credentials":
                 String file = getOption(statement, i + 1);
                 if (file == null) {
-                    throw new IllegalArgumentException("credential.json not specified");
+                    throw new IllegalArgumentException("credential file not specified");
                 } else {
                     i++;
                     option.credentialList.add(() -> {
