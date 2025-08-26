@@ -505,7 +505,7 @@ public class CommandArgumentSet {
             description = "Connect as a guest user.",
             required = false)
     public void setAuthenticationGuest(boolean guest) {
-        LOG.trace("argument: --no-auth", guest); //$NON-NLS-1$
+        LOG.trace("argument: --no-auth: {}", guest); //$NON-NLS-1$
         this.authenticationGuest = guest;
     }
 
