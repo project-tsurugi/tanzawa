@@ -20,6 +20,8 @@ import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
+import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
+
 /**
  * Environment variable for Tsurugi credential.
  */
@@ -42,7 +44,7 @@ public final class CredentialEnvironment {
      * @return path
      */
     public static @Nonnull Optional<Path> findUserHomeCredentialPath() {
-        return findUserHomePath("credentials.json"); //$NON-NLS-1$
+        return FileCredential.DEFAULT_CREDENTIAL_PATH;
     }
 
     /**
