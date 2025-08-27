@@ -79,8 +79,7 @@ public class ReaderCredentialPrompt implements CredentialPrompt {
     public Optional<String> getPassword() throws IOException, InterruptedException {
         try {
             write("password: ");
-            return Optional.ofNullable(reader.readLine())
-                    .map(String::trim);
+            return Optional.ofNullable(reader.readLine());
         } catch (IOException e) {
             throw rethrow(e);
         }

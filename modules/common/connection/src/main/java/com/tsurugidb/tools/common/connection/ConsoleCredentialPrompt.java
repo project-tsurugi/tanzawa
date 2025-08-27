@@ -55,8 +55,7 @@ public class ConsoleCredentialPrompt implements CredentialPrompt {
     public Optional<String> getPassword() throws IOException, InterruptedException {
         try {
             return Optional.ofNullable(console.readPassword("password: "))
-                    .map(String::valueOf)
-                    .map(String::trim);
+                    .map(String::valueOf);
         } catch (IOError e) {
             throw rethrow(e);
         }

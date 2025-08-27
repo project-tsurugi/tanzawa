@@ -69,13 +69,6 @@ class ReaderCredentialPromptTest {
     }
 
     @Test
-    void getPassword_trim() throws Exception {
-        var prompt = new ReaderCredentialPrompt(new StringReader("  password  \n"));
-        assertEquals(Optional.of("password"), prompt.getPassword());
-        assertEquals(Optional.empty(), prompt.getPassword());
-    }
-
-    @Test
     void getPassword_empty() throws Exception {
         var prompt = new ReaderCredentialPrompt(new StringReader("\n"));
         assertEquals(Optional.of(""), prompt.getPassword()); // password can be empty

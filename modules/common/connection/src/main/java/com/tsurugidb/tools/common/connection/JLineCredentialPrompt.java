@@ -79,8 +79,7 @@ public class JLineCredentialPrompt implements CredentialPrompt {
     public Optional<String> getPassword() throws IOException {
         try {
             var line = lineReader.readLine("password: ", '*');
-            return Optional.of(line)
-                    .map(String::trim);
+            return Optional.of(line);
         } catch (UserInterruptException e) {
             LOG.debug("password input was canceled", e); //$NON-NLS-1$
             return Optional.empty();
