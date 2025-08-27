@@ -87,7 +87,7 @@ public class PromptCredentialProvider implements CredentialProvider {
                 }
                 LOG.debug("prompting for username was successful: {}", user); //$NON-NLS-1$
             }
-                LOG.debug("prompting for password"); //$NON-NLS-1$
+            LOG.debug("prompting for password"); //$NON-NLS-1$
             String password = prompt.getPassword().orElse(null);
             if (password == null) {
                 LOG.debug("prompting for password was canceled"); //$NON-NLS-1$
