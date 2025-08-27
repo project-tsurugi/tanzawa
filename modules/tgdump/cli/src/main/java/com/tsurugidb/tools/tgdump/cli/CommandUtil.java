@@ -29,6 +29,8 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.tools.common.connection.CredentialProvider;
+import com.tsurugidb.tools.common.connection.CredentialProviderFactory;
 import com.tsurugidb.tools.common.diagnostic.DiagnosticException;
 import com.tsurugidb.tools.common.diagnostic.DiagnosticUtil;
 import com.tsurugidb.tools.common.monitoring.CompositeMonitor;
@@ -129,6 +131,27 @@ final class CommandUtil {
             Files.createDirectories(parent);
         }
         return new CompositeMonitor(List.of(createMonitor(null), new JsonMonitor(path)));
+    }
+
+    static List<CredentialProvider> prepareCredentials(
+            @Nullable String user,
+            @Nullable String token,
+            @Nullable Path credentialFile,
+            boolean guest) throws DiagnosticException {
+        var factory = new CredentialProviderFactory();
+        if (user != null) {
+            return List.of(factory.getPromptCredentialProvider(factory.getDefaultCredentialPrompt(), user));
+        }
+        if (token != null) {
+            return List.of(factory.getRememberMeCredentialProvider(token));
+        }
+        if (credentialFile != null) {
+            return List.of(factory.getFileCredentialProvider(credentialFile));
+        }
+        if (guest) {
+            return List.of(factory.getNullCredentialProvider());
+        }
+        return factory.getDefaultCredentialProviders(factory.getDefaultCredentialPrompt());
     }
 
     static DumpProfile loadProfile(@Nonnull DumpProfileBundleLoader loader, @Nonnull Path profile)

@@ -15,9 +15,7 @@
  */
 package com.tsurugidb.tools.common.connection;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,7 +36,7 @@ import com.tsurugidb.tsubakuro.exception.CoreServiceException;
 
 class ConnectionProviderTest {
 
-    static final Session MOCK = new SessionImpl(new MockWire());
+    static final Session MOCK = new SessionImpl();
 
     static final CredentialProvider CP = new BasicCredentialProvider("testing", NullCredential.INSTANCE);
 
@@ -92,6 +90,22 @@ class ConnectionProviderTest {
     }
 
     @Test
+    void error_invalid_request() throws Exception {
+        var provider = new ConnectionProvider() {
+            @Override
+            protected Session attempt(ConnectionSettings settings, Credential credential) throws CoreServiceException {
+                throw new CoreServiceException(CoreServiceCode.INVALID_REQUEST);
+            }
+        };
+        var settings = ConnectionSettings.newBuilder()
+                .withEndpointUri(URI.create("testing:testing"))
+                .withCredentialProviders(List.of(CP))
+                .build();
+        var e = assertThrows(DiagnosticException.class, () -> provider.connect(settings));
+        assertEquals(ConnectionDiagnosticCode.AUTHENTICATION_FAILURE, e.getDiagnosticCode());
+    }
+
+    @Test
     void connect_multiple_attempts() throws Exception {
         var provider = new ConnectionProvider() {
             @Override
@@ -99,14 +113,17 @@ class ConnectionProviderTest {
                 if (((UsernamePasswordCredential) credential).getName().equals("OK")) {
                     return MOCK;
                 }
+                if (((UsernamePasswordCredential) credential).getName().equals("invalid")) {
+                throw new CoreServiceException(CoreServiceCode.INVALID_REQUEST);
+                }
                 throw new CoreServiceException(CoreServiceCode.AUTHENTICATION_ERROR);
             }
         };
         var settings = ConnectionSettings.newBuilder()
                 .withEndpointUri(URI.create("ipc:testing"))
                 .withCredentialProviders(List.of(
-                        new BasicCredentialProvider("a", new UsernamePasswordCredential("error", "p")),
-                        new BasicCredentialProvider("b", new UsernamePasswordCredential("wrong", "p")),
+                        new BasicCredentialProvider("a", new UsernamePasswordCredential("invalid", "p")),
+                        new BasicCredentialProvider("b", new UsernamePasswordCredential("error", "p")),
                         new BasicCredentialProvider("c", new UsernamePasswordCredential("OK", "p"))))
                 .build();
         var result = provider.connect(settings);
@@ -140,7 +157,7 @@ class ConnectionProviderTest {
         var provider = new ConnectionProvider() {
             @Override
             protected Session attempt(ConnectionSettings settings, Credential credential) throws CoreServiceException {
-                throw new CoreServiceException(CoreServiceCode.INVALID_REQUEST);
+                throw new CoreServiceException(CoreServiceCode.IO_ERROR);
             }
         };
         var settings = ConnectionSettings.newBuilder()

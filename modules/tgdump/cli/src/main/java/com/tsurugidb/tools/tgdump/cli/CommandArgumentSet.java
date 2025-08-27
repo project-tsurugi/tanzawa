@@ -18,6 +18,7 @@ package com.tsurugidb.tools.tgdump.cli;
 import java.net.URI;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class CommandArgumentSet {
         public void validate(String name, String value) throws ParameterException {
             if (value.isEmpty()) {
                 throw new ParameterException(MessageFormat.format(
-                        "\"{0}\" must contain empty name",
+                        "\"{0}\" must have one or more characters",
                         name));
             }
         }
@@ -185,6 +186,14 @@ public class CommandArgumentSet {
 
     private int numberOfWorkerThreads = DEFAULT_NUMBER_OF_WORKER_THREADS;
 
+    private String authenticationUser = null;
+
+    private String authenticationToken = null;
+
+    private Path authenticationCredentialFile = null;
+
+    private boolean authenticationGuest = false;
+
     private boolean verbose = false;
 
     private Path monitorOutput = null;
@@ -278,7 +287,7 @@ public class CommandArgumentSet {
         LOG.trace("argument: --single: {}", enable); //$NON-NLS-1$
         this.singleMode = enable;
     }
-    
+
     /**
      * Returns the dump files destination path.
      * @return the destination path
@@ -292,7 +301,7 @@ public class CommandArgumentSet {
      * @param path the destination path
      */
     @Parameter(
-            order = 10,
+            order = 12,
             names = { "--to" },
             arity = 1,
             description = "Destination directory of dump files.",
@@ -316,7 +325,7 @@ public class CommandArgumentSet {
      * @param path the dump profile path
      */
     @Parameter(
-            order = 100,
+            order = 13,
             names = { "--profile" },
             arity = 1,
             description = "Dump profile name.",
@@ -384,7 +393,7 @@ public class CommandArgumentSet {
     }
 
     /**
-     * Sets  the connection timeout in milliseconds.
+     * Sets the connection timeout in milliseconds.
      * @param value  the connection timeout in milliseconds, or {@code 0} to disable connection timeout
      */
     @Parameter(
@@ -401,6 +410,103 @@ public class CommandArgumentSet {
         }
         LOG.trace("argument: --connection-timeout: {}", value); //$NON-NLS-1$
         this.connectionTimeoutMillis = value;
+    }
+
+    /**
+     * Returns the authentication user name.
+     * @return the user name, or {@code null} if it is not specified
+     */
+    public String getAuthenticationUser() {
+        return authenticationUser;
+    }
+
+    /**
+     * Sets the authentication user name.
+     * @param name the user name, must not be empty
+     */
+    @Parameter(
+            order = 30,
+            names = { "--user" },
+            arity = 1,
+            description = "Authentication user name.",
+            validateWith = NoEmptyElementValidator.class,
+            required = false)
+    public void setAuthenticationUser(@Nonnull String name) {
+        Objects.requireNonNull(name);
+        LOG.trace("argument: --user: {}", name); //$NON-NLS-1$
+        this.authenticationUser = name;
+    }
+
+    /**
+     * Returns the authentication token.
+     * @return the token string, or {@code null} if it is not specified
+     */
+    public String getAuthenticationToken() {
+        return authenticationToken;
+    }
+
+    /**
+     * Sets the authentication token.
+     * @param token the token string
+     */
+    @Parameter(
+            order = 31,
+            names = { "--auth-token" },
+            arity = 1,
+            description = "Authentication token.",
+            validateWith = NoEmptyElementValidator.class,
+            required = false)
+    public void setAuthenticationToken(@Nonnull String token) {
+        Objects.requireNonNull(token);
+        LOG.trace("argument: --auth-token: {}", token); //$NON-NLS-1$
+        this.authenticationToken = token;
+    }
+
+    /**
+     * Returns the authentication credential file.
+     * @return the credential file path, or {@code null} if it is not specified
+     */
+    public Path getAuthenticationCredentialFile() {
+        return authenticationCredentialFile;
+    }
+
+    /**
+     * Sets the authentication credential file.
+     * @param file the file path
+     */
+    @Parameter(
+            order = 32,
+            names = { "--credentials" },
+            arity = 1,
+            description = "Authentication credential file path.",
+            required = false)
+    public void setAuthenticationCredentialFile(@Nonnull Path file) {
+        Objects.requireNonNull(file);
+        LOG.trace("argument: --credentials: {}", file); //$NON-NLS-1$
+        this.authenticationCredentialFile = file;
+    }
+
+    /**
+     * Returns whether to connect to server as guest user.
+     * @return {@code true} if connect as guest user, {@code false} otherwise
+     */
+    public boolean isAuthenticationGuest() {
+        return authenticationGuest;
+    }
+
+    /**
+     * Sets whether to connect to server as guest user.
+     * @param guest {@code true} to connect as guest user, {@code false} otherwise
+     */
+    @Parameter(
+            order = 33,
+            names = { "--no-auth" },
+            arity = 0,
+            description = "Connect as a guest user.",
+            required = false)
+    public void setAuthenticationGuest(boolean guest) {
+        LOG.trace("argument: --no-auth: {}", guest); //$NON-NLS-1$
+        this.authenticationGuest = guest;
     }
 
     /**
@@ -699,6 +805,26 @@ public class CommandArgumentSet {
                 throw new ParameterException("Cannot specify multiple queries with --single.");
             }
             throw new ParameterException("Cannot specify multiple table names with --single.");
+        }
+
+        // check authentication mode
+        var sawAuthentications = new ArrayList<String>();
+        if (authenticationUser != null) {
+            sawAuthentications.add("--user");
+        }
+        if (authenticationToken != null) {
+            sawAuthentications.add("--auth-token");
+        }
+        if (authenticationCredentialFile != null) {
+            sawAuthentications.add("--credentials");
+        }
+        if (authenticationGuest) {
+            sawAuthentications.add("--no-auth");
+        }
+        if (sawAuthentications.size() > 1) {
+            throw new ParameterException(MessageFormat.format(
+                    "Cannot specify multiple authentication options: {0}",
+                    String.join(", ", sawAuthentications)));
         }
     }
 }

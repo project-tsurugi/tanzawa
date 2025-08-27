@@ -63,11 +63,11 @@ public class ConnectionProvider {
             LOG.debug("retrieving credential ({}/{}): {}", i + 1, attemptList.size(), attempt.getType()); //$NON-NLS-1$
             var credential = attempt.get();
             if (credential.isEmpty()) {
-                LOG.debug("skipped disabled attempt: {}", attempt); //$NON-NLS-1$
+                LOG.debug("skipped disabled attempt: {}", attempt.getType()); //$NON-NLS-1$
                 continue;
             }
 
-            LOG.debug("trying attempt: {} ({})", settings.getEndpointUri(), credential.get()); //$NON-NLS-1$
+            LOG.debug("trying attempt: {} ({})", settings.getEndpointUri(), attempt.getType()); //$NON-NLS-1$
             try {
                 var result = attempt(settings, credential.get());
                 LOG.trace("exit: connect: {}", settings); //$NON-NLS-1$
@@ -86,7 +86,9 @@ public class ConnectionProvider {
                         e);
             } catch (ServerException e) {
                 // escape authentication errors and try the next attempt
-                if (e.getDiagnosticCode() == CoreServiceCode.AUTHENTICATION_ERROR) {
+                // NOTE: NullCredential request also should raise "AUTHENTICATION_ERROR".
+                if (e.getDiagnosticCode() == CoreServiceCode.AUTHENTICATION_ERROR
+                        || e.getDiagnosticCode() == CoreServiceCode.INVALID_REQUEST) {
                     LOG.debug("authentication error in connection attempt", e); //$NON-NLS-1$
                     attemptFailures.add(e);
                     continue;

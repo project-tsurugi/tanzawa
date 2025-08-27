@@ -17,6 +17,7 @@ package com.tsurugidb.tools.tgdump.cli;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -86,6 +87,66 @@ class CommandArgumentSetTest {
         args.setSingleMode(true);
         args.setQueryMode(true);
         args.setTableNames(List.of("t1", "t2"));
+        assertThrows(ParameterException.class, () -> args.validateCombination());
+    }
+
+    @Test
+    void validateCombination_multiple_auth_user_token() {
+        var args = new CommandArgumentSet();
+        args.setTableNames(List.of("tbl"));
+        args.setAuthenticationUser("user");
+        args.setAuthenticationToken("token");
+
+        assertThrows(ParameterException.class, () -> args.validateCombination());
+    }
+
+    @Test
+    void validateCombination_multiple_auth_user_file() {
+        var args = new CommandArgumentSet();
+        args.setTableNames(List.of("tbl"));
+        args.setAuthenticationUser("user");
+        args.setAuthenticationCredentialFile(Path.of("creds.key"));
+
+        assertThrows(ParameterException.class, () -> args.validateCombination());
+    }
+
+    @Test
+    void validateCombination_multiple_auth_user_guest() {
+        var args = new CommandArgumentSet();
+        args.setTableNames(List.of("tbl"));
+        args.setAuthenticationUser("user");
+        args.setAuthenticationGuest(true);
+
+        assertThrows(ParameterException.class, () -> args.validateCombination());
+    }
+
+    @Test
+    void validateCombination_multiple_auth_token_file() {
+        var args = new CommandArgumentSet();
+        args.setTableNames(List.of("tbl"));
+        args.setAuthenticationToken("token");
+        args.setAuthenticationCredentialFile(Path.of("creds.key"));
+
+        assertThrows(ParameterException.class, () -> args.validateCombination());
+    }
+
+    @Test
+    void validateCombination_multiple_auth_token_guest() {
+        var args = new CommandArgumentSet();
+        args.setTableNames(List.of("tbl"));
+        args.setAuthenticationToken("token");
+        args.setAuthenticationGuest(true);
+
+        assertThrows(ParameterException.class, () -> args.validateCombination());
+    }
+
+    @Test
+    void validateCombination_multiple_auth_file_guest() {
+        var args = new CommandArgumentSet();
+        args.setTableNames(List.of("tbl"));
+        args.setAuthenticationCredentialFile(Path.of("creds.key"));
+        args.setAuthenticationGuest(true);
+
         assertThrows(ParameterException.class, () -> args.validateCombination());
     }
 }
