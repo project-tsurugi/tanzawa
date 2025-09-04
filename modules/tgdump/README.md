@@ -39,16 +39,16 @@ Examples:
 
 ```sh
 # Export the tables "t1" and "t2" to /tmp/dump/{t1, t2}
-tgdump t1 t2 --to /tmp/dump --connection ipc://tsurugi
+tgdump t1 t2 --to /tmp/dump --connection ipc:tsurugi
 
 # Export the query results to /tmp/sql/{a, b}
-tgdump --sql "a: SELECT * FROM t1 WHERE k = 0" "b: SELECT * FROM t2 WHERE k = 1" --to /tmp/sql --connection ipc://tsurugi
+tgdump --sql "a: SELECT * FROM t1 WHERE k = 0" "b: SELECT * FROM t2 WHERE k = 1" --to /tmp/sql --connection ipc:tsurugi
 
 # Export the table "t1" to /tmp/single without sub-directories
-tgdump --single t1 --to /tmp/single --connection ipc://tsurugi
+tgdump --single t1 --to /tmp/single --connection ipc:tsurugi
 
 # Export the table "t1" to /tmp/arrow/t1 as Arrow format
-tgdump t1 --profile arrow --to /tmp/arrow --connection ipc://tsurugi
+tgdump t1 --profile arrow --to /tmp/arrow --connection ipc:tsurugi
 ```
 
 Parameters:
