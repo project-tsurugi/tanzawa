@@ -106,6 +106,10 @@ Optional Parameters:
 * `--transaction-label`
   * The transaction label.
   * Default: no transaction labels.
+* `--scan-parallel`
+  * The maximum task division number for table reading on the database side.
+    * Currently only effective for RTX.
+  * Default: follows the database default.
 * `--threads`
   * The number of client threads used for export operations.
     * The number of tables or queries processed simultaneously is limited by this value.

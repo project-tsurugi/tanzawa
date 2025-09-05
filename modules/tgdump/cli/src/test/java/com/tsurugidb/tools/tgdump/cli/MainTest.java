@@ -512,6 +512,32 @@ class MainTest {
     }
 
     @Test
+    void parseArguments_scan_parallel() {
+        var app = new Main();
+        var args = app.parseArguments(
+                "--connection", "ipc:testing", "A", "--to", "output",
+                "--scan-parallel", "4");
+        assertEquals(4, args.getNumberOfScanParallels());
+    }
+
+    @Test
+    void parseArguments_scan_parallel_zero() {
+        var app = new Main();
+        var args = app.parseArguments(
+                "--connection", "ipc:testing", "A", "--to", "output",
+                "--scan-parallel", "0");
+        assertEquals(0, args.getNumberOfScanParallels());
+    }
+
+    @Test
+    void parseArguments_scan_parallel_invalid() {
+        var app = new Main();
+        assertThrows(ParameterException.class, () -> app.parseArguments(
+                "--connection", "ipc:testing", "A", "--to", "output",
+                "--scan-parallel", "-1"));
+    }
+
+    @Test
     void parseArguments_monitor() {
         var app = new Main();
         var args = app.parseArguments(

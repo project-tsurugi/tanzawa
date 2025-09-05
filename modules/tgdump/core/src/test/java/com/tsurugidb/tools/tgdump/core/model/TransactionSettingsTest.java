@@ -15,10 +15,11 @@
  */
 package com.tsurugidb.tools.tgdump.core.model;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +34,7 @@ class TransactionSettingsTest {
         assertEquals(TransactionSettings.DEFAULT_TYPE, s.getType());
         assertEquals(Optional.empty(), s.getLabel());
         assertEquals(TransactionSettings.DEFAULT_ENABLE_READ_AREAS, s.isEnableReadAreas());
+        assertEquals(OptionalInt.empty(), s.getScanParallel());
 
         assertEquals(s, new TransactionSettings(), s.toString());
         assertEquals(
@@ -40,6 +42,20 @@ class TransactionSettingsTest {
                         .setType(SqlRequest.TransactionType.READ_ONLY)
                         .build(),
                 s.toProtocolBuffer(List.of()));
+    }
+
+    @Test
+    void withScanParallel_zero() {
+        var s = TransactionSettings.newBuilder()
+                .withScanParallel(0)
+                .build();
+        assertEquals(OptionalInt.of(0), s.getScanParallel());
+    }
+
+    @Test
+    void withScanParallel_negative() {
+        var b = TransactionSettings.newBuilder();
+        assertThrows(IllegalArgumentException.class, () -> b.withScanParallel(-1));
     }
 
     @Test
@@ -103,5 +119,33 @@ class TransactionSettingsTest {
                         .setLabel("TESTING")
                         .build(),
                 s.toProtocolBuffer(List.of("T1")));
+    }
+
+    @Test
+    void toProtocolBuffer_label() {
+        var s = TransactionSettings.newBuilder()
+                .withLabel("TESTING")
+                .build();
+        assertEquals(Optional.of("TESTING"), s.getLabel());
+        assertEquals(
+                SqlRequest.TransactionOption.newBuilder()
+                        .setType(SqlRequest.TransactionType.READ_ONLY)
+                        .setLabel("TESTING")
+                        .build(),
+                s.toProtocolBuffer(List.of()));
+    }
+
+    @Test
+    void toProtocolBuffer_scanParallel() {
+        var s = TransactionSettings.newBuilder()
+                .withScanParallel(4)
+                .build();
+        assertEquals(OptionalInt.of(4), s.getScanParallel());
+        assertEquals(
+                SqlRequest.TransactionOption.newBuilder()
+                        .setType(SqlRequest.TransactionType.READ_ONLY)
+                        .setScanParallel(4)
+                        .build(),
+                s.toProtocolBuffer(List.of()));
     }
 }
