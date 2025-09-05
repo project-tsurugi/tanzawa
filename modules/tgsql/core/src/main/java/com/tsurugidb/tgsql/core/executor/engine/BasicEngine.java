@@ -50,6 +50,7 @@ import com.tsurugidb.tgsql.core.model.ExplainStatement;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
 import com.tsurugidb.tgsql.core.model.StartTransactionStatement;
 import com.tsurugidb.tgsql.core.model.Statement;
+import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -115,6 +116,11 @@ public class BasicEngine extends AbstractEngine {
     @Override
     public boolean disconnect() throws ServerException, IOException, InterruptedException {
         return sqlProcessor.disconnect();
+    }
+
+    @Override
+    public Session getSession() {
+        return sqlProcessor.getSession();
     }
 
     @Override

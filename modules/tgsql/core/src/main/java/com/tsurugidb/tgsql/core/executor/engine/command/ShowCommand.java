@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -154,8 +155,17 @@ public class ShowCommand extends SpecialCommand {
         var sqlProcessor = engine.getSqlProcessor();
         String endpoint = sqlProcessor.getEndpoint();
         boolean active = sqlProcessor.isSessionActive();
+        var session = sqlProcessor.getSession();
+
+        Optional<String> userName;
+        if (session != null) {
+            userName = session.getUserName().get();
+        } else {
+            userName = Optional.empty();
+        }
+
         var reporter = engine.getReporter();
-        reporter.reportSessionStatus(endpoint, active);
+        reporter.reportSessionStatus(endpoint, active, userName);
         return true;
     }
 

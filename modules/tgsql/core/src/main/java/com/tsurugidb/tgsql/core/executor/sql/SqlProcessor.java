@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.model.Region;
+import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.SqlServiceException;
@@ -106,6 +107,15 @@ public interface SqlProcessor extends ServerResource {
      * @return {@code true} if the holding session is (probably) active, or {@code false} otherwise
      */
     boolean isSessionActive();
+
+    /**
+     * Returns the session.
+     *
+     * @return the session, or {@code null} if there is no active sessions
+     */
+    default @Nullable Session getSession() {
+        return null;
+    }
 
     /**
      * Returns whether or not the holding transaction is active.

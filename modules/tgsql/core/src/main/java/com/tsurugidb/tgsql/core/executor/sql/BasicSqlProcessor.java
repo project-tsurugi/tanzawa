@@ -225,6 +225,11 @@ public class BasicSqlProcessor implements SqlProcessor {
     }
 
     @Override
+    public @Nullable Session getSession() {
+        return this.session;
+    }
+
+    @Override
     public boolean isTransactionActive() {
         return transaction != null;
     }

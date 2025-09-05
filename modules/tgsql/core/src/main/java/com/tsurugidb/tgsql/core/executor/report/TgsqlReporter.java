@@ -349,8 +349,9 @@ public abstract class TgsqlReporter {
      *
      * @param endpoint endpoint
      * @param active   {@code true} if session is active
+     * @param userName user name
      */
-    public void reportSessionStatus(String endpoint, boolean active) {
+    public void reportSessionStatus(String endpoint, boolean active, Optional<String> userName) {
         String activeMessage = active ? "active" : "inactive";
 
         String message;
@@ -361,6 +362,11 @@ public abstract class TgsqlReporter {
         }
 
         reportSessionStatus(message, endpoint, active);
+
+        userName.ifPresent(user -> {
+            String userMessage = MessageFormat.format("session.user={0}", user);
+            reportSessionUserName(userMessage);
+        });
     }
 
     /**
@@ -371,6 +377,15 @@ public abstract class TgsqlReporter {
      * @param active   {@code true} if session is active
      */
     protected void reportSessionStatus(String message, String endpoint, boolean active) {
+        info(message);
+    }
+
+    /**
+     * output message for session status.
+     *
+     * @param message message
+     */
+    protected void reportSessionUserName(String message) {
         info(message);
     }
 

@@ -20,9 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,7 +35,9 @@ import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
+import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.sql.Transaction;
+import com.tsurugidb.tsubakuro.util.FutureResponse;
 
 class TgsqlPromptTest {
 
@@ -46,7 +50,7 @@ class TgsqlPromptTest {
     @Test
     void constant() {
         var prompt = TgsqlPrompt.create("tgsql> ");
-        String actual = prompt.getPrompt(null, null);
+        String actual = prompt.getPrompt(null, null, null);
         assertEquals("tgsql> ", actual);
     }
 
@@ -56,13 +60,43 @@ class TgsqlPromptTest {
         {
             var config = new TgsqlConfig();
             config.setEndpoint("tcp://localhost:12345");
-            String actual = prompt.getPrompt(config, null);
+            String actual = prompt.getPrompt(config, null, null);
             assertEquals("tcp://localhost:12345> ", actual);
         }
         {
             var config = new TgsqlConfig();
-            String actual = prompt.getPrompt(config, null);
+            String actual = prompt.getPrompt(config, null, null);
             assertEquals("null> ", actual);
+        }
+    }
+
+    @Test
+    void sessionUser() {
+        var prompt = TgsqlPrompt.create("{session.user}> ");
+        {
+            var session = new SessionTestMock() {
+                @Override
+                public FutureResponse<Optional<String>> getUserName() throws IOException {
+                    return FutureResponse.returns(Optional.of("test-user"));
+                }
+            };
+            String actual = prompt.getPrompt(null, session, null);
+            assertEquals("test-user> ", actual);
+        }
+        {
+            var session = new SessionTestMock() {
+                @Override
+                public FutureResponse<Optional<String>> getUserName() throws IOException {
+                    return FutureResponse.returns(Optional.empty());
+                }
+            };
+            String actual = prompt.getPrompt(null, session, null);
+            assertEquals("> ", actual);
+        }
+        {
+            Session session = null;
+            String actual = prompt.getPrompt(null, session, null);
+            assertEquals("> ", actual);
         }
     }
 
@@ -71,7 +105,7 @@ class TgsqlPromptTest {
         {
             var prompt = TgsqlPrompt.create("{now}> ");
             String start = LocalDateTime.now().toString();
-            String actual = prompt.getPrompt(null, null);
+            String actual = prompt.getPrompt(null, null, null);
             String end = LocalDateTime.now().toString();
 
             assertTrue(actual.endsWith("> "));
@@ -88,7 +122,7 @@ class TgsqlPromptTest {
 
             var prompt = TgsqlPrompt.create("{now." + format + "}> ");
             String start = ZonedDateTime.now().format(formatter) + "> ";
-            String actual = prompt.getPrompt(null, null);
+            String actual = prompt.getPrompt(null, null, null);
             String end = ZonedDateTime.now().format(formatter) + "> ";
             if (start.compareTo(actual) <= 0 && actual.compareTo(end) <= 0) {
                 // success
@@ -108,7 +142,7 @@ class TgsqlPromptTest {
             }
         };
         var transaction = new TransactionWrapper(tx, null);
-        String actual = prompt.getPrompt(null, transaction);
+        String actual = prompt.getPrompt(null, null, transaction);
         assertEquals("TID-12345> ", actual);
     }
 
@@ -117,7 +151,7 @@ class TgsqlPromptTest {
         var prompt = TgsqlPrompt.create("type={tx.type}> ");
         var option = TransactionOption.newBuilder().setType(TransactionType.SHORT).build();
         var transaction = new TransactionWrapper(null, option);
-        String actual = prompt.getPrompt(null, transaction);
+        String actual = prompt.getPrompt(null, null, transaction);
         assertEquals("type=OCC> ", actual);
     }
 
@@ -126,7 +160,7 @@ class TgsqlPromptTest {
         var prompt = TgsqlPrompt.create("label=[{tx.label}]> ");
         var option = TransactionOption.newBuilder().setLabel("abc").build();
         var transaction = new TransactionWrapper(null, option);
-        String actual = prompt.getPrompt(null, transaction);
+        String actual = prompt.getPrompt(null, null, transaction);
         assertEquals("label=[abc]> ", actual);
     }
 
@@ -136,7 +170,7 @@ class TgsqlPromptTest {
         var prompt = TgsqlPrompt.create("include_ddl={" + property + "}> ");
         var option = TransactionOption.newBuilder().setModifiesDefinitions(true).build();
         var transaction = new TransactionWrapper(null, option);
-        String actual = prompt.getPrompt(null, transaction);
+        String actual = prompt.getPrompt(null, null, transaction);
         assertEquals("include_ddl=true> ", actual);
     }
 
@@ -149,7 +183,7 @@ class TgsqlPromptTest {
                 .addWritePreserves(WritePreserve.newBuilder().setTableName("test2").build()) //
                 .build();
         var transaction = new TransactionWrapper(null, option);
-        String actual = prompt.getPrompt(null, transaction);
+        String actual = prompt.getPrompt(null, null, transaction);
         assertEquals("LTX(wp=[\"test1\", \"test2\"])> ", actual);
     }
 
@@ -162,7 +196,7 @@ class TgsqlPromptTest {
                 .addInclusiveReadAreas(ReadArea.newBuilder().setTableName("test2").build()) //
                 .build();
         var transaction = new TransactionWrapper(null, option);
-        String actual = prompt.getPrompt(null, transaction);
+        String actual = prompt.getPrompt(null, null, transaction);
         assertEquals("LTX(ra=[\"test1\", \"test2\"])> ", actual);
     }
 
@@ -175,7 +209,7 @@ class TgsqlPromptTest {
                 .addExclusiveReadAreas(ReadArea.newBuilder().setTableName("test2").build()) //
                 .build();
         var transaction = new TransactionWrapper(null, option);
-        String actual = prompt.getPrompt(null, transaction);
+        String actual = prompt.getPrompt(null, null, transaction);
         assertEquals("LTX(ra=[\"test1\", \"test2\"])> ", actual);
     }
 
@@ -184,14 +218,14 @@ class TgsqlPromptTest {
         var prompt = TgsqlPrompt.create("{tx.priority}> ");
         var option = TransactionOption.newBuilder().build();
         var transaction = new TransactionWrapper(null, option);
-        String actual = prompt.getPrompt(null, transaction);
+        String actual = prompt.getPrompt(null, null, transaction);
         assertEquals("unspecified> ", actual);
     }
 
     @Test
     void brace1() {
         var prompt = TgsqlPrompt.create("{{abc}}");
-        String actual = prompt.getPrompt(null, null);
+        String actual = prompt.getPrompt(null, null, null);
         assertEquals("{abc}", actual);
     }
 
@@ -205,7 +239,7 @@ class TgsqlPromptTest {
             }
         };
         var transaction = new TransactionWrapper(tx, null);
-        String actual = prompt.getPrompt(null, transaction);
+        String actual = prompt.getPrompt(null, null, transaction);
         assertEquals("tid={TID-12345}> ", actual);
     }
 }

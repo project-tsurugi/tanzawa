@@ -24,6 +24,7 @@ import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.executor.report.TgsqlReporter;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.tgsql.core.model.Statement;
+import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 /**
@@ -71,6 +72,15 @@ public interface Engine {
      */
     default boolean disconnect() throws ServerException, IOException, InterruptedException {
         return false; // do override
+    }
+
+    /**
+     * Returns the session.
+     *
+     * @return the session, or {@code null} if there is no active sessions
+     */
+    default @Nullable Session getSession() {
+        throw new UnsupportedOperationException("do override");
     }
 
     /**

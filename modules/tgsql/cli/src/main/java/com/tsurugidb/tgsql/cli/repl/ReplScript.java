@@ -29,14 +29,15 @@ import org.slf4j.LoggerFactory;
 import com.tsurugidb.tgsql.cli.repl.jline.ReplJLineParser.ParsedStatement;
 import com.tsurugidb.tgsql.core.TgsqlRunner.StatementSupplier;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
-import com.tsurugidb.tgsql.core.config.TgsqlPrompt;
 import com.tsurugidb.tgsql.core.config.TgsqlCvKey.TgsqlCvKeyPrompt;
+import com.tsurugidb.tgsql.core.config.TgsqlPrompt;
 import com.tsurugidb.tgsql.core.exception.TgsqlInterruptedException;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
 import com.tsurugidb.tgsql.core.model.Region;
 import com.tsurugidb.tgsql.core.model.SimpleStatement;
 import com.tsurugidb.tgsql.core.model.Statement;
 import com.tsurugidb.tgsql.core.model.Statement.Kind;
+import com.tsurugidb.tsubakuro.common.Session;
 
 /**
  * Tsurugi SQL console repl script.
@@ -59,13 +60,15 @@ public class ReplScript implements StatementSupplier {
     }
 
     @Override
-    public List<Statement> get(TgsqlConfig config, @Nullable TransactionWrapper transaction) {
-        String prompt2 = getPrompt(config, ReplCvKey.PROMPT2_DEFAULT, ReplCvKey.PROMPT2_TRANSACTION, ReplCvKey.PROMPT2_OCC, ReplCvKey.PROMPT2_LTX, ReplCvKey.PROMPT2_RTX, PROMPT2, transaction);
+    public List<Statement> get(TgsqlConfig config, @Nullable Session session, @Nullable TransactionWrapper transaction) {
+        String prompt2 = getPrompt(config, ReplCvKey.PROMPT2_DEFAULT, ReplCvKey.PROMPT2_TRANSACTION, ReplCvKey.PROMPT2_OCC, ReplCvKey.PROMPT2_LTX, ReplCvKey.PROMPT2_RTX, PROMPT2, session,
+                transaction);
         lineReader.setVariable(LineReader.SECONDARY_PROMPT_PATTERN, prompt2);
 
         String text;
         try {
-            String prompt1 = getPrompt(config, ReplCvKey.PROMPT1_DEFAULT, ReplCvKey.PROMPT1_TRANSACTION, ReplCvKey.PROMPT1_OCC, ReplCvKey.PROMPT1_LTX, ReplCvKey.PROMPT1_RTX, PROMPT1, transaction);
+            String prompt1 = getPrompt(config, ReplCvKey.PROMPT1_DEFAULT, ReplCvKey.PROMPT1_TRANSACTION, ReplCvKey.PROMPT1_OCC, ReplCvKey.PROMPT1_LTX, ReplCvKey.PROMPT1_RTX, PROMPT1, session,
+                    transaction);
             text = lineReader.readLine(prompt1);
         } catch (UserInterruptException e) {
             throw new TgsqlInterruptedException(e);
@@ -86,8 +89,8 @@ public class ReplScript implements StatementSupplier {
         throw new AssertionError(line);
     }
 
-    private String getPrompt(TgsqlConfig config, TgsqlCvKeyPrompt keyDefault, TgsqlCvKeyPrompt keyTx, TgsqlCvKeyPrompt keyOcc, TgsqlCvKeyPrompt keyLtx, TgsqlCvKeyPrompt keyRtx,
-            String defaultPrompt, @Nullable TransactionWrapper transaction) {
+    private String getPrompt(TgsqlConfig config, TgsqlCvKeyPrompt keyDefault, TgsqlCvKeyPrompt keyTx, TgsqlCvKeyPrompt keyOcc, TgsqlCvKeyPrompt keyLtx, TgsqlCvKeyPrompt keyRtx, String defaultPrompt,
+            @Nullable Session session, @Nullable TransactionWrapper transaction) {
         var variableMap = config.getClientVariableMap();
 
         TgsqlPrompt prompt = null;
@@ -123,7 +126,7 @@ public class ReplScript implements StatementSupplier {
         }
 
         try {
-            return prompt.getPrompt(config, transaction);
+            return prompt.getPrompt(config, session, transaction);
         } catch (Exception e) {
             LOG.debug("ReplScript.getPrompt error (key={}, prompt={})", key, prompt, e); //$NON-NLS-1$
             return defaultPrompt;

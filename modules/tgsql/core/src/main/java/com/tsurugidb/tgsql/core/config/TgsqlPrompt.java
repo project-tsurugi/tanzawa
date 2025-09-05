@@ -15,6 +15,7 @@
  */
 package com.tsurugidb.tgsql.core.config;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -33,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import com.tsurugidb.tgsql.core.exception.TgsqlMessageException;
 import com.tsurugidb.tgsql.core.executor.report.TransactionOptionReportUtil;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
+import com.tsurugidb.tsubakuro.common.Session;
+import com.tsurugidb.tsubakuro.exception.ServerException;
 
 /**
  * prompt.
@@ -149,11 +152,14 @@ public class TgsqlPrompt {
             return TgsqlPrompt::getEndpoint;
         case "connection":
         case "conn":
+        case "session":
             switch (field) {
             case "uri":
                 return TgsqlPrompt::getEndpoint;
             case "label":
                 return TgsqlPrompt::getConnectionLabel;
+            case "user":
+                return TgsqlPrompt::getSessionUser;
             default:
                 break;
             }
@@ -210,7 +216,7 @@ public class TgsqlPrompt {
          * @return prompt element for text
          */
         static TgsqlPromptElement text(String text) {
-            return (config, transaction) -> text;
+            return (config, session, transaction) -> text;
         }
 
         /**
@@ -220,31 +226,43 @@ public class TgsqlPrompt {
          * @param transaction transaction
          * @return prompt text
          */
-        String get(TgsqlConfig config, TransactionWrapper transaction);
+        String get(TgsqlConfig config, Session session, TransactionWrapper transaction);
     }
 
     static TgsqlPromptElement parseElementDateTime(String format) {
         if (format == null || format.isEmpty()) {
-            return (c, t) -> LocalDateTime.now().toString();
+            return (c, s, t) -> LocalDateTime.now().toString();
         }
 
         try {
             var formatter = DateTimeFormatter.ofPattern(format);
-            return (c, t) -> ZonedDateTime.now().format(formatter);
+            return (c, s, t) -> ZonedDateTime.now().format(formatter);
         } catch (Exception e) {
             throw new TgsqlMessageException(MessageFormat.format("dateTime format error. format={0}, cause={1}", format, e.getMessage()), e);
         }
     }
 
-    static String getEndpoint(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getEndpoint(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         return config.getEndpoint();
     }
 
-    static String getConnectionLabel(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getConnectionLabel(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         return config.getConnectionLabel().orElse(null);
     }
 
-    static String getTransactionId(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getSessionUser(TgsqlConfig config, Session session, TransactionWrapper transaction) {
+        if (session == null) {
+            return "";
+        }
+
+        try {
+            return session.getUserName().get().orElse("");
+        } catch (IOException | ServerException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static String getTransactionId(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -253,7 +271,7 @@ public class TgsqlPrompt {
         return tx.getTransactionId();
     }
 
-    static String getTxOption(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getTxOption(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -263,7 +281,7 @@ public class TgsqlPrompt {
         return util.toString(option);
     }
 
-    static String getTxType(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getTxType(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -274,7 +292,7 @@ public class TgsqlPrompt {
         return util.toString(type);
     }
 
-    static String getTxLabel(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getTxLabel(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -287,7 +305,7 @@ public class TgsqlPrompt {
         return label;
     }
 
-    static String getTxIncludeDdl(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getTxIncludeDdl(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -297,7 +315,7 @@ public class TgsqlPrompt {
         return Boolean.toString(includeDdl);
     }
 
-    static String getTxWritePreserve(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getTxWritePreserve(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -308,7 +326,7 @@ public class TgsqlPrompt {
         return util.toStringWp(list);
     }
 
-    static String getTxInclusiveReadArea(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getTxInclusiveReadArea(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -319,7 +337,7 @@ public class TgsqlPrompt {
         return util.toStringRa(list);
     }
 
-    static String getTxExclusiveReadArea(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getTxExclusiveReadArea(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -330,7 +348,7 @@ public class TgsqlPrompt {
         return util.toStringRa(list);
     }
 
-    static String getTxPriority(TgsqlConfig config, TransactionWrapper transaction) {
+    static String getTxPriority(TgsqlConfig config, Session session, TransactionWrapper transaction) {
         if (transaction == null) {
             return "<error>";
         }
@@ -359,20 +377,21 @@ public class TgsqlPrompt {
      * get prompt.
      *
      * @param config      tgsql configuration
+     * @param session     session
      * @param transaction transaction
      * @return prompt
      */
-    public String getPrompt(TgsqlConfig config, TransactionWrapper transaction) {
+    public String getPrompt(TgsqlConfig config, @Nullable Session session, @Nullable TransactionWrapper transaction) {
         if (elementList.size() == 1) {
             var element = elementList.get(0);
-            return element.get(config, transaction);
+            return element.get(config, session, transaction);
         }
 
         var sb = new StringBuilder();
         for (var element : elementList) {
             String s;
             try {
-                s = element.get(config, transaction);
+                s = element.get(config, session, transaction);
             } catch (Exception e) {
                 LOG.debug("PromptElement.get error", e);
                 s = "<error>";

@@ -54,6 +54,7 @@ import com.tsurugidb.tgsql.core.model.Statement.Kind;
 import com.tsurugidb.tgsql.core.parser.SqlParser;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
+import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 /**
@@ -296,11 +297,12 @@ public final class TgsqlRunner {
          * get statement.
          *
          * @param config      tgsql configuration
+         * @param session     session
          * @param transaction transaction
          * @return list of statement
          * @throws IOException if I/O error was occurred
          */
-        List<Statement> get(TgsqlConfig config, @Nullable TransactionWrapper transaction) throws IOException;
+        List<Statement> get(TgsqlConfig config, @Nullable Session session, @Nullable TransactionWrapper transaction) throws IOException;
     }
 
     /**
@@ -329,8 +331,9 @@ public final class TgsqlRunner {
         LOG.info("start repl");
         loop: while (true) {
             try {
+                var session = engine.getSession();
                 var transaction = engine.getTransaction();
-                List<Statement> statementList = script.get(engine.getConfig(), transaction);
+                List<Statement> statementList = script.get(engine.getConfig(), session, transaction);
                 if (statementList == null) {
                     LOG.trace("EOF");
                     break;

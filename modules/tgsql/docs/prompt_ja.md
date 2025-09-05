@@ -52,6 +52,7 @@ prompt2もprompt1と同様に設定可能。
 | now.日付書式                   | 現在日時（日付書式はDateTimeFormatter） |                       |
 | endpoint                       | エンドポイント                          | tcp://localhost:12345 |
 | connection.label               | セッションのラベル                      |                       |
+| session.user                   | セッションのユーザー                    | tsurugi               |
 | tx.id                          | トランザクションID                      | TID-0000000000000001  |
 | tx.option                      | トランザクションオプション              |                       |
 | tx.type                        | トランザクション種別                    | OCC                   |

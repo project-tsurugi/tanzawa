@@ -30,6 +30,7 @@ import com.tsurugidb.tgsql.core.model.ExplainStatement;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
 import com.tsurugidb.tgsql.core.model.StartTransactionStatement;
 import com.tsurugidb.tgsql.core.model.Statement;
+import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
 /**
@@ -64,6 +65,11 @@ public class ReplEngine extends AbstractEngine {
     @Override
     public void connect() throws ServerException, IOException, InterruptedException {
         delegate.connect();
+    }
+
+    @Override
+    public Session getSession() {
+        return delegate.getSession();
     }
 
     @Override
