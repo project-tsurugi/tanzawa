@@ -597,7 +597,7 @@ public class CommandArgumentSet {
     public void setNumberOfScanParallels(@Nullable Integer count) {
         if (count != null && count < 0) {
             throw new IllegalArgumentException(MessageFormat.format(
-                    "the number of scan parallels must be > 0 (specified: {0})",
+                    "the number of scan parallels must be >= 0 (specified: {0})",
                     count));
         }
         LOG.trace("argument: --scan-parallel: {}", count); //$NON-NLS-1$
