@@ -1,25 +1,25 @@
 # prompt for tgsql
 
-Tsurugi SQLコンソール（tgsql）のプロンプトはクライアント変数によって変更することが出来る。
+Tsurugi SQLコンソール（tgsql）のプロンプトは [クライアント変数](client-variable_ja.md) によって変更することができます。
 
 
 
 ## デフォルトのプロンプト
 
-最初に表示されるプロンプトをprompt1、複数行にまたがって入力するときのプロンプトをprompt2と呼ぶ。
+最初に表示されるプロンプトをprompt1、複数行にまたがって入力するときのプロンプトをprompt2と呼ぶことにします。
 
-promt1, prompt2のデフォルトは以下の通り。
+promt1, prompt2のデフォルトは以下の通りです。
 
 ```
-tgsql> ...prompt1
-     | ...prompt2
+tgsql>   <--prompt1
+     |   <--prompt2
 ```
 
 
 
 ## プロンプトのクライアント変数
 
-以下のクライアント変数にプロンプトの書式を設定する。
+以下のクライアント変数にプロンプトの書式を設定します。
 
 | クライアント変数名      | 説明                                           |
 | ----------------------- | ---------------------------------------------- |
@@ -29,39 +29,39 @@ tgsql> ...prompt1
 | console.prompt1.ltx     | LTX実行中のプロンプト                          |
 | console.prompt1.rtx     | RTX実行中のプロンプト                          |
 
-トランザクションが実行されていないときやトランザクション実行中のプロンプトが設定されていない場合は、console.prompt1.defaultの設定が使われる。
+トランザクションが実行されていないときやトランザクション実行中のプロンプトが設定されていない場合は、console.prompt1.defaultの設定が使われます。
 
-トランザクション実行中でconsole.prompt1.occ/ltx/rtxが設定されていない場合は、console.prompt1.txの設定が使われる。
+トランザクション実行中でconsole.prompt1.occ/ltx/rtxが設定されていない場合は、console.prompt1.txの設定が使われます。
 
-空文字列を設定するとデフォルトに戻る。（設定が削除される）
+空文字列を設定するとデフォルトに戻ります。（設定が削除されます）
 
-prompt2もprompt1と同様に設定可能。
+prompt2も prompt1と同様に設定することができます。
 
 
 
 ## プロンプトの書式
 
-プロンプトのクライアント変数には専用の書式を設定する。
+プロンプトのクライアント変数には専用の書式を設定します。
 
-波括弧で囲ったプロパティーは実行中の値に置換される。
+波括弧で囲ったプロパティーは実行中の値に置換されます。
 
-トランザクションに関するプロパティーは、トランザクション実行中のプロンプトのみで使用できる。
+トランザクションに関するプロパティーは、トランザクション実行中のプロンプトのみで使用できます。
 
-| プロパティー名                 | 説明                                    | 出力例                |
-| ------------------------------ | --------------------------------------- | --------------------- |
-| now.日付書式                   | 現在日時（日付書式はDateTimeFormatter） |                       |
-| endpoint                       | エンドポイント                          | tcp://localhost:12345 |
-| connection.label               | セッションのラベル                      |                       |
-| session.user                   | セッションのユーザー                    | tsurugi               |
-| tx.id                          | トランザクションID                      | TID-0000000000000001  |
-| tx.option                      | トランザクションオプション              |                       |
-| tx.type                        | トランザクション種別                    | OCC                   |
-| tx.label                       | トランザクションのラベル                |                       |
-| tx.include-ddl                 | DDL実行オプション                       | true                  |
-| tx.write-preserve, tx.wp       | write preserve                          | "test1", "test2"      |
-| tx.inclusive-read-area, tx.ira | inclusive read area                     | "test1", "test2"      |
-| tx.exclusive-read-area, tx.era | exclusive read area                     | "test1", "test2"      |
-| tx.priority                    | priority                                |                       |
+| プロパティー名                 | 説明                                                         | 出力例                |
+| ------------------------------ | ------------------------------------------------------------ | --------------------- |
+| now.日付書式                   | 現在日時（日付書式は [DateTimeFormatter](https://docs.oracle.com/javase/jp/11/docs/api/java.base/java/time/format/DateTimeFormatter.html) ） |                       |
+| endpoint                       | エンドポイント                                               | tcp://localhost:12345 |
+| connection.label               | セッションのラベル                                           |                       |
+| session.user                   | セッションのユーザー                                         | tsurugi               |
+| tx.id                          | トランザクションID                                           | TID-0000000000000001  |
+| tx.option                      | トランザクションオプション                                   |                       |
+| tx.type                        | トランザクション種別                                         | OCC                   |
+| tx.label                       | トランザクションのラベル                                     |                       |
+| tx.include-ddl                 | DDL実行オプション                                            | true                  |
+| tx.write-preserve, tx.wp       | write preserve                                               | "test1", "test2"      |
+| tx.inclusive-read-area, tx.ira | inclusive read area                                          | "test1", "test2"      |
+| tx.exclusive-read-area, tx.era | exclusive read area                                          | "test1", "test2"      |
+| tx.priority                    | トランザクションの優先度                                     |                       |
 
 
 

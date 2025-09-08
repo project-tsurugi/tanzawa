@@ -1,7 +1,7 @@
 # Tsurugi SQL console client variable
 
-クライアント変数は、Tsurugi SQLコンソール（tgsql）内で使用する値。
-値はユーザーが指定可能。
+クライアント変数は、Tsurugi SQLコンソール（tgsql）内で使用する値です。  
+この値はユーザーが変更することができます。
 
 
 
@@ -9,19 +9,19 @@
 
 ### デフォルトファイルで指定する方法
 
-tgsql起動時に、ユーザーのホームディレクトリー（Linuxの場合は`$HOME`, Windowsの場合は`%USERPROFILE%`）の下に`.tsurugidb/tgsql/client-variable.properties`があれば、それが読まれる。
+tgsql起動時に、ユーザーのホームディレクトリー（Linuxの場合は`$HOME`, Windowsの場合は`%USERPROFILE%`）の下に`.tsurugidb/tgsql/client-variable.properties`があれば、それが読まれます。
 
-このプロパティーファイルの中に`key=value`形式でクライアント変数を指定する。
+このプロパティーファイルの中に`key=value`形式でクライアント変数を指定します。
 
-### プログラム引数で指定する方法
+### 起動オプションで指定する方法
 
-プログラム引数に `-D<key>=<value>` あるいは `-D <key>=<value>` 形式で指定する。
+`tgsql` コマンドの起動オプションに `-D<key>=<value>` あるいは `-D <key>=<value>` 形式で指定します。
 
 ```bash
 tgsql -Dkey1=value1 -D key2=value2
 ```
 
-または、クライアント変数が記述されたプロパティーファイルを指定する。
+または、クライアント変数が記述されたプロパティーファイルを指定します。
 
 ```bash
 tgsql --client-variable client-variable.properties
@@ -29,17 +29,17 @@ tgsql --client-variable client-variable.properties
 
 ### 実行中に指定する方法
 
-コマンドで指定する。
+コマンドで指定します。
 
 - `\show client [<key prefix>]`
-  - 設定されているクライアント変数を一覧表示する。
-  - `key prefix` を指定した場合は、変数名の先頭がそれに一致したものだけを表示する。
+  - 設定されているクライアント変数を一覧表示します。
+  - `key prefix` を指定した場合は、変数名の先頭がそれに一致したものだけを表示します。
 - `\set`
-  - 設定されているクライアント変数を一覧表示する。
+  - 設定されているクライアント変数を一覧表示します。
 - `\set <key prefix>`
-  - 指定されたクライアント変数の値を表示する。
+  - 指定されたクライアント変数の値を表示します。
 - `\set <key> <value>`
-  - クライアント変数に値を設定する。
+  - クライアント変数に値を設定します。
 
 
 
@@ -57,7 +57,7 @@ tgsql --client-variable client-variable.properties
 | `console.warinig.color`  | 警告メッセージの文字色                     | color    | 赤色         |
 | `console.help.color`     | ヘルプメッセージの文字色                   | color    | 灰色         |
 | `console.prompt1.～`     | プロンプト。see [prompt.md](prompt_ja.md). | string   | `tgsql>`     |
-| `console.prompt2.～`     | プロンプト（2行目以降）                    | string   | `|`          |
+| `console.prompt2.～`     | プロンプト（2行目以降）                    | string   | <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#124;</code>          |
 | `display.implicit` | 暗黙メッセージの表示の有無 | boolean | true |
 | `display.succeed` | 成功メッセージの表示の有無 | boolean | true |
 | `implicit-transaction.label.suffix-time` | 暗黙に開始するトランザクションのラベルに付加する日時の書式 | date | `yyyy-MM-dd HH:mm:ss.SSSxxx` |
@@ -90,7 +90,7 @@ tgsql --client-variable client-variable.properties
 - color
   - 十六進数6桁（rrggbb）
 - date
-  - 日時の書式。JavaのDateTimeFormatterで指定できる形式。
+  - 日時の書式。Javaの [DateTimeFormatter](https://docs.oracle.com/javase/jp/11/docs/api/java.base/java/time/format/DateTimeFormatter.html) で指定できる形式。
 
 
 
