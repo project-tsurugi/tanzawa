@@ -90,9 +90,9 @@ tgsql --script -c tcp://localhost:12345 -e UTF-8 /path/to/script.sql
   * `--credentials` - credentials file path
   * `--no-auth` - do not use authentication mechanism
   * if none of `--user`, `--auth-token`, `--credentials`, `--no-auth`  is specified, solve in the following order
-    1. if `TSURUGI_AUTH_TOKEN` is not empty, use that string as the authentication token.
-    2. If there is a default credentials file, use it.
-    3. do not use authentication mechanism. (if an authentication error occurs, proceed to step 4）
+    1. if `TSURUGI_AUTH_TOKEN` is not empty, use that string as the authentication token. (if an authentication error occurs, proceed to next step)
+    2. If there is a default credentials file, use it. (if an authentication error occurs, proceed to next step)
+    3. do not use authentication mechanism. (if an authentication error occurs, proceed to next step)
     4. display a prompt to enter the username, and use the entered string as the username if it is not empty. (then a password prompt will also be displayed)
 
 ### Arguments for SQL console mode

@@ -18,6 +18,7 @@ package com.tsurugidb.tgsql.core.credential;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -93,18 +94,24 @@ public class DefaultCredentialSessionConnector {
     public SessionWithCredential connect(@Nonnull String applicationName, Optional<String> label, @Nonnull String endpoint) throws IOException, ServerException, InterruptedException {
         List<CredentialGetter> credentialList = List.of(this::getTokenCredential, this::getFileCredential, this::getNullCredential, this::getUserPasswordCredential);
 
+        var failureList = new ArrayList<CoreServiceException>();
         for (var getter : credentialList) {
             var credential = getter.get();
-            var session = connect(applicationName, label, endpoint, credential);
+            var session = connect(applicationName, label, endpoint, credential, failureList);
             if (session != null) {
                 return new SessionWithCredential(session, credential);
             }
         }
 
-        throw new AssertionError();
+        var e = new RuntimeException("connect authentication error");
+        for (var s : failureList) {
+            e.addSuppressed(s);
+        }
+        throw e;
     }
 
-    protected Session connect(String applicationName, Optional<String> label, String endpoint, Credential credential) throws IOException, ServerException, InterruptedException {
+    protected Session connect(String applicationName, Optional<String> label, String endpoint, Credential credential, List<CoreServiceException> failureList)
+            throws IOException, ServerException, InterruptedException {
         if (credential == null) {
             return null;
         }
@@ -113,12 +120,11 @@ public class DefaultCredentialSessionConnector {
             label.ifPresent(builder::withLabel);
             return builder.create();
         } catch (CoreServiceException e) {
-            if (credential == NullCredential.INSTANCE) {
-                var code = e.getDiagnosticCode();
-                if (code == CoreServiceCode.AUTHENTICATION_ERROR) {
-                    LOG.trace("NullCredential authentication error");
-                    return null;
-                }
+            var code = e.getDiagnosticCode();
+            if (code == CoreServiceCode.AUTHENTICATION_ERROR || code == CoreServiceCode.INVALID_REQUEST) {
+                LOG.debug("authentication error. {}: {}", credential, e.getMessage());
+                failureList.add(e);
+                return null;
             }
             throw e;
         }
