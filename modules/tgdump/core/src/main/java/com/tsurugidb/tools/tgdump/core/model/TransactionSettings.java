@@ -262,6 +262,6 @@ public class TransactionSettings {
 
     @Override
     public String toString() {
-        return String.format("TransactionSettings(type=%s, label=%s, scanParallel=%s)", type, label, scanParallel);
+        return String.format("TransactionSettings(type=%s, label=%s, scanParallel=%s)", type, label, scanParallel); //$NON-NLS-1$
     }
 }
