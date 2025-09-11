@@ -213,6 +213,7 @@ public class Main {
         var transactionSettings = TransactionSettings.newBuilder()
                 .withType(args.getTransactionType())
                 .withLabel(args.getTransactionLabel())
+                .withScanParallel(args.getNumberOfScanParallels())
                 .build();
         var engine = new DumpEngine(args.getNumberOfWorkerThreads());
         var profile = CommandUtil.loadProfile(args.getProfileBundleLoader(), args.getProfile());

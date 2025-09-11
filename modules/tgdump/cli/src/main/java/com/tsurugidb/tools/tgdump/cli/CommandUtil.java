@@ -101,6 +101,7 @@ final class CommandUtil {
         printArgument(printer, "--transaction", args.getTransactionType()); //$NON-NLS-1$
         printArgument(printer, "--transaction-label", args.getTransactionLabel()); //$NON-NLS-1$
         printArgument(printer, "--threads", args.getNumberOfWorkerThreads()); //$NON-NLS-1$
+        printArgument(printer, "--scan-parallel", args.getNumberOfScanParallels()); //$NON-NLS-1$
 
         // information settings
         printArgument(printer, "--verbose", args.isVerbose()); //$NON-NLS-1$

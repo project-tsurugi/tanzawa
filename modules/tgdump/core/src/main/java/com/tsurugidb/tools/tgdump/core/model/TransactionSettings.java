@@ -19,8 +19,10 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.tsurugidb.sql.proto.SqlRequest;
 
@@ -57,9 +59,11 @@ public class TransactionSettings {
 
         Type type = DEFAULT_TYPE;
 
-        String label;
+        @Nullable String label;
 
         boolean enableReadAreas = DEFAULT_ENABLE_READ_AREAS;
+
+        @Nullable Integer scanParallel;
 
         /**
          * Creates a new instance from this builder settings.
@@ -99,6 +103,22 @@ public class TransactionSettings {
             this.enableReadAreas = value;
             return this;
         }
+
+        /**
+         * Sets the scan parallel value.
+         * @param value the value to set, or {@code null} to clear the setting
+         * @return this
+         * @throws IllegalArgumentException if the given value is negative ({@code < 0})
+         */
+        public Builder withScanParallel(Integer value) {
+            if (value != null && value < 0) {
+                throw new IllegalArgumentException(MessageFormat.format(
+                        "scan parallel must be >= 0: {0}",
+                        value));
+            }
+            this.scanParallel = value;
+            return this;
+        }
     }
 
     /**
@@ -116,6 +136,8 @@ public class TransactionSettings {
     private final String label;
 
     private final boolean enableReadAreas;
+
+    private final Integer scanParallel;
 
     /**
      * Creates a new instance with default settings.
@@ -135,6 +157,7 @@ public class TransactionSettings {
         this.type = builder.type;
         this.label = builder.label;
         this.enableReadAreas = builder.enableReadAreas;
+        this.scanParallel = builder.scanParallel;
     }
 
     /**
@@ -170,6 +193,17 @@ public class TransactionSettings {
     }
 
     /**
+     * Returns the scan parallel value.
+     * @return the scan parallel value, or empty if it is not set
+     */
+    public OptionalInt getScanParallel() {
+        if (scanParallel == null) {
+            return OptionalInt.empty();
+        }
+        return OptionalInt.of(scanParallel);
+    }
+
+    /**
      * Builds transaction options from this settings.
      * @param tables the source tables
      * @return the built protocol buffer object
@@ -199,12 +233,13 @@ public class TransactionSettings {
                     txType));
         }
         getLabel().ifPresent(options::setLabel);
+        getScanParallel().ifPresent(options::setScanParallel);
         return options.build();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(enableReadAreas, label, type);
+        return Objects.hash(enableReadAreas, label, type, scanParallel);
     }
 
     @Override
@@ -219,11 +254,14 @@ public class TransactionSettings {
             return false;
         }
         TransactionSettings other = (TransactionSettings) obj;
-        return enableReadAreas == other.enableReadAreas && Objects.equals(label, other.label) && type == other.type;
+        return enableReadAreas == other.enableReadAreas
+            && Objects.equals(label, other.label)
+            && type == other.type
+            && Objects.equals(scanParallel, other.scanParallel);
     }
 
     @Override
     public String toString() {
-        return String.format("TransactionSettings(type=%s, label=%s)", type, label); //$NON-NLS-1$
+        return String.format("TransactionSettings(type=%s, label=%s, scanParallel=%s)", type, label, scanParallel); //$NON-NLS-1$
     }
 }

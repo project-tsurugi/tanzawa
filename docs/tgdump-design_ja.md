@@ -92,10 +92,16 @@ tgdump --sql [<query-label>:]<query-text> [[<query-label>:]<query-text> [...]] -
   * `--transaction-label`
     * トランザクションのラベル
     * 未指定の場合はラベルを利用しない
+  * `--scan-parallel`
+    * データベース側のテーブル読み出しの最大タスク分割数
+      * 現状は RTX のみで有効
+    * 未指定の場合は、データベースのデフォルト設定を利用
   * `--threads`
     * クライアント側の処理スレッド数
       * サーバ側に同時に処理を要求するテーブル数はこのスレッド数に制限される
     * 未指定の場合は `1`
+    * Attention: 同一セッション内で、同時に利用可能な出力チャネル数に制限に抵触する可能性がある
+      * 原則的には、 `--scan-parallel` の値と `--threads` の値の積が出力チャネル数 (`sql.max_result_set_writers`) の上限を超えないようにすること
   * `-v,--verbose`
     * より多くのメッセージを標準出力へ出力する
   * `--monitor` (hidden)
@@ -275,10 +281,6 @@ tgdump --sql [<query-label>:]<query-text> [[<query-label>:]<query-text> [...]] -
   `internal` | 非 `0` | アプリケーション側の問題による内部エラー
 
   ※ reason はモニタリング情報のコマンド終了時の原因コード、 exit status はコマンド自体の終了ステータス
-
-* 備考
-  * TBD: strand 前提で、テーブルごとの最大ダンプ並列数を指定できるようにする
-    * `-P,--parallel` あたりを想定
 
 ## ダンププロファイル
 

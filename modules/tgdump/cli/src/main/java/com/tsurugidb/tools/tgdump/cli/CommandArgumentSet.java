@@ -65,6 +65,21 @@ public class CommandArgumentSet {
     }
 
     /**
+     * A validator to ensure zero or more parameter values.
+     */
+    public static class ZeroOrMoreValidator implements IValueValidator<Integer> {
+        @Override
+        public void validate(String name, Integer value) throws ParameterException {
+            if (value < 0) {
+                throw new ParameterException(MessageFormat.format(
+                        "\"{0}\" must be >= 0 (specified: {1})",
+                        name,
+                        value));
+            }
+        }
+    }
+
+    /**
      * A validator to ensure one or more parameter values.
      */
     public static class OneOrMoreValidator implements IValueValidator<Integer> {
@@ -185,6 +200,8 @@ public class CommandArgumentSet {
     private String transactionLabel = null;
 
     private int numberOfWorkerThreads = DEFAULT_NUMBER_OF_WORKER_THREADS;
+
+    private Integer numberOfScanParallels = null;
 
     private String authenticationUser = null;
 
@@ -555,6 +572,36 @@ public class CommandArgumentSet {
     public void setTransactionLabel(@Nullable String label) {
         LOG.trace("argument: --transaction-label: {}", label); //$NON-NLS-1$
         this.transactionLabel = label;
+    }
+
+    /**
+     * Returns the number of scan parallels for reading tables.
+     * @return the number of scan parallels, or {@code null} if it is not specified
+     */
+    public Integer getNumberOfScanParallels() {
+        return numberOfScanParallels;
+    }
+
+    /**
+     * Sets the number of scan parallels for reading tables.
+     * @param count the number of scan parallels, or {@code null} to clear it
+     * @throws IllegalArgumentException if the value is less than {@code 0}
+     */
+    @Parameter(
+            order = 120,
+            names = { "--scan-parallel" },
+            arity = 1,
+            description = "The number of scan parallels for reading tables",
+            validateValueWith = ZeroOrMoreValidator.class,
+            required = false)
+    public void setNumberOfScanParallels(@Nullable Integer count) {
+        if (count != null && count < 0) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "the number of scan parallels must be >= 0 (specified: {0})",
+                    count));
+        }
+        LOG.trace("argument: --scan-parallel: {}", count); //$NON-NLS-1$
+        this.numberOfScanParallels = count;
     }
 
 
