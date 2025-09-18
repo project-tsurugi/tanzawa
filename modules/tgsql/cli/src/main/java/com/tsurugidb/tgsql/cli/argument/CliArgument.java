@@ -85,7 +85,7 @@ public class CliArgument {
     @Parameter(order = 31, names = { "--auth-token" }, arity = 1, description = "<token>")
     private String authToken;
 
-    @Parameter(order = 32, names = { "--credentials" }, arity = 1, description = "</path/to/credentials.json>")
+    @Parameter(order = 32, names = { "--credentials" }, arity = 1, description = "</path/to/credentials.key>")
     private String credentials;
 
     @Parameter(order = 33, names = { "--no-auth" }, arity = 0, description = "no auth")
