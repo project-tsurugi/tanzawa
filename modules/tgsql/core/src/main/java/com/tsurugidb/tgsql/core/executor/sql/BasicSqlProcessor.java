@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.sql.proto.SqlRequest;
+import com.tsurugidb.system.proto.SystemResponse.SystemInfo;
 import com.tsurugidb.tgsql.core.TgsqlConstants;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.model.Region;
@@ -39,6 +40,7 @@ import com.tsurugidb.tsubakuro.sql.StatementMetadata;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.TransactionStatus.TransactionStatusWithMessage;
 import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
+import com.tsurugidb.tsubakuro.system.SystemClient;
 import com.tsurugidb.tsubakuro.util.Owner;
 
 /**
@@ -108,8 +110,23 @@ public class BasicSqlProcessor implements SqlProcessor {
             }
             this.sessionEndpoint = endpoint;
             config.setCredential(() -> credential);
+
+            try {
+                var systemInfo = getSystemInfo();
+                String name = systemInfo.getName();
+                String version = systemInfo.getVersion();
+                LOG.info("connected: {} {}", name, version);
+            } catch (Exception e) {
+                LOG.debug("getSystemInfo error", e);
+            }
         }
         return this.session;
+    }
+
+    private SystemInfo getSystemInfo() throws ServerException, IOException, InterruptedException {
+        try (var systemClient = SystemClient.attach(this.session)) {
+            return systemClient.getSystemInfo().await();
+        }
     }
 
     @Override
