@@ -85,13 +85,25 @@ public final class Main {
 
             if (argument.isVersion()) {
                 printVersion();
-                // return
-            }
-            if (argument.isHelp()) {
-                commander.usage();
+
+                if (argument.isHelp()) {
+                    commander.usage();
+                }
                 return 0;
             }
-            if (argument.isVersion()) {
+
+            String tgsqlVersion;
+            try {
+                var tgsqlCoreVersion = getTgSqlCoreVersion();
+                tgsqlVersion = tgsqlCoreVersion.getBuildVersion().get();
+            } catch (Exception e) {
+                LOG.debug("tgsqlVersion get error", e);
+                tgsqlVersion = "(unknown version)";
+            }
+            LOG.info("start tgsql {}", tgsqlVersion);
+
+            if (argument.isHelp()) {
+                commander.usage();
                 return 0;
             }
 
