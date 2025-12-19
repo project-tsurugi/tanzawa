@@ -52,4 +52,10 @@ shadowJar {
     archiveBaseName = 'tgsql'
     archiveClassifier = 'all'
     mergeServiceFiles()
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer) {
+        resource = 'META-INF/tsurugidb/clients'
+    }
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer) {
+        resource = 'META-INF/tsurugidb/diagnostic-code'
+    }
 }
