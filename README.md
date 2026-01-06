@@ -7,7 +7,9 @@
 
 ## Requirements
 
-* JDK `>= 11`
+* JDK `>= 17`
+
+**Note:** The build is configured with `release = 11` in Gradle, which means the compiled bytecode is compatible with Java 11 or later. While JDK 17 is required for the build environment, the resulting JAR files can run on Java 11 and above.
 
 ## How to build
 
