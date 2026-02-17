@@ -155,7 +155,7 @@ public final class TgsqlRunner {
         Objects.requireNonNull(script);
         Objects.requireNonNull(config);
 
-        try (var sqlProcessor = new BasicSqlProcessor(); //
+        try (var sqlProcessor = new BasicSqlProcessor(config); //
                 var resultProcessor = new BasicResultProcessor()) {
             var reporter = new BasicReporter(config);
             return execute(script, new BasicEngine(config, sqlProcessor, resultProcessor, reporter));
@@ -282,7 +282,7 @@ public final class TgsqlRunner {
         Objects.requireNonNull(script);
         Objects.requireNonNull(resultProcessor);
 
-        try (var sqlProcessor = new BasicSqlProcessor()) {
+        try (var sqlProcessor = new BasicSqlProcessor(config)) {
             var engine = new BasicEngine(config, sqlProcessor, resultProcessor, reporter);
             repl(script, engineWrapper.apply(engine));
         }

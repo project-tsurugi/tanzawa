@@ -110,7 +110,7 @@ public class BasicEngine extends AbstractEngine {
 
     @Override
     public void connect() throws ServerException, IOException, InterruptedException {
-        sqlProcessor.connect(config);
+        sqlProcessor.connect();
     }
 
     @Override

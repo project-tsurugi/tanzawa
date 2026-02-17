@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.tsurugidb.sql.proto.SqlRequest;
-import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.model.Region;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.exception.ServerException;
@@ -41,12 +40,11 @@ public interface SqlProcessor extends ServerResource {
     /**
      * connect.
      *
-     * @param config config
      * @throws ServerException      if server side error was occurred
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws InterruptedException if interrupted while executing the statement
      */
-    void connect(TgsqlConfig config) throws ServerException, IOException, InterruptedException;
+    void connect() throws ServerException, IOException, InterruptedException;
 
     /**
      * get endpoint.

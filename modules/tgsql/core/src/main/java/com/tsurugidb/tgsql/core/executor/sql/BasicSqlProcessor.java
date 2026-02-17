@@ -18,6 +18,8 @@ package com.tsurugidb.tgsql.core.executor.sql;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,6 +51,7 @@ import com.tsurugidb.tsubakuro.util.Owner;
 public class BasicSqlProcessor implements SqlProcessor {
     static final Logger LOG = LoggerFactory.getLogger(BasicSqlProcessor.class);
 
+    private final TgsqlConfig config;
     private String sessionEndpoint;
     private Session session;
     private SqlClient sqlClient;
@@ -57,7 +60,8 @@ public class BasicSqlProcessor implements SqlProcessor {
     /**
      * Creates a new instance.
      */
-    public BasicSqlProcessor() {
+    public BasicSqlProcessor(TgsqlConfig config) {
+        this.config = config;
     }
 
     /**
@@ -67,21 +71,22 @@ public class BasicSqlProcessor implements SqlProcessor {
      */
     BasicSqlProcessor(@Nonnull SqlClient client) {
         Objects.requireNonNull(client);
+        this.config = null;
         this.session = null;
         this.sqlClient = client;
     }
 
     @Override
-    public void connect(TgsqlConfig config) throws ServerException, IOException, InterruptedException {
+    public void connect() throws ServerException, IOException, InterruptedException {
         Objects.requireNonNull(config);
 
         if (this.sqlClient != null) {
             throw new IllegalStateException("already connected");
         }
-        this.sqlClient = SqlClient.attach(getSession(config));
+        this.sqlClient = SqlClient.attach(getOrCreateSession());
     }
 
-    protected Session getSession(TgsqlConfig config) throws ServerException, IOException, InterruptedException {
+    protected Session getOrCreateSession() throws ServerException, IOException, InterruptedException {
         if (this.session == null) {
             String applicationName = TgsqlConstants.APPLICATION_NAME;
             String endpoint = config.getEndpoint();
@@ -302,12 +307,41 @@ public class BasicSqlProcessor implements SqlProcessor {
 
     private boolean closeSession() throws ServerException, IOException, InterruptedException {
         try (var s = session; var c = sqlClient; var t = transaction) {
+            if (this.session != null) {
+                shutdownSession();
+            }
+
             return this.session != null;
         } finally {
             this.sessionEndpoint = null;
             this.session = null;
             this.sqlClient = null;
             this.transaction = null;
+        }
+    }
+
+    private void shutdownSession() {
+        if (this.config == null) {
+            return;
+        }
+
+        var shutdownType = config.getShutdownType();
+        LOG.debug("shutdownSession(): shutdownType={}", shutdownType);
+        var rawShutdownType = shutdownType.getRawShutdownType();
+        if (rawShutdownType == null) {
+            return;
+        }
+        int shutdownTimeout = config.getShutdownTimeout();
+        LOG.debug("shutdownSession(): shutdownTimeout={}", shutdownTimeout);
+
+        try {
+            session.shutdown(rawShutdownType).await(shutdownTimeout, TimeUnit.SECONDS);
+            LOG.trace("shutdownSession() end");
+        } catch (TimeoutException ignore) {
+            LOG.warn("shutdown timeout");
+        } catch (Exception e) {
+            LOG.warn("shutdown error. {}", e.getMessage());
+            LOG.debug("closeSession(): shutdown error", e);
         }
     }
 }

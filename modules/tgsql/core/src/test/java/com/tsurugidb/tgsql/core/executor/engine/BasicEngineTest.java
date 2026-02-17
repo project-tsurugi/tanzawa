@@ -83,7 +83,7 @@ class BasicEngineTest {
         }
 
         @Override
-        public void connect(TgsqlConfig config) throws ServerException, IOException, InterruptedException {
+        public void connect() throws ServerException, IOException, InterruptedException {
             return;
         }
 

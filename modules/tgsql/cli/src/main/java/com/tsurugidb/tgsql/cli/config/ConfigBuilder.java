@@ -81,6 +81,7 @@ public abstract class ConfigBuilder {
         fillProperty();
         fillClientVariable();
         fillCommitOption();
+        fillShutdownOption();
 
         buildSub();
 
@@ -280,6 +281,21 @@ public abstract class ConfigBuilder {
         var status = (commitOption != null) ? commitOption.toCommitStatus() : null;
         log.debug("config.commitStatus={}", status);
         config.setCommitStatus(status);
+    }
+
+    protected void fillShutdownOption() {
+        var clientVariableMap = config.getClientVariableMap();
+
+        var shutdownType = argument.getShutdownType();
+        log.debug("config.shutdownType={}", shutdownType);
+        clientVariableMap.put(TgsqlCvKey.SHUTDOWN_TYPE, shutdownType);
+
+        int shutdownTimeout = argument.getShutdownTimeout();
+        if (shutdownTimeout < 0) {
+            shutdownTimeout = 0;
+        }
+        log.debug("config.shutdownTimeout={}", shutdownTimeout);
+        clientVariableMap.put(TgsqlCvKey.SHUTDOWN_TIMEOUT, shutdownTimeout);
     }
 
     /*

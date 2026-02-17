@@ -230,4 +230,22 @@ public class TgsqlConfig {
         }
         return historySupplier.apply(size);
     }
+
+    /**
+     * get shutdown type.
+     *
+     * @return shutdown type
+     */
+    public @Nonnull TgsqlShutdownType getShutdownType() {
+        return clientVariableMap.get(TgsqlCvKey.SHUTDOWN_TYPE);
+    }
+
+    /**
+     * get shutdown timeout.
+     *
+     * @return shutdown timeout [seconds]
+     */
+    public int getShutdownTimeout() {
+        return clientVariableMap.get(TgsqlCvKey.SHUTDOWN_TIMEOUT);
+    }
 }

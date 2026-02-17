@@ -39,6 +39,7 @@ import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.tgsql.cli.repl.ReplDefaultCredentialSessionConnector;
 import com.tsurugidb.tgsql.core.TgsqlConstants;
+import com.tsurugidb.tgsql.core.config.TgsqlShutdownType;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
@@ -76,6 +77,22 @@ public class CliArgument {
 
     @Parameter(order = 21, names = { "--connection-label" }, arity = 1, description = "Tsurugi connection session label")
     private String connectionLabel;
+
+    /**
+     * --shutdown-type.
+     *
+     * @since 1.14.0
+     */
+    @Parameter(order = 22, names = { "--shutdown-type" }, arity = 1, description = "session shutdown type")
+    private TgsqlShutdownType shutdownType = TgsqlShutdownType.GRACEFUL;
+
+    /**
+     * --shutdown-timeout.
+     *
+     * @since 1.14.0
+     */
+    @Parameter(order = 23, names = { "--shutdown-timeout" }, arity = 1, description = "session shutdown timeout [seconds]")
+    private int shutdownTimeout = 5;
 
     // credential
 
@@ -325,6 +342,24 @@ public class CliArgument {
      */
     public @Nullable String getConnectionLabel() {
         return this.connectionLabel;
+    }
+
+    /**
+     * get --shutdown-type.
+     *
+     * @return shutdown type
+     */
+    public @Nonnull TgsqlShutdownType getShutdownType() {
+        return (this.shutdownType != null) ? this.shutdownType : TgsqlShutdownType.GRACEFUL;
+    }
+
+    /**
+     * get --shutdown-timeout.
+     *
+     * @return shutdown timeout [seconds]
+     */
+    public int getShutdownTimeout() {
+        return shutdownTimeout;
     }
 
     // credential

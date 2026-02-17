@@ -17,6 +17,7 @@ package com.tsurugidb.tgsql.core.config;
 
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +68,19 @@ public abstract class TgsqlCvKey<T> {
     public static final TgsqlCvKeyString DOT_NODE_PREFIX = new TgsqlCvKeyString(DotOutputHandler.KEY_NODE_PREFIX);
     /** dot.edge.* . */
     public static final TgsqlCvKeyString DOT_EDGE_PREFIX = new TgsqlCvKeyString(DotOutputHandler.KEY_EDGE_PREFIX);
+
+    /**
+     * shutdown.type .
+     *
+     * @since 1.14.0
+     */
+    public static final TgsqlCvKeyShutdownType SHUTDOWN_TYPE = new TgsqlCvKeyShutdownType("shutdown.type"); //$NON-NLS-1$
+    /**
+     * shutdown.timeout .
+     *
+     * @since 1.14.0
+     */
+    public static final TgsqlCvKeyInt SHUTDOWN_TIMEOUT = new TgsqlCvKeyInt("shutdown.timeout"); //$NON-NLS-1$
 
     //
 
@@ -214,6 +228,31 @@ public abstract class TgsqlCvKey<T> {
                 return TgsqlDateTimeFormat.create(s);
             } catch (Exception e) {
                 throw new TgsqlMessageException(MessageFormat.format("dateTime format error. key={0}, value={1}, cause={2}", name, s, e.getMessage()), e);
+            }
+        }
+    }
+
+    /**
+     * client variable key for ShutdownType.
+     */
+    public static class TgsqlCvKeyShutdownType extends TgsqlCvKey<TgsqlShutdownType> {
+
+        /**
+         * Creates a new instance.
+         *
+         * @param name variable name
+         */
+        public TgsqlCvKeyShutdownType(String name) {
+            super(name);
+        }
+
+        @Override
+        public TgsqlShutdownType convertValue(@Nonnull String s) {
+            try {
+                return TgsqlShutdownType.valueOf(s.toUpperCase());
+            } catch (Exception e) {
+                throw new TgsqlMessageException(
+                        MessageFormat.format("shutdownType error. key={0}, value={1}, cause={2}, possible values={3}", name, s, e.getMessage(), Arrays.toString(TgsqlShutdownType.values())), e);
             }
         }
     }
