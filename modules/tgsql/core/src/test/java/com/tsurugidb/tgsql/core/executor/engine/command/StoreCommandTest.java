@@ -24,6 +24,7 @@ import java.io.StringReader;
 import org.junit.jupiter.api.Test;
 
 import com.tsurugidb.tgsql.core.exception.TgsqlMessageException;
+import com.tsurugidb.tgsql.core.executor.engine.command.StoreCommand.StoreCommandArgument;
 import com.tsurugidb.tgsql.core.model.SpecialStatement;
 import com.tsurugidb.tgsql.core.parser.SqlParser;
 
@@ -119,6 +120,50 @@ class StoreCommandTest {
             target.parseArgument("blob", statement);
         });
         assertEquals("illegal objectName. target=blob, objectName=b@0", e.getMessage());
+    }
+
+    @Test
+    void fromStart() throws Exception {
+        var statement = parse("blob@^ /path/to/file");
+
+        var argument = target.parseArgument("blob", statement);
+        assertEquals("blob", argument.objectPrefix);
+        assertEquals(StoreCommandArgument.NumberType.FROM_START, argument.objectNumberType);
+        assertEquals(0, argument.objectNumber);
+        assertEquals("/path/to/file", argument.destination);
+    }
+
+    @Test
+    void fromStart1() throws Exception {
+        var statement = parse("blob@^1 /path/to/file");
+
+        var argument = target.parseArgument("blob", statement);
+        assertEquals("blob", argument.objectPrefix);
+        assertEquals(StoreCommandArgument.NumberType.FROM_START, argument.objectNumberType);
+        assertEquals(1, argument.objectNumber);
+        assertEquals("/path/to/file", argument.destination);
+    }
+
+    @Test
+    void fromEnd() throws Exception {
+        var statement = parse("blob@$ /path/to/file");
+
+        var argument = target.parseArgument("blob", statement);
+        assertEquals("blob", argument.objectPrefix);
+        assertEquals(StoreCommandArgument.NumberType.FROM_END, argument.objectNumberType);
+        assertEquals(0, argument.objectNumber);
+        assertEquals("/path/to/file", argument.destination);
+    }
+
+    @Test
+    void fromEnd1() throws Exception {
+        var statement = parse("blob@$1 /path/to/file");
+
+        var argument = target.parseArgument("blob", statement);
+        assertEquals("blob", argument.objectPrefix);
+        assertEquals(StoreCommandArgument.NumberType.FROM_END, argument.objectNumberType);
+        assertEquals(1, argument.objectNumber);
+        assertEquals("/path/to/file", argument.destination);
     }
 
     private static SpecialStatement parse(String s) throws IOException {

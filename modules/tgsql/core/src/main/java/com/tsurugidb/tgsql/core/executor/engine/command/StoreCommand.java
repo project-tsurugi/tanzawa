@@ -135,9 +135,18 @@ public class StoreCommand extends SpecialCommand {
     }
 
     static class StoreCommandArgument {
+        enum NumberType {
+            ABSOLUTE, FROM_START, FROM_END
+        }
+
         public String objectPrefix;
+        public NumberType objectNumberType = NumberType.ABSOLUTE;
         public int objectNumber;
         public String destination;
+
+        public String objectName() {
+            return objectPrefix + "@" + ((objectNumberType == NumberType.FROM_START) ? "^" : (objectNumberType == NumberType.FROM_END) ? "$" : "") + objectNumber;
+        }
     }
 
     StoreCommandArgument parseArgument(String subName, SpecialStatement statement) {
@@ -167,7 +176,17 @@ public class StoreCommand extends SpecialCommand {
             throw new TgsqlMessageException(MessageFormat.format("illegal objectName. target={0}, objectName={1}", subName, objectName));
         }
         argument.objectPrefix = objectPrefix;
-        argument.objectNumber = toInt(subName, objectNumber);
+
+        if (objectNumber.startsWith("^")) {
+            argument.objectNumberType = StoreCommandArgument.NumberType.FROM_START;
+            objectNumber = objectNumber.substring(1).trim();
+        } else if (objectNumber.startsWith("$")) {
+            argument.objectNumberType = StoreCommandArgument.NumberType.FROM_END;
+            objectNumber = objectNumber.substring(1).trim();
+        }
+        if (!objectNumber.isEmpty()) {
+            argument.objectNumber = toInt(subName, objectNumber);
+        }
 
         String destination = getOption(statement, index);
         if (destination == null) {
@@ -187,28 +206,50 @@ public class StoreCommand extends SpecialCommand {
     }
 
     private static boolean executeStoreBlob(BasicEngine engine, StoreCommandArgument argument) throws EngineException, ServerException, IOException, InterruptedException {
-        String objectName = argument.objectPrefix + "@" + argument.objectNumber;
+        String objectName = argument.objectName();
         String destination = argument.destination;
         LOG.debug("store blob. objectName={}, destination={}", objectName, destination); //$NON-NLS-1$ $NON-NLS-2$
 
         var sqlProcessor = engine.getSqlProcessor();
         var transaction = sqlProcessor.getTransactionOrThrow();
 
-        var blob = transaction.getObject(BlobWrapper.class, BlobWrapper.PREFIX, argument.objectNumber);
+        BlobWrapper blob;
+        switch (argument.objectNumberType) {
+        default:
+            blob = transaction.getObject(BlobWrapper.class, BlobWrapper.PREFIX, argument.objectNumber);
+            break;
+        case FROM_START:
+            blob = transaction.getFirstObject(BlobWrapper.class, BlobWrapper.PREFIX, argument.objectNumber);
+            break;
+        case FROM_END:
+            blob = transaction.getLastObject(BlobWrapper.class, BlobWrapper.PREFIX, argument.objectNumber);
+            break;
+        }
         blob.copyTo(transaction.getTransaction(), Path.of(destination));
 
         return true;
     }
 
     private static boolean executeStoreClob(BasicEngine engine, StoreCommandArgument argument) throws EngineException, ServerException, IOException, InterruptedException {
-        String objectName = argument.objectPrefix + "@" + argument.objectNumber;
+        String objectName = argument.objectName();
         String destination = argument.destination;
         LOG.debug("store clob. objectName={}, destination={}", objectName, destination); //$NON-NLS-1$ $NON-NLS-2$
 
         var sqlProcessor = engine.getSqlProcessor();
         var transaction = sqlProcessor.getTransactionOrThrow();
 
-        var clob = transaction.getObject(ClobWrapper.class, ClobWrapper.PREFIX, argument.objectNumber);
+        ClobWrapper clob;
+        switch (argument.objectNumberType) {
+        default:
+            clob = transaction.getObject(ClobWrapper.class, ClobWrapper.PREFIX, argument.objectNumber);
+            break;
+        case FROM_START:
+            clob = transaction.getFirstObject(ClobWrapper.class, ClobWrapper.PREFIX, argument.objectNumber);
+            break;
+        case FROM_END:
+            clob = transaction.getLastObject(ClobWrapper.class, ClobWrapper.PREFIX, argument.objectNumber);
+            break;
+        }
         clob.copyTo(transaction.getTransaction(), Path.of(destination));
 
         return true;

@@ -49,7 +49,7 @@ BLOBの場合は `blob@番号` 、CLOBの場合は `clob@番号` です。
 
 object-nameには `blob@番号` や `clob@番号` が指定できます。
 
-### 例
+#### 例
 
 ```
 tgsql> begin;
@@ -65,6 +65,43 @@ tgsql> select * from blob_example;
 (3 rows)
 
 tgsql> \store blob@0 /tmp/blob-0.bin
+
+tgsql> commit;
+transaction commit(DEFAULT) finished.
+```
+
+### 相対番号指定
+
+tgsql 1.16.0から、オブジェクト名の番号の位置に `^` や `$` を指定することができます。
+
+`blob@^` は、そのトランザクション内で一番小さな番号のBLOBになります。  
+`blob@$` は、そのトランザクション内で一番大きな番号のBLOBになります。  
+
+`^` や `$` の直後に数値を書くと、（0から始まる）相対番号として扱われます。  
+`blob@^n` は、n+1番目に小さな番号のBLOBになります。（`blob@^0` は `blob@^` と同じ意味です）  
+同様に、`blob@$n` は、n+1番目に大きな番号のBLOBになります。
+
+#### 例
+
+```
+tgsql> begin;
+transaction started. option=[
+  type: OCC
+]
+
+tgsql> select * from blob_example;
+[pk: INT, value: BLOB]
+[1, blob@8]
+[2, blob@9]
+[3, blob@10]
+[4, blob@11]
+[9, null]
+(5 rows)
+
+tgsql> \store blob@^ /tmp/blob-0.dat
+tgsql> \store blob@^1 /tmp/blob-1.dat
+tgsql> \store blob@$1 /tmp/blob-2.dat
+tgsql> \store blob@$ /tmp/blob-3.dat
 
 tgsql> commit;
 transaction commit(DEFAULT) finished.

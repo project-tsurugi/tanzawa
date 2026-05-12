@@ -115,7 +115,7 @@ public class TransactionWrapper implements AutoCloseable {
      * @param key    key
      * @param prefix prefix
      * @param id     object id
-     * @return object list
+     * @return object
      * @throws TgsqlMessageException if object not found
      */
     public <T extends IdWrapper> T getObject(Class<T> key, String prefix, int id) {
@@ -125,6 +125,43 @@ public class TransactionWrapper implements AutoCloseable {
             throw new TgsqlMessageException(MessageFormat.format("object not found in transaction. objectName={0}@{1}", prefix, id));
         }
         return object;
+    }
+
+    /**
+     * get first object.
+     *
+     * @param <T>    object type
+     * @param key    key
+     * @param prefix prefix
+     * @param skip   number of objects to skip
+     * @return object
+     * @throws TgsqlMessageException if object not found
+     */
+    public <T extends IdWrapper> T getFirstObject(Class<T> key, String prefix, int skip) {
+        if (skip < 0) {
+            throw new TgsqlMessageException(MessageFormat.format("object not found in transaction. objectName={0}@^{1}", prefix, skip));
+        }
+        var list = objectList(key);
+        return list.stream().skip(skip).findFirst().orElseThrow(() -> new TgsqlMessageException(MessageFormat.format("object not found in transaction. objectName={0}@^{1}", prefix, skip)));
+    }
+
+    /**
+     * get last object.
+     *
+     * @param <T>    object type
+     * @param key    key
+     * @param prefix prefix
+     * @param skip   number of objects to skip
+     * @return object
+     * @throws TgsqlMessageException if object not found
+     */
+    public <T extends IdWrapper> T getLastObject(Class<T> key, String prefix, int skip) {
+        var list = objectList(key);
+        int skip1 = list.size() - 1 - skip;
+        if (skip1 < 0) {
+            throw new TgsqlMessageException(MessageFormat.format("object not found in transaction. objectName={0}@${1}", prefix, skip));
+        }
+        return list.stream().skip(skip1).findFirst().orElseThrow(() -> new TgsqlMessageException(MessageFormat.format("object not found in transaction. objectName={0}@${1}", prefix, skip)));
     }
 
     @Override
