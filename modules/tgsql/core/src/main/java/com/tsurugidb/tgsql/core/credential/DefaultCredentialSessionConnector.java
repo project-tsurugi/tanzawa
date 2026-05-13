@@ -27,11 +27,13 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tsurugidb.tgsql.core.config.TgsqlLobTransferType;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredential;
+import com.tsurugidb.tsubakuro.common.BlobTransferType;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.common.SessionBuilder;
 import com.tsurugidb.tsubakuro.exception.CoreServiceCode;
@@ -86,18 +88,20 @@ public class DefaultCredentialSessionConnector {
      * @param applicationName application name
      * @param label           connection label
      * @param endpoint        the end-point URI string
+     * @param lobTrasferType  large object transfer type
      * @return the established connection session
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws ServerException      if server side error was occurred
      * @throws InterruptedException if interrupted while executing the statement
      */
-    public SessionWithCredential connect(@Nonnull String applicationName, Optional<String> label, @Nonnull String endpoint) throws IOException, ServerException, InterruptedException {
+    public SessionWithCredential connect(@Nonnull String applicationName, Optional<String> label, @Nonnull String endpoint, @Nonnull TgsqlLobTransferType lobTrasferType)
+            throws IOException, ServerException, InterruptedException {
         List<CredentialGetter> credentialList = List.of(this::getTokenCredential, this::getFileCredential, this::getNullCredential, this::getUserPasswordCredential);
 
         var failureList = new ArrayList<CoreServiceException>();
         for (var getter : credentialList) {
             var credential = getter.get();
-            var session = connect(applicationName, label, endpoint, credential, failureList);
+            var session = connect(applicationName, label, endpoint, credential, lobTrasferType.getRawBlobTransferType(), failureList);
             if (session != null) {
                 return new SessionWithCredential(session, credential);
             }
@@ -110,13 +114,13 @@ public class DefaultCredentialSessionConnector {
         throw e;
     }
 
-    protected Session connect(String applicationName, Optional<String> label, String endpoint, Credential credential, List<CoreServiceException> failureList)
+    protected Session connect(String applicationName, Optional<String> label, String endpoint, Credential credential, BlobTransferType blobTransferType, List<CoreServiceException> failureList)
             throws IOException, ServerException, InterruptedException {
         if (credential == null) {
             return null;
         }
         try {
-            var builder = SessionBuilder.connect(endpoint).withApplicationName(applicationName).withCredential(credential);
+            var builder = SessionBuilder.connect(endpoint).withApplicationName(applicationName).withCredential(credential).withBlobTransfer(blobTransferType);
             label.ifPresent(builder::withLabel);
             return builder.create();
         } catch (CoreServiceException e) {

@@ -160,6 +160,8 @@ public class TgsqlPrompt {
                 return TgsqlPrompt::getConnectionLabel;
             case "user":
                 return TgsqlPrompt::getSessionUser;
+            case "lobtransfertype":
+                return TgsqlPrompt::getSessionLobTransferType;
             default:
                 break;
             }
@@ -259,6 +261,20 @@ public class TgsqlPrompt {
             return session.getUserName().get().orElse("");
         } catch (IOException | ServerException | InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    static String getSessionLobTransferType(TgsqlConfig config, Session session, TransactionWrapper transaction) {
+        if (session == null) {
+            return "";
+        }
+
+        try {
+            var rawType = session.getBlobTransferMedium().getBlobTransferType();
+            var type = TgsqlLobTransferType.valueOf(rawType);
+            return type.toString();
+        } catch (Exception e) {
+            return "<unknown>";
         }
     }
 

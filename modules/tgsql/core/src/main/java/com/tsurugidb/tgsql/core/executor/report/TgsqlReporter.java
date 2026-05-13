@@ -34,6 +34,7 @@ import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
 import com.tsurugidb.tgsql.core.config.TgsqlCvKey;
 import com.tsurugidb.tgsql.core.config.TgsqlCvKey.TgsqlCvKeyBoolean;
+import com.tsurugidb.tgsql.core.config.TgsqlLobTransferType;
 import com.tsurugidb.tgsql.core.executor.sql.ColumnWrapper;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.explain.PlanGraph;
@@ -347,11 +348,12 @@ public abstract class TgsqlReporter {
     /**
      * output message for session status.
      *
-     * @param endpoint endpoint
-     * @param active   {@code true} if session is active
-     * @param userName user name
+     * @param endpoint        endpoint
+     * @param active          {@code true} if session is active
+     * @param userName        user name
+     * @param lobTransferType large object transfer type
      */
-    public void reportSessionStatus(String endpoint, boolean active, Optional<String> userName) {
+    public void reportSessionStatus(String endpoint, boolean active, Optional<String> userName, Optional<TgsqlLobTransferType> lobTransferType) {
         String activeMessage = active ? "active" : "inactive";
 
         String message;
@@ -367,6 +369,10 @@ public abstract class TgsqlReporter {
             String userMessage = MessageFormat.format("session.user={0}", user);
             reportSessionUserName(userMessage);
         });
+        lobTransferType.ifPresent(type -> {
+            String typeMessage = MessageFormat.format("session.lobTransferType={0}", type);
+            reportSessionLobTransferType(typeMessage);
+        });
     }
 
     /**
@@ -381,11 +387,20 @@ public abstract class TgsqlReporter {
     }
 
     /**
-     * output message for session status.
+     * output message for session user name.
      *
      * @param message message
      */
     protected void reportSessionUserName(String message) {
+        info(message);
+    }
+
+    /**
+     * output message for session large object transfer type.
+     *
+     * @param message message
+     */
+    protected void reportSessionLobTransferType(String message) {
         info(message);
     }
 

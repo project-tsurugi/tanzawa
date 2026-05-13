@@ -39,6 +39,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.tsurugidb.tgsql.cli.argument.CliArgument.TransactionEnum;
 import com.tsurugidb.tgsql.core.TgsqlConstants;
+import com.tsurugidb.tgsql.core.config.TgsqlLobTransferType;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
@@ -140,6 +141,15 @@ class CliArgumentTest {
         set(argument, "--connection-label", label);
 
         assertEquals(label, argument.getConnectionLabel());
+    }
+
+    @Test
+    void lobTransferType() {
+        var lobTransferType = TgsqlLobTransferType.RELAY;
+        var argument = new CliArgument();
+        set(argument, "--lob-transfer-type", lobTransferType);
+
+        assertEquals(TgsqlLobTransferType.RELAY, argument.getLobTransferType());
     }
 
     // commit

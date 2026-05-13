@@ -96,6 +96,9 @@ public abstract class ConfigBuilder {
         String label = argument.getConnectionLabel();
         log.debug("config.connectionLabel={}", label);
         config.setConnectionLabel(label);
+        var lobTrasferType = argument.getLobTransferType();
+        log.debug("config.lobTransferType={}", lobTrasferType);
+        config.setLobTransferType(lobTrasferType);
     }
 
     private void fillTransactionOption() {

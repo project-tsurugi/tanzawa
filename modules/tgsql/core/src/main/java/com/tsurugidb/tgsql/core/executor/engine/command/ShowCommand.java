@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.tgsql.core.config.TgsqlConfig;
+import com.tsurugidb.tgsql.core.config.TgsqlLobTransferType;
 import com.tsurugidb.tgsql.core.executor.engine.BasicEngine;
 import com.tsurugidb.tgsql.core.executor.engine.EngineException;
 import com.tsurugidb.tgsql.core.executor.result.type.BlobWrapper;
@@ -157,15 +158,20 @@ public class ShowCommand extends SpecialCommand {
         boolean active = sqlProcessor.isSessionActive();
         var session = sqlProcessor.getSession();
 
-        Optional<String> userName;
+        Optional<String> userName = Optional.empty();
+        Optional<TgsqlLobTransferType> lobTransferType = Optional.empty();
         if (session != null) {
             userName = session.getUserName().get();
-        } else {
-            userName = Optional.empty();
+            try {
+                var rawLobTransferType = session.getBlobTransferMedium().getBlobTransferType();
+                lobTransferType = Optional.ofNullable(TgsqlLobTransferType.valueOf(rawLobTransferType));
+            } catch (Exception ignore) {
+                // ignore
+            }
         }
 
         var reporter = engine.getReporter();
-        reporter.reportSessionStatus(endpoint, active, userName);
+        reporter.reportSessionStatus(endpoint, active, userName, lobTransferType);
         return true;
     }
 

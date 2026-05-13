@@ -94,6 +94,7 @@ public class BasicSqlProcessor implements SqlProcessor {
                 throw new IllegalStateException("specify connection-url");
             }
             var label = config.getConnectionLabel();
+            var lobTransferType = config.getLobTransferType();
 
             Credential credential;
             try {
@@ -102,10 +103,11 @@ public class BasicSqlProcessor implements SqlProcessor {
                     credential = supplier.get();
                     var builder = SessionBuilder.connect(endpoint).withApplicationName(applicationName).withCredential(credential);
                     label.ifPresent(builder::withLabel);
+                    builder.withBlobTransfer(lobTransferType.getRawBlobTransferType());
                     this.session = builder.create();
                 } else {
                     var sessionConnector = config.getDefaultCredentialSessionConnector();
-                    var connection = sessionConnector.connect(applicationName, label, endpoint);
+                    var connection = sessionConnector.connect(applicationName, label, endpoint, lobTransferType);
                     credential = connection.credential();
                     this.session = connection.session();
                 }
@@ -115,6 +117,13 @@ public class BasicSqlProcessor implements SqlProcessor {
             }
             this.sessionEndpoint = endpoint;
             config.setCredential(() -> credential);
+
+            try {
+                var largeObjectClient = session.getLargeObjectClient();
+                LOG.debug("largeObjectClient: {}", largeObjectClient);
+            } catch (Exception e) {
+                LOG.debug("getLargeObjectClient error", e);
+            }
 
             try {
                 var systemInfo = getSystemInfo();
