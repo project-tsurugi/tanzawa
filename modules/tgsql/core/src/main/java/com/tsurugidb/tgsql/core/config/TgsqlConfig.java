@@ -39,6 +39,7 @@ public class TgsqlConfig {
 
     private String endpoint;
     private Optional<String> connectionLabel = Optional.empty();
+    private TgsqlLobTransferType lobTransferType = TgsqlLobTransferType.DEFAULT;
 
     private Supplier<Credential> credential;
     private DefaultCredentialSessionConnector defaultCredentialSessionConnector;
@@ -87,6 +88,24 @@ public class TgsqlConfig {
      */
     public Optional<String> getConnectionLabel() {
         return this.connectionLabel;
+    }
+
+    /**
+     * set lob transfer type.
+     *
+     * @param lobTransferType lob transfer type
+     */
+    public void setLobTransferType(@Nonnull TgsqlLobTransferType lobTransferType) {
+        this.lobTransferType = Objects.requireNonNull(lobTransferType);
+    }
+
+    /**
+     * get lob transfer type.
+     *
+     * @return lob transfer type
+     */
+    public @Nonnull TgsqlLobTransferType getLobTransferType() {
+        return this.lobTransferType;
     }
 
     /**

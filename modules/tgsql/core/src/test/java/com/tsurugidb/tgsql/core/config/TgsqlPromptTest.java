@@ -35,6 +35,8 @@ import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 import com.tsurugidb.tgsql.core.executor.sql.TransactionWrapper;
+import com.tsurugidb.tsubakuro.common.BlobTransferMedium;
+import com.tsurugidb.tsubakuro.common.BlobTransferType;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 import com.tsurugidb.tsubakuro.util.FutureResponse;
@@ -97,6 +99,36 @@ class TgsqlPromptTest {
             Session session = null;
             String actual = prompt.getPrompt(null, session, null);
             assertEquals("> ", actual);
+        }
+    }
+
+    @Test
+    void sessionLobTransferType() {
+        var prompt = TgsqlPrompt.create("{session.lob-transfer-type}> ");
+        {
+            var session = new SessionTestMock() {
+                @Override
+                public BlobTransferMedium getBlobTransferMedium() {
+                    return new BlobTransferMedium() {
+                        @Override
+                        public BlobTransferType getBlobTransferType() {
+                            return BlobTransferType.RELAY;
+                        }
+                    };
+                }
+            };
+            String actual = prompt.getPrompt(null, session, null);
+            assertEquals("RELAY> ", actual);
+        }
+        {
+            var session = new SessionTestMock() {
+                @Override
+                public BlobTransferMedium getBlobTransferMedium() {
+                    return null;
+                }
+            };
+            String actual = prompt.getPrompt(null, session, null);
+            assertEquals("<unknown>> ", actual);
         }
     }
 

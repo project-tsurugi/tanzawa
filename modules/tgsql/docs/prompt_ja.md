@@ -53,6 +53,7 @@ prompt2も prompt1と同様に設定することができます。
 | endpoint                       | エンドポイント                                               | tcp://localhost:12345 |
 | connection.label               | セッションのラベル                                           |                       |
 | session.user                   | セッションのユーザー                                         | tsurugi               |
+| session.lob-transfer-type      | セッションのLOB転送モード                                    | RELAY                 |
 | tx.id                          | トランザクションID                                           | TID-0000000000000001  |
 | tx.option                      | トランザクションオプション                                   |                       |
 | tx.type                        | トランザクション種別                                         | OCC                   |

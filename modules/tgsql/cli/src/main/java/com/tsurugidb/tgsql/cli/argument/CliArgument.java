@@ -39,6 +39,7 @@ import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.tgsql.cli.repl.ReplDefaultCredentialSessionConnector;
 import com.tsurugidb.tgsql.core.TgsqlConstants;
+import com.tsurugidb.tgsql.core.config.TgsqlLobTransferType;
 import com.tsurugidb.tgsql.core.config.TgsqlShutdownType;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
@@ -79,11 +80,19 @@ public class CliArgument {
     private String connectionLabel;
 
     /**
+     * --lob-transfer-type.
+     *
+     * @since 1.16.0
+     */
+    @Parameter(order = 22, names = { "--lob-transfer-type" }, arity = 1, description = "large object transfer type")
+    private TgsqlLobTransferType lobTransferType = TgsqlLobTransferType.DEFAULT;
+
+    /**
      * --shutdown-type.
      *
      * @since 1.14.0
      */
-    @Parameter(order = 22, names = { "--shutdown-type" }, arity = 1, description = "session shutdown type")
+    @Parameter(order = 25, names = { "--shutdown-type" }, arity = 1, description = "session shutdown type")
     private TgsqlShutdownType shutdownType = TgsqlShutdownType.GRACEFUL;
 
     /**
@@ -91,7 +100,7 @@ public class CliArgument {
      *
      * @since 1.14.0
      */
-    @Parameter(order = 23, names = { "--shutdown-timeout" }, arity = 1, description = "session shutdown timeout [seconds]")
+    @Parameter(order = 26, names = { "--shutdown-timeout" }, arity = 1, description = "session shutdown timeout [seconds]")
     private int shutdownTimeout = 5;
 
     // credential
@@ -342,6 +351,16 @@ public class CliArgument {
      */
     public @Nullable String getConnectionLabel() {
         return this.connectionLabel;
+    }
+
+    /**
+     * get --lob-transfer-type.
+     *
+     * @return large object transfer type
+     */
+
+    public @Nonnull TgsqlLobTransferType getLobTransferType() {
+        return this.lobTransferType;
     }
 
     /**
