@@ -88,20 +88,20 @@ public class DefaultCredentialSessionConnector {
      * @param applicationName application name
      * @param label           connection label
      * @param endpoint        the end-point URI string
-     * @param lobTrasferType  large object transfer type
+     * @param lobTransferType large object transfer type
      * @return the established connection session
      * @throws IOException          if I/O error was occurred while executing the statement
      * @throws ServerException      if server side error was occurred
      * @throws InterruptedException if interrupted while executing the statement
      */
-    public SessionWithCredential connect(@Nonnull String applicationName, Optional<String> label, @Nonnull String endpoint, @Nonnull TgsqlLobTransferType lobTrasferType)
+    public SessionWithCredential connect(@Nonnull String applicationName, Optional<String> label, @Nonnull String endpoint, @Nonnull TgsqlLobTransferType lobTransferType)
             throws IOException, ServerException, InterruptedException {
         List<CredentialGetter> credentialList = List.of(this::getTokenCredential, this::getFileCredential, this::getNullCredential, this::getUserPasswordCredential);
 
         var failureList = new ArrayList<CoreServiceException>();
         for (var getter : credentialList) {
             var credential = getter.get();
-            var session = connect(applicationName, label, endpoint, credential, lobTrasferType.getRawBlobTransferType(), failureList);
+            var session = connect(applicationName, label, endpoint, credential, lobTransferType.getRawBlobTransferType(), failureList);
             if (session != null) {
                 return new SessionWithCredential(session, credential);
             }
